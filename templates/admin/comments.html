@@ -1,0 +1,37 @@
+<%inherit file="../base.html"/>
+
+<h2><a href="/admin">Admin</a></h2>
+
+<h3>Comments</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Post</th>
+            <th>Name</th>
+            <th>URL</th>
+            <th>Email</th>
+            <th>Body</th>
+            <th>Timestamp (UTC)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        % for comment in comments:
+            <tr>
+                <td><a href="/admin/post/${comment.post.slug}">${comment.post.title}</a></td>
+                <td>${comment.name}</td>
+                <td>${comment.url}</td>
+                <td>${comment.email}</td>
+                <td>${comment.body}</td>
+                <td>${comment.timestamp}</td>
+                <td>
+                    <form action="" method="post">
+                        <input type="hidden" name="email" value="${comment.email}" />
+                        <input type="submit" value="Approve" />
+                    </form>
+                </td>
+            </tr>
+        % endfor
+    </tbody>
+</table>
+

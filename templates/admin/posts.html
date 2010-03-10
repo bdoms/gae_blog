@@ -1,0 +1,26 @@
+<%inherit file="../base.html"/>
+
+<h2><a href="/admin">Admin</a></h2>
+
+<h3>Posts</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Published</th>
+            <th># of Comments</th>
+            <th>Timestamp (UTC)</th>
+        </tr>
+    </thead>
+    <tbody>
+        % for post in posts:
+            <tr>
+                <td><a href="/admin/post/${post.slug}">${post.title}</a></td>
+                <td>${post.published}</td>
+                <td>${len(post.approved_comments)}</td>
+                <td>${post.timestamp}
+            </tr>
+        % endfor
+    </tbody>
+</table>
+

@@ -1,0 +1,31 @@
+<%inherit file="../base.html"/>
+
+<h2><a href="/admin">Admin</a></h2>
+
+<h3>
+    Post
+    % if post:
+        (<a href="/post/${post.slug}">View</a>)
+    % endif
+</h3>
+<form action="" method="post">
+    <p>
+        Post Title: <input type="text" name="title" value="${post and post.title or ''}" />
+    </p>
+    <p>Post Body:</p>
+    % if post:
+        <textarea name="body">${post.body}</textarea>        
+    % else:
+        <textarea name="body"></textarea>
+    % endif
+    <p>
+        Published:
+        % if post and post.published:
+            <input type="checkbox" name="published" checked="checked" />
+        % else:
+            <input type="checkbox" name="published" />
+        % endif
+    </p>
+    <p><input type="submit" value="Save Post" /></p>
+</form>
+

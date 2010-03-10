@@ -1,0 +1,8 @@
+<%inherit file="base.html"/>
+
+<%namespace file="post.html" import="renderPost"/>
+
+% for post in posts:
+    ${renderPost(post, include_comments=False)}
+% endfor
+

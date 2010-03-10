@@ -1,0 +1,27 @@
+<%inherit file="../base.html"/>
+
+<h2>Admin</h2>
+
+<h3>Actions</h3>
+<ul>
+    <li><a href="/admin/post/">Write a New Post</a></li>
+    <li><a href="/admin/posts">View or Edit Pre-Existing Posts</a></li>
+    <li><a href="/admin/comments">Moderate Comments</a></li>
+</ul>
+
+<h3>Configuration</h3>
+<form action="" method="post">
+    <p>
+        Blog Title: <input type="text" name="title" value="${blog_title or ''}" />
+    </p>
+    <p>
+        Enable Comments:
+        % if blog_comments:
+            <input type="checkbox" name="comments" checked="checked" />
+        % else:
+            <input type="checkbox" name="comments" />
+        % endif
+    </p>
+    <p><input type="submit" value="Save Changes" /></p>
+</form>
+

@@ -1,0 +1,75 @@
+<%inherit file="base.html"/>
+
+${renderPost(post)}
+
+<%def name="renderPost(post, include_comments=True)">
+
+<div class="post">
+    <h2 class="title">
+        <a href="/post/${post.slug}">${post.title}</a>
+        % if user_is_admin:
+            (<a href="/admin/post/${post.slug}">Edit</a>)
+        % endif
+    </h2>
+
+    <p class="timestamp">${post.timestamp}</p>
+
+    <div class="body">
+        ${post.body}
+    </div>
+</div>
+
+% if blog_comments:
+    % if include_comments:
+        % if post.approved_comments:
+            <h3>Comments</h3>
+            <div class="comments">
+                % for comment in post.approved_comments:
+                    <div class="comment">
+                        <p class="name">
+                            % if comment.name:
+                                % if comment.url:
+                                    <a href="${comment.url}">${comment.name}</a>
+                                % else:
+                                    ${comment.name}
+                                % endif
+                            % else:
+                                Anonymous
+                            % endif
+                        </p>
+                        <p class="timestamp">${comment.timestamp}</p>
+
+                        <p class="body">${comment.body}</p>
+                    </div>
+                % endfor
+            </div>
+        % endif
+
+        <h3>Leave a Comment</h3>
+        <form action="" method="post">
+            <p>
+                Name:
+                <input type="text" name="name" />
+                <span class="help">(optional, appears with comment)</span>
+            </p>
+            <p>
+                URL:
+                <input type="text" name="url" />
+                <span class="help">(optional, your name links to this address if included)</span>
+            </p>
+            <p>
+                Email:
+                <input type="text" name="email" />
+                <span class="help">(required for verification, your first comment will be moderated)</span>
+            </p>
+            <p>Comment:</p>
+            <textarea name="body"></textarea>
+            <p><input type="submit" value="Make Comment" /></p>
+        </form>
+    % else:
+        <p><a href="/post/${post.slug}">See all ${len(post.approved_comments)} comments.</a></p>
+    % endif
+% endif
+
+</%def>
+
