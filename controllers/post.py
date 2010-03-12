@@ -1,6 +1,6 @@
 from base import BaseController
 
-import model
+from gaeblog import model
 
 class PostController(BaseController):
     """ shows an individual post and saves comments to it """

@@ -5,8 +5,8 @@ from google.appengine.ext import webapp
 from google.appengine.api import users
 
 # local
-from config import TEMPLATES_PATH
-import model
+from gaeblog.config import TEMPLATES_PATH
+from gaeblog import model
 
 # we have to force the use of the local Mako folder rather than the system one
 # this is a problem with how Python 2.X deals with imports - it's fixed in 3.X

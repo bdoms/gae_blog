@@ -1,7 +1,7 @@
 from google.appengine.api import users
 
 from base import BaseController
-import model
+from gaeblog import model
 
 LOGOUT_URL = users.create_logout_url("/")
 
