@@ -28,7 +28,6 @@ class BaseController(webapp.RequestHandler):
         if blog:
             kwargs["blog_title"] = blog.title
             kwargs["blog_comments"] = blog.comments
-        kwargs["h"] = helpers
         user = self.getUser()
         kwargs["user"] = user
         if user:
