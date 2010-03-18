@@ -3,7 +3,7 @@
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
-from config import ROUTES
+from gaeblog.config import ROUTES
 
 def main():
     app = application()
