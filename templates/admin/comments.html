@@ -1,6 +1,6 @@
 <%inherit file="../base.html"/>
 
-<h2><a href="/admin">Admin</a></h2>
+<h2><a href="${blog_url}/admin">Admin</a></h2>
 
 <h3>Comments</h3>
 <table>
@@ -18,7 +18,7 @@
     <tbody>
         % for comment in comments:
             <tr>
-                <td><a href="/admin/post/${comment.post.slug}">${comment.post.title}</a></td>
+                <td><a href="${blog_url}/admin/post/${comment.post.slug}">${comment.post.title}</a></td>
                 <td>${comment.name}</td>
                 <td>${comment.url}</td>
                 <td>${comment.email}</td>

@@ -8,12 +8,14 @@ TEMPLATES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), TEMPLA
 
 
 # url routes
+BLOG_URL = '/blog'
+
 from controllers import admin, index, post
 
-ROUTES = [('/blog', index.IndexController),
-          ('/blog/post/(.*)', post.PostController),
-          ('/blog/admin', admin.AdminController),
-          ('/blog/admin/post/(.*)', admin.PostController),
-          ('/blog/admin/posts', admin.PostsController),
-          ('/blog/admin/comments', admin.CommentsController)
+ROUTES = [(BLOG_URL, index.IndexController),
+          (BLOG_URL + '/post/(.*)', post.PostController),
+          (BLOG_URL + '/admin', admin.AdminController),
+          (BLOG_URL + '/admin/post/(.*)', admin.PostController),
+          (BLOG_URL + '/admin/posts', admin.PostsController),
+          (BLOG_URL + '/admin/comments', admin.CommentsController)
          ]

@@ -6,9 +6,9 @@ ${renderPost(post)}
 
 <div class="post">
     <h2 class="title">
-        <a href="/post/${post.slug}">${post.title}</a>
+        <a href="${blog_url}/post/${post.slug}">${post.title}</a>
         % if user_is_admin:
-            (<a href="/admin/post/${post.slug}">Edit</a>)
+            (<a href="${blog_url}/admin/post/${post.slug}">Edit</a>)
         % endif
     </h2>
 
@@ -67,7 +67,7 @@ ${renderPost(post)}
             <p><input type="submit" value="Make Comment" /></p>
         </form>
     % else:
-        <p><a href="/post/${post.slug}">See all ${len(post.approved_comments)} comments.</a></p>
+        <p><a href="${blog_url}/post/${post.slug}">See all ${len(post.approved_comments)} comments.</a></p>
     % endif
 % endif
 

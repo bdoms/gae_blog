@@ -16,16 +16,22 @@ In your pre-existing application add this project as a submodule, like so:
 
     git submodule add git://github.com/bdoms/gaeblog.git gaeblog
 
+Next, you need to initialize and update the submodule to get the data:
+
+    git submodule init
+    git submodule update
+
+Might need to do a git pull as well.
+
 And then just add this to your app.yaml 'handlers' section:
 
     - url: /blog.*
       script: gaeblog/blog.py
+    - url: /blog/admin.*
+      script: gaeblog/blog.py
+      login: admin
 
 Now going to /blog on your app will be handled by gaeblog.
-
-To update the submodule, just run:
-
-    git submodule update
 
 You should be good to go!
 

@@ -5,7 +5,7 @@ from google.appengine.ext import webapp
 from google.appengine.api import users
 
 # local
-from gaeblog.config import TEMPLATES_PATH
+from gaeblog.config import TEMPLATES_PATH, BLOG_URL
 from gaeblog import model
 
 # we have to force the use of the local Mako folder rather than the system one
@@ -24,6 +24,7 @@ class BaseController(webapp.RequestHandler):
     def renderTemplate(self, filename, **kwargs):
         template = self.template_lookup.get_template(filename)
         # add some standard variables
+        kwargs["blog_url"] = BLOG_URL
         blog = model.Blog.all().get()
         if blog:
             kwargs["blog_title"] = blog.title

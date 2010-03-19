@@ -1,11 +1,11 @@
 <%inherit file="../base.html"/>
 
-<h2><a href="/admin">Admin</a></h2>
+<h2><a href="${blog_url}/admin">Admin</a></h2>
 
 <h3>
     Post
     % if post:
-        (<a href="/post/${post.slug}">View</a>)
+        (<a href="${blog_url}/post/${post.slug}">View</a>)
     % endif
 </h3>
 <form action="" method="post">
