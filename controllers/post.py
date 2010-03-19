@@ -1,4 +1,4 @@
-from base import BaseController
+from base import BaseController, BLOG_URL
 
 from gaeblog import model
 
@@ -45,7 +45,7 @@ class PostController(BaseController):
                         comment.approved = True
                     comment.put()
 
-                    return self.redirect('/post/' + post_slug)
+                    return self.redirect(BLOG_URL + '/post/' + post_slug)
 
         return self.renderError(404)
 

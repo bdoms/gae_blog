@@ -1,6 +1,6 @@
 from google.appengine.api import users
 
-from base import BaseController
+from base import BaseController, BLOG_URL
 from gaeblog import model
 
 LOGOUT_URL = users.create_logout_url("/")
@@ -31,7 +31,7 @@ class AdminController(BaseController):
 
         blog.put()
 
-        self.redirect('/admin')
+        self.redirect(BLOG_URL + '/admin')
 
 
 class PostsController(BaseController):
@@ -80,9 +80,9 @@ class PostController(BaseController):
 
         # send them back to the admin list of posts if it's not published or to the actual post if it is
         if post.published:
-            self.redirect('/post/' + post.slug)
+            self.redirect(BLOG_URL + '/post/' + post.slug)
         else:
-            self.redirect('/admin/posts')
+            self.redirect(BLOG_URL + '/admin/posts')
 
 
 class CommentsController(BaseController):
@@ -103,5 +103,5 @@ class CommentsController(BaseController):
             comment.approved = True
             comment.put()
 
-        self.redirect('/admin/comments')
+        self.redirect(BLOG_URL + '/admin/comments')
 
