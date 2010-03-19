@@ -1,5 +1,5 @@
-GAE Blog is a project to provide a bare-bones blogging solution that makes no
-assumptions, and is easy to integrate with existing apps.
+GAE Blog is a project to provide a bare-bones blogging solution for Google App
+Engine that makes no assumptions, and is easy to integrate with existing apps.
 
 It uses and includes a copy of the Mako:
 
@@ -7,7 +7,7 @@ It uses and includes a copy of the Mako:
 
 Which is covered by the MIT License:
 
-    http://www.opensource.org/licenses/mit-license.php)
+    http://www.opensource.org/licenses/mit-license.php
 
 
 = Setup for Integrating with Your Project =
