@@ -15,20 +15,22 @@ class AdminController(BaseController):
 
     def post(self):
 
-        title = self.request.get("title")
+        title = self.request.get("title", "")
+        template = self.request.get("template", "")
         comments = self.request.get("comments", None)
 
         if comments:
             comments = True
         else:
-            comments - False
+            comments = False
 
         blog = model.BlogGlobal.all().get()
         if blog:
             blog.title = title
             blog.comments = comments
+            blog.template = template
         else:
-            blog = model.BlogGlobal(title=title, comments=comments)
+            blog = model.BlogGlobal(title=title, comments=comments, template=template)
 
         blog.put()
 

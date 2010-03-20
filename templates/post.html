@@ -5,28 +5,28 @@ ${renderPost(post)}
 <%def name="renderPost(post, include_comments=True)">
 
 <div class="post">
-    <h2 class="title">
+    <h3 class="post-title">
         <a href="${blog_url}/post/${post.slug}">${post.title}</a>
         % if user_is_admin:
             (<a href="${blog_url}/admin/post/${post.slug}">Edit</a>)
         % endif
-    </h2>
+    </h3>
 
-    <p class="timestamp">${post.timestamp}</p>
+    <p class="post-timestamp">${post.secondsSinceEpoch}</p>
 
-    <div class="body">
+    <p class="post-body">
         ${post.body}
-    </div>
+    </p>
 </div>
 
 % if blog_comments:
     % if include_comments:
         % if post.approved_comments:
-            <h3>Comments</h3>
+            <h4>Comments</h4>
             <div class="comments">
                 % for comment in post.approved_comments:
                     <div class="comment">
-                        <p class="name">
+                        <p class="comment-name">
                             % if comment.name:
                                 % if comment.url:
                                     <a href="${comment.url}">${comment.name}</a>
@@ -37,16 +37,16 @@ ${renderPost(post)}
                                 Anonymous
                             % endif
                         </p>
-                        <p class="timestamp">${comment.timestamp}</p>
+                        <p class="comment-timestamp">${comment.secondsSinceEpoch}</p>
 
-                        <p class="body">${comment.body}</p>
+                        <p class="comment-body">${comment.body}</p>
                     </div>
                 % endfor
             </div>
         % endif
 
-        <h3>Leave a Comment</h3>
-        <form action="" method="post">
+        <h4><a id="comment-link" href="#">Leave a Comment</a></h4>
+        <form id="comment-form" action="" method="post" style="display: none;">
             <p>
                 Name:
                 <input type="text" name="name" />
@@ -66,10 +66,53 @@ ${renderPost(post)}
             <textarea name="body"></textarea>
             <p><input type="submit" value="Make Comment" /></p>
         </form>
+        <script type="text/javascript">
+            var link = document.getElementById("comment-link");
+            link.addEventListener("click", function() {
+                var form = document.getElementById("comment-form");
+                if (form.style.display == "none") {
+                    form.style.display = "block";
+                }
+                else {
+                    form.style.display = "none";
+                }
+                return false;
+            }, false);
+        </script>
     % else:
         <p><a href="${blog_url}/post/${post.slug}">See all ${len(post.approved_comments)} comments.</a></p>
     % endif
 % endif
+
+<script type="text/javascript">
+    var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    var els = document.getElementsByTagName("*");
+    var timestamp_els = [];
+    for (var i=0; i < els.length; i++) {
+        if (els[i].className == "post-timestamp" || els[i].className == "comment-timestamp") {
+            timestamp_els.push(els[i]);
+        }
+    }
+
+    for (var i=0; i < timestamp_els.length; i++) {
+        var el = timestamp_els[i];
+
+        var utc_ms = parseInt(el.innerHTML) * 1000; // convert from seconds to ms
+        var local = new Date(utc_ms);
+        var date_string = days[local.getDay()] + ", " + months[local.getMonth()] + " " + local.getDate().toString();
+
+        var hours = local.getHours();
+        var ampm = "AM";
+        if (hours > 11) {ampm = "PM";}
+        if (hours > 12) {hours = hours - 12;}
+        if (hours == 0) {hours = 12;}
+        var time_string = hours.toString() + ":" + local.getMinutes().toString() + " " + ampm;
+
+        el.innerHTML = date_string + " at " + time_string;
+    }
+</script>
 
 </%def>
 

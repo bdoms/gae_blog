@@ -1,12 +1,15 @@
 
+from time import mktime
+
 from google.appengine.ext import db
 
 
 # standard model objects
 class BlogGlobal(db.Model):
 
-    title = db.StringProperty(required=True)
+    title = db.StringProperty()
     comments = db.BooleanProperty(required=True)
+    template = db.StringProperty()
 
 class BlogPost(db.Model):
 
@@ -21,6 +24,10 @@ class BlogPost(db.Model):
         #ordered_comments = self.comments.order_by(timestamp) # TODO: this needs the correct syntax
         return [comment for comment in self.comments if comment.approved]
 
+    @property
+    def secondsSinceEpoch(self):
+        return mktime(self.timestamp.timetuple())
+
 class BlogComment(db.Model):
 
     name = db.StringProperty()
@@ -30,6 +37,10 @@ class BlogComment(db.Model):
     approved = db.BooleanProperty(default=False)
     timestamp = db.DateTimeProperty(auto_now_add=True)
     post = db.ReferenceProperty(BlogPost, required=True, collection_name="comments")
+
+    @property
+    def secondsSinceEpoch(self):
+        return mktime(self.timestamp.timetuple())
 
 
 # misc functions

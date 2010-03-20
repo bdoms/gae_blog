@@ -40,3 +40,22 @@ If you just want the blog to be the only part of your website, the process is
 fairly similar. Just clone (or fork) the repository and make your own app.yaml
 file that includes the handlers mentioned above.
 
+
+= Using a Custom Base Template =
+
+You can obviously modify the included base template as much as you want, but in
+order to avoid redundancy, if you already have one that you'd like to use all
+you have to do is modify the "Base Template" configuration option on the blog
+admin page (at /blog/admin) with a path relative to your project (i.e. the
+parent directory of the gaeblog folder). For example, if your directory
+structure looks like this:
+
+    - your_project
+        - gaeblog
+        - your_templates
+            - your_base_template.html
+
+You would enter "your_templates/your_base_template.html" as the relative path.
+However, if you leave that option blank, then the default_base.html file will
+be used instead.
+
