@@ -25,7 +25,7 @@ class BaseController(webapp.RequestHandler):
         template = self.template_lookup.get_template(filename)
         # add some standard variables
         kwargs["blog_url"] = BLOG_URL
-        blog = model.Blog.all().get()
+        blog = model.BlogGlobal.all().get()
         if blog:
             kwargs["blog_title"] = blog.title
             kwargs["blog_comments"] = blog.comments

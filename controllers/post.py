@@ -7,7 +7,7 @@ class PostController(BaseController):
     def get(self, post_slug):
 
         if post_slug:
-            post = model.Post.all().filter("slug =", post_slug).get()
+            post = model.BlogPost.all().filter("slug =", post_slug).get()
             if post and post.published:
                 # only display a post if it's actually published
                 return self.renderTemplate('post.html', post=post)
@@ -16,11 +16,11 @@ class PostController(BaseController):
 
     def post(self, post_slug):
 
-        blog = model.Blog.all().get()
+        blog = model.BlogGlobal.all().get()
         if blog and blog.comments:
             # only allow comment posting is comments are enabled
             if post_slug:
-                post = model.Post.all().filter("slug =", post_slug).get()
+                post = model.BlogPost.all().filter("slug =", post_slug).get()
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
                     name = self.request.get("name")
@@ -38,9 +38,9 @@ class PostController(BaseController):
 
                     # TODO: make a way for the post author to bypass this check
                     # look for a previously approved comment from this email address
-                    approved = model.Comment.all().filter("email =", email).get()
+                    approved = model.BlogComment.all().filter("email =", email).get()
 
-                    comment = model.Comment(name=name, url=url, email=email, body=body, post=post)
+                    comment = model.BlogComment(name=name, url=url, email=email, body=body, post=post)
                     if approved:
                         comment.approved = True
                     comment.put()

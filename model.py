@@ -3,12 +3,12 @@ from google.appengine.ext import db
 
 
 # standard model objects
-class Blog(db.Model):
+class BlogGlobal(db.Model):
 
     title = db.StringProperty(required=True)
     comments = db.BooleanProperty(required=True)
 
-class Post(db.Model):
+class BlogPost(db.Model):
 
     title = db.StringProperty(required=True) # max of 500 chars
     slug = db.StringProperty(required=True)
@@ -21,7 +21,7 @@ class Post(db.Model):
         #ordered_comments = self.comments.order_by(timestamp) # TODO: this needs the correct syntax
         return [comment for comment in self.comments if comment.approved]
 
-class Comment(db.Model):
+class BlogComment(db.Model):
 
     name = db.StringProperty()
     url = db.StringProperty()
@@ -29,7 +29,7 @@ class Comment(db.Model):
     body = db.StringProperty(required=True)
     approved = db.BooleanProperty(default=False)
     timestamp = db.DateTimeProperty(auto_now_add=True)
-    post = db.ReferenceProperty(Post, required=True, collection_name="comments")
+    post = db.ReferenceProperty(BlogPost, required=True, collection_name="comments")
 
 
 # misc functions
@@ -43,14 +43,14 @@ def makePostSlug(title, post=None):
     """ creates a slug for use in a url """
     slug = title.lower().replace(" ", "-")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
-    existing = Post.all().filter("slug =", slug).get()
+    existing = BlogPost.all().filter("slug =", slug).get()
     if post and post.key() != existing.key():
         # only work on finding a new slug if this isn't the same post that already uses it
         i = 0
         while existing:
             i += 1
             new_slug = slug + "-" + str(i)
-            existing = Post.all.filter("slug =", new_slug).get()
+            existing = BlogPost.all.filter("slug =", new_slug).get()
             if not existing:
                 slug = new_slug
     return slug

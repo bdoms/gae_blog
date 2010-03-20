@@ -23,12 +23,12 @@ class AdminController(BaseController):
         else:
             comments - False
 
-        blog = model.Blog.all().get()
+        blog = model.BlogGlobal.all().get()
         if blog:
             blog.title = title
             blog.comments = comments
         else:
-            blog = model.Blog(title=title, comments=comments)
+            blog = model.BlogGlobal(title=title, comments=comments)
 
         blog.put()
 
@@ -39,7 +39,7 @@ class PostsController(BaseController):
     """ handles viewing all posts """
     def get(self):
 
-        posts = model.Post.all()
+        posts = model.BlogPost.all()
 
         self.renderTemplate('admin/posts.html', posts=posts)
 
@@ -50,7 +50,7 @@ class PostController(BaseController):
 
         post = None
         if post_slug:
-            post = model.Post.all().filter("slug =", post_slug).get()
+            post = model.BlogPost.all().filter("slug =", post_slug).get()
 
         self.renderTemplate('admin/post.html', post=post)
 
@@ -67,7 +67,7 @@ class PostController(BaseController):
 
         post = None
         if post_slug:
-            post = model.Post.all().filter("slug =", post_slug).get()
+            post = model.BlogPost.all().filter("slug =", post_slug).get()
 
         if post:
             post.title = title
@@ -75,7 +75,7 @@ class PostController(BaseController):
             post.published = published
             post.slug = model.makePostSlug(title, post)
         else:
-            post = model.Post(title=title, body=body, published=published, slug=model.makePostSlug(title))
+            post = model.BlogPost(title=title, body=body, published=published, slug=model.makePostSlug(title))
 
         post.put()
 
@@ -90,7 +90,7 @@ class CommentsController(BaseController):
     """ handles moderating comments """
     def get(self):
 
-        comments = model.Comment.all().filter("approved =", False)
+        comments = model.BlogComment.all().filter("approved =", False)
 
         self.renderTemplate('admin/comments.html', comments=comments)
 
@@ -99,7 +99,7 @@ class CommentsController(BaseController):
         # approve all the comments with the submitted email address here
         email = self.request.get("email")
 
-        comments = model.Comment.all().filter("email =", email)
+        comments = model.BlogComment.all().filter("email =", email)
         for comment in comments:
             comment.approved = True
             comment.put()
