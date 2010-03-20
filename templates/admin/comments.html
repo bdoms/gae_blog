@@ -3,6 +3,8 @@
 <h2><a href="${blog_url}/admin">Admin</a></h2>
 
 <h3>Comments</h3>
+
+% if comments.count() > 0:
 <table>
     <thead>
         <tr>
@@ -34,4 +36,7 @@
         % endfor
     </tbody>
 </table>
+% else:
+<p>No comments to moderate.</p>
+% endif
 
