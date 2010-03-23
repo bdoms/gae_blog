@@ -1,0 +1,3 @@
+[submodule "PyRSS2Gen"]
+	path = PyRSS2Gen
+	url = git://github.com/bdoms/PyRSS2Gen.git
