@@ -8,7 +8,7 @@ TEMPLATES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), TEMPLA
 
 
 # url routes
-BLOG_URLS = ['/blog', '/travel']
+BLOG_URLS = ['/blog']
 
 from controllers import admin, index, post
 
