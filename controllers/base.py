@@ -5,18 +5,21 @@ from google.appengine.ext import webapp
 from google.appengine.api import users
 
 # local
-from gaeblog.config import TEMPLATES_PATH
+from gaeblog.config import TEMPLATES_PATH, MAKO_PATH
 from gaeblog import model
 
 # we have to force the use of the local Mako folder rather than the system one
-# this is a problem with how Python 2.X deals with imports - it's fixed in 3.X
+# this is a problem with how Mako does imports (assumes an installed package)
 # also, this would never happen on production as Google blocks these things
 import sys
-system_mako = '/usr/local/lib/python2.6/dist-packages/Mako-0.2.5-py2.6.egg'
-if system_mako in sys.path:
-    sys.path.remove(system_mako)
+for path in sys.path:
+    if 'Mako' in path:
+        sys.path.remove(path)
+        break
 
-from mako.lookup import TemplateLookup
+sys.path.append(MAKO_PATH)
+from MakoTemplates.mako.lookup import TemplateLookup
+
 
 class BaseController(webapp.RequestHandler):
 

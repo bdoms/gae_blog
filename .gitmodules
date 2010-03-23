@@ -1,3 +1,6 @@
 [submodule "PyRSS2Gen"]
 	path = PyRSS2Gen
 	url = git://github.com/bdoms/PyRSS2Gen.git
+[submodule "MakoTemplates"]
+	path = MakoTemplates
+	url = git://github.com/bdoms/MakoTemplates.git
