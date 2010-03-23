@@ -1,4 +1,4 @@
-from base import BaseController, BLOG_URL
+from base import BaseController
 
 from gaeblog import model
 
@@ -7,7 +7,8 @@ class PostController(BaseController):
     def get(self, post_slug):
 
         if post_slug:
-            post = model.BlogPost.all().filter("slug =", post_slug).get()
+            blog = self.getBlog()
+            post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
             if post and post.published:
                 # only display a post if it's actually published
                 return self.renderTemplate('post.html', post=post)
@@ -16,11 +17,11 @@ class PostController(BaseController):
 
     def post(self, post_slug):
 
-        blog = model.BlogGlobal.all().get()
+        blog = self.getBlog()
         if blog and blog.comments:
-            # only allow comment posting is comments are enabled
+            # only allow comment posting if comments are enabled
             if post_slug:
-                post = model.BlogPost.all().filter("slug =", post_slug).get()
+                post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
                     name = self.request.get("name")
@@ -37,15 +38,18 @@ class PostController(BaseController):
                     # TODO: turn any linebreaks in the body into br tags
 
                     # TODO: make a way for the post author to bypass this check
-                    # look for a previously approved comment from this email address
-                    approved = model.BlogComment.all().filter("email =", email).get()
+
+                    # look for a previously approved comment from this email address on this blog
+                    approved = []
+                    for post in self.getBlog().posts:
+                        approved.extend(list(post.comments.filter("email =", email).filter("approved =", True)))
 
                     comment = model.BlogComment(name=name, url=url, email=email, body=body, post=post)
                     if approved:
                         comment.approved = True
                     comment.put()
 
-                    return self.redirect(BLOG_URL + '/post/' + post_slug)
+                    return self.redirect(self.blog_url + '/post/' + post_slug)
 
         return self.renderError(404)
 

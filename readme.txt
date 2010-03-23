@@ -1,13 +1,17 @@
 GAE Blog is a project to provide a bare-bones blogging solution for Google App
 Engine that makes no assumptions, and is easy to integrate with existing apps.
 
-It uses and includes a copy of the Mako:
-
+It uses and includes a copy of Mako:
     http://www.makotemplates.org/
 
 Which is covered by the MIT License:
-
     http://www.opensource.org/licenses/mit-license.php
+
+And PyRSS2Gen:
+    http://www.dalkescientific.com/Python/PyRSS2Gen.html
+
+Which is covered by the BSD License:
+    http://www.opensource.org/licenses/bsd-license.php
 
 
 = Setup for Integrating with Your Project =
@@ -23,15 +27,15 @@ Next, you need to initialize and update the submodule to get the data:
 
 And then just add this to your app.yaml 'handlers' section:
 
-    - url: /blog.*
-      script: gaeblog/blog.py
     - url: /blog/admin.*
       script: gaeblog/blog.py
       login: admin
+    - url: /blog.*
+      script: gaeblog/blog.py
 
 Now going to /blog on your app will be handled by gaeblog.
 
-You should be good to go!
+Go to /blog/admin to configure your blog, post to it, and moderate comments.
 
 
 = Setup for Using As a Parent Project =
@@ -39,6 +43,17 @@ You should be good to go!
 If you just want the blog to be the only part of your website, the process is
 fairly similar. Just clone (or fork) the repository and make your own app.yaml
 file that includes the handlers mentioned above.
+
+
+= Managing Multiple Blogs =
+
+If you want to use GAE Blog for multiple blogs within the same project/domain,
+you just have to decide on a relative URL for each one ("/blog" by default)
+and modify these things:
+
+    * add handlers for it to your app.yaml as mentioned above
+    * add it to the BLOG_URLS list in gaeblog/config.py
+    * create each blog with its respective URL from /blog/admin
 
 
 = Using a Custom Base Template =

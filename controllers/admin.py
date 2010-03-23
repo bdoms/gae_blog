@@ -1,21 +1,45 @@
 from google.appengine.api import users
 
-from base import BaseController, BLOG_URL
+from base import BaseController
 
 from gaeblog import model
-
-LOGOUT_URL = users.create_logout_url("/")
 
 
 class AdminController(BaseController):
     """ shows the index page for the admin section, and handles sitewide configuration """
     def get(self):
 
-        self.renderTemplate('admin/index.html')
+        blog = self.getBlog()
 
-    def post(self):
+        if blog:
+            other_blogs = model.Blog.all().filter("url !=", blog.url)
+            self.renderTemplate('admin/index.html', blog=blog, other_blogs=other_blogs, logout_url=self.logout_url)
+
+        else:
+            self.redirect(self.blog_url + '/admin/blog/')
+
+    @property
+    def logout_url(self):
+        return users.create_logout_url(self.blog_url)
+
+class BlogController(AdminController):
+    """ handles blog configuration and creation """
+    def get(self, blog_key):
+
+        blog = None
+        if blog_key:
+            blog = model.Blog.get(blog_key)
+
+        self.renderTemplate('admin/blog.html', blog=blog, logout_url=self.logout_url)
+
+    def post(self, blog_key):
+
+        blog = None
+        if blog_key:
+            blog = model.Blog.get(blog_key)
 
         title = self.request.get("title", "")
+        url = self.request.get("url", "")
         template = self.request.get("template", "")
         comments = self.request.get("comments", None)
 
@@ -24,87 +48,145 @@ class AdminController(BaseController):
         else:
             comments = False
 
-        blog = model.BlogGlobal.all().get()
         if blog:
             blog.title = title
             blog.comments = comments
+            blog.url = url
             blog.template = template
         else:
-            blog = model.BlogGlobal(title=title, comments=comments, template=template)
+            # check to make sure that there isn't already another blog at this URL
+            existing = model.Blog.all().filter('url =', url).get()
+            if existing:
+                self.response.out.write("A blog already exists with that URL.")
+                return
+
+            blog = model.Blog(title=title, comments=comments, url=url, template=template)
 
         blog.put()
 
-        self.redirect(BLOG_URL + '/admin')
+        self.redirect(blog.url + '/admin/author/')
 
 
-class PostsController(BaseController):
-    """ handles viewing all posts """
+class AuthorsController(AdminController):
+    """ handles viewing all authors for this blog """
     def get(self):
 
-        posts = model.BlogPost.all()
+        blog = self.getBlog()
+        authors = model.BlogAuthor.all().filter('blog =', blog)
 
-        self.renderTemplate('admin/posts.html', posts=posts)
+        self.renderTemplate('admin/authors.html', authors=authors, logout_url=self.logout_url)
 
 
-class PostController(BaseController):
+class AuthorController(AdminController):
+    """ handles creating and changing authors """
+    def get(self, author_key):
+
+        author = None
+        if author_key:
+            author = model.BlogAuthor.get(author_key)
+
+        self.renderTemplate('admin/author.html', author=author, logout_url=self.logout_url)
+
+    def post(self, author_key):
+
+        author = None
+        if author_key:
+            author = model.BlogAuthor.get(author_key)
+
+        name = self.request.get("name")
+
+        if author:
+            author.name = name
+        else:
+            author = model.BlogAuthor(name=name, blog=self.getBlog())
+
+        author.put()
+
+        self.redirect(self.blog_url + '/admin')
+
+
+class PostsController(AdminController):
+    """ handles viewing all posts for this blog """
+    def get(self):
+
+        posts = self.getBlog().posts
+
+        self.renderTemplate('admin/posts.html', posts=posts, logout_url=self.logout_url)
+
+
+class PostController(AdminController):
     """ handles editing and publishing posts """
     def get(self, post_slug):
 
+        blog = self.getBlog()
         post = None
         if post_slug:
-            post = model.BlogPost.all().filter("slug =", post_slug).get()
+            post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
 
-        self.renderTemplate('admin/post.html', post=post)
+        authors = model.BlogAuthor.all().filter("blog =", blog)
+
+        self.renderTemplate('admin/post.html', post=post, authors=authors, logout_url=self.logout_url)
 
     def post(self, post_slug):
 
         title = self.request.get("title")
+        author = self.request.get("author")
         body = self.request.get("body")
         published = self.request.get("published", None)
+
+        author = model.BlogAuthor.get(author)
 
         if published:
             published = True
         else:
             published = False
 
+        blog = self.getBlog()
+
         post = None
         if post_slug:
-            post = model.BlogPost.all().filter("slug =", post_slug).get()
+            post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
 
         if post:
             post.title = title
             post.body = body
             post.published = published
             post.slug = model.makePostSlug(title, post)
+            post.author = author
         else:
-            post = model.BlogPost(title=title, body=body, published=published, slug=model.makePostSlug(title))
+            post = model.BlogPost(title=title, body=body, published=published, slug=model.makePostSlug(title), author=author, blog=blog)
 
         post.put()
 
         # send them back to the admin list of posts if it's not published or to the actual post if it is
         if post.published:
-            self.redirect(BLOG_URL + '/post/' + post.slug)
+            self.redirect(self.blog_url + '/post/' + post.slug)
         else:
-            self.redirect(BLOG_URL + '/admin/posts')
+            self.redirect(self.blog_url + '/admin/posts')
 
 
-class CommentsController(BaseController):
+class CommentsController(AdminController):
     """ handles moderating comments """
     def get(self):
 
-        comments = model.BlogComment.all().filter("approved =", False)
+        comments = []
+        for post in self.getBlog().posts:
+            comments.extend(list(post.comments.filter("approved =", False)))
 
-        self.renderTemplate('admin/comments.html', comments=comments)
+        self.renderTemplate('admin/comments.html', comments=comments, logout_url=self.logout_url)
 
     def post(self):
 
         # approve all the comments with the submitted email address here
         email = self.request.get("email")
 
-        comments = model.BlogComment.all().filter("email =", email)
+        comments = []
+        for post in self.getBlog().posts:
+            comments.extend(list(post.comments.filter("email =", email)))
+
         for comment in comments:
             comment.approved = True
             comment.put()
 
-        self.redirect(BLOG_URL + '/admin/comments')
+        self.redirect(self.blog_url + '/admin/comments')
 

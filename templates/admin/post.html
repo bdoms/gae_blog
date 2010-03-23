@@ -1,6 +1,4 @@
-<%inherit file="../base.html"/>
-
-<h2><a href="${blog_url}/admin">Admin</a></h2>
+<%inherit file="base.html"/>
 
 <h3>
     Post
@@ -10,14 +8,25 @@
 </h3>
 <form action="" method="post">
     <p>
-        Post Title: <input type="text" name="title" value="${post and post.title or ''}" />
+        Title: <input type="text" name="title" value="${post and post.title or ''}" />
     </p>
-    <p>Post Body:</p>
+
+    <p>
+        Author:
+        <select name="author">
+            % for author in authors:
+                <option value="${author.key()}">${author.name}</a>
+            % endfor
+        </select>
+    </p> 
+
+    <p>Body:</p>
     % if post:
         <textarea name="body">${post.body}</textarea>        
     % else:
         <textarea name="body"></textarea>
     % endif
+
     <p>
         Published:
         % if post and post.published:
@@ -26,6 +35,7 @@
             <input type="checkbox" name="published" />
         % endif
     </p>
+
     <p><input type="submit" value="Save Post" /></p>
 </form>
 

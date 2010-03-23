@@ -12,7 +12,9 @@ ${renderPost(post)}
         % endif
     </h3>
 
-    <p class="post-timestamp">${post.secondsSinceEpoch}</p>
+    <p class="post-author">By ${post.author.name}</p>
+
+    <p>At <span class="post-timestamp">${post.secondsSinceEpoch}</span></p>
 
     <p class="post-body">
         ${post.body}
@@ -21,7 +23,7 @@ ${renderPost(post)}
 
 % if blog_comments:
     % if include_comments:
-        % if post.approved_comments:
+        % if post.approved_comments.count():
             <h4>Comments</h4>
             <div class="comments">
                 % for comment in post.approved_comments:
@@ -80,7 +82,7 @@ ${renderPost(post)}
             }, false);
         </script>
     % else:
-        <p><a href="${blog_url}/post/${post.slug}">See all ${len(post.approved_comments)} comments.</a></p>
+        <p><a href="${blog_url}/post/${post.slug}">See all comments (${post.approved_comments.count()}).</a></p>
     % endif
 % endif
 

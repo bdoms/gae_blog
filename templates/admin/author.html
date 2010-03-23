@@ -1,0 +1,17 @@
+<%inherit file="../base.html"/>
+
+<h2><a href="${blog_url}/admin">Admin</a></h2>
+
+<h3>Author</h3>
+<form action="" method="post">
+    <p>
+        Name: <input type="text" name="name" value="${author and author.name or ''}" />
+    </p>
+
+    % if author:
+        <p><input type="submit" value="Save Changes" /></p>
+    % else:
+        <p><input type="submit" value="Create New Author" /></p>
+    % endif
+</form>
+

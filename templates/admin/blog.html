@@ -1,0 +1,36 @@
+<%inherit file="base.html"/>
+
+% if blog:
+    <h3>Configuration</h3>
+% else:
+    <h3>Blog Setup</h3>
+% endif
+
+<form action="" method="post">
+    <p>
+        Blog Title: <input type="text" name="title" value="${blog and blog.title or ''}" />
+    </p>
+    <p>
+        Enable Comments:
+        % if blog and blog.comments:
+            <input type="checkbox" name="comments" checked="checked" />
+        % else:
+            <input type="checkbox" name="comments" />
+        % endif
+    </p>
+    <p>
+        Blog URL: <input type="text" name="url" value="${blog and blog.url or blog_url}" />
+        (WARNING: changing this may break things, see readme for instructions)
+    </p>
+    <p>
+        Base Template: <input type="text" name="template" value="${blog and blog.template or ''}" />
+        (relative path from your parent project)
+    </p>
+
+    % if blog:
+        <p><input type="submit" value="Save Changes" /></p>
+    % else:
+        <p><input type="submit" value="Create New Blog" /></p>
+    % endif
+</form>
+

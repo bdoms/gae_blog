@@ -2,7 +2,16 @@
 
 <%namespace file="post.html" import="renderPost"/>
 
-% for post in posts:
-    ${renderPost(post, include_comments=False)}
-% endfor
+% if blog:
+
+    % for post in blog.published_posts:
+        ${renderPost(post, include_comments=False)}
+    % endfor
+
+% else:
+    <p>
+        There's nothing here yet.
+        You should <a href="${blog_url}/admin">setup your blog</a>.
+    </p>
+% endif
 

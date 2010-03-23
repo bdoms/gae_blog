@@ -5,11 +5,21 @@ from google.appengine.ext import db
 
 
 # standard model objects
-class BlogGlobal(db.Model):
+class Blog(db.Model):
 
     title = db.StringProperty()
     comments = db.BooleanProperty(required=True)
+    url = db.StringProperty(default='/blog')
     template = db.StringProperty()
+
+    @property
+    def published_posts(self):
+        return self.posts.filter('published =', True).order('timestamp')
+
+class BlogAuthor(db.Model):
+
+    name = db.StringProperty(required=True)
+    blog = db.ReferenceProperty(Blog, required=True, collection_name="authors")
 
 class BlogPost(db.Model):
 
@@ -18,11 +28,12 @@ class BlogPost(db.Model):
     body = db.TextProperty() # returns type db.Text (a subclass of unicode)
     published = db.BooleanProperty(default=False)
     timestamp = db.DateTimeProperty(auto_now_add=True)
+    author = db.ReferenceProperty(BlogAuthor, required=True, collection_name="posts")
+    blog = db.ReferenceProperty(Blog, required=True, collection_name="posts")
 
     @property
     def approved_comments(self):
-        #ordered_comments = self.comments.order_by(timestamp) # TODO: this needs the correct syntax
-        return [comment for comment in self.comments if comment.approved]
+        return self.comments.filter('approved =', True).order('timestamp')
 
     @property
     def secondsSinceEpoch(self):

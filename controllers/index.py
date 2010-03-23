@@ -6,7 +6,7 @@ class IndexController(BaseController):
     """ handles request for the main index page of the site """
     def get(self):
 
-        posts = model.BlogPost.all()
+        blog = self.getBlog()
 
-        self.renderTemplate('index.html', posts=posts)
+        self.renderTemplate('index.html', blog=blog)
 
