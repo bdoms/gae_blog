@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from google.appengine.api import users
 
 from base import BaseController
@@ -137,9 +139,17 @@ class PostController(AdminController):
         title = self.request.get("title")
         author = self.request.get("author")
         body = self.request.get("body")
+        timestamp_choice = self.request.get("timestamp-choice")
+        timestamp = self.request.get("timestamp")
         published = self.request.get("published", None)
 
         author = model.BlogAuthor.get(author)
+
+        if timestamp_choice == "now":
+            timestamp = datetime.utcnow()
+        else:
+            # try to parse it
+            timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
 
         if published:
             published = True
@@ -155,11 +165,12 @@ class PostController(AdminController):
         if post:
             post.title = title
             post.body = body
+            post.timestamp = timestamp
             post.published = published
             post.slug = model.makePostSlug(title, post)
             post.author = author
         else:
-            post = model.BlogPost(title=title, body=body, published=published, slug=model.makePostSlug(title), author=author, blog=blog)
+            post = model.BlogPost(title=title, body=body, timestamp=timestamp, published=published, slug=model.makePostSlug(title), author=author, blog=blog)
 
         post.put()
 

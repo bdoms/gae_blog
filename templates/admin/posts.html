@@ -19,7 +19,7 @@
             % for post in posts:
                 <tr>
                     <td><a href="${blog_url}/admin/post/${post.slug}">${post.title}</a></td>
-                    <td>${post.author}</td>
+                    <td>${post.author.name}</td>
                     <td>${post.published}</td>
                     <td>${post.approved_comments.count()}</td>
                     <td>${post.timestamp}</td>

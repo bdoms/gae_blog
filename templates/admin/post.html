@@ -27,6 +27,28 @@
         <textarea name="body"></textarea>
     % endif
 
+    <p>Timestamp:</p>
+    <ul>
+        <li>
+            % if post:
+                <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" />
+            % else:
+                <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" checked="checked" />
+            % endif
+            <label for="timestamp-now">Now</label>
+        </li>
+        <li>
+            % if post:
+                <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" checked="checked" />
+            % else:
+                <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" />
+            % endif
+            <label for="timestamp-custom">Custom:</label>
+            <input type="text" name="timestamp" value="${post and post.timestamp.strftime('%Y-%m-%d %H:%M:%S') or ''}" />
+            (ex: 1970-01-21 13:35:16)
+        </li>
+    </ul>
+
     <p>
         Published:
         % if post and post.published:
