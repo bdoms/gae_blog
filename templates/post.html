@@ -24,7 +24,7 @@ ${renderPost(post)}
 % if blog_comments:
     % if include_comments:
         % if post.approved_comments.count():
-            <h4>Comments</h4>
+            <h4 id="comments">Comments</h4>
             <div class="comments">
                 % for comment in post.approved_comments:
                     <div class="comment">

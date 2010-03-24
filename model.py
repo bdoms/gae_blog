@@ -8,6 +8,7 @@ from google.appengine.ext import db
 class Blog(db.Model):
 
     title = db.StringProperty()
+    description = db.StringProperty()
     comments = db.BooleanProperty(required=True)
     url = db.StringProperty(default='/blog')
     template = db.StringProperty()

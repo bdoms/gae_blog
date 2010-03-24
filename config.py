@@ -12,12 +12,13 @@ MAKO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), MAKO_DIR)
 # url routes
 BLOG_URLS = ['/blog']
 
-from controllers import admin, index, post
+from controllers import admin, feed, index, post
 
 ROUTES = []
 
 for url in BLOG_URLS:
     ROUTES.extend([(url, index.IndexController),
+                   (url + '/feed', feed.FeedController),
                    (url + '/post/(.*)', post.PostController),
                    (url + '/admin', admin.AdminController),
                    (url + '/admin/blog/(.*)', admin.BlogController),

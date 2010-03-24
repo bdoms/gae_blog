@@ -39,6 +39,7 @@ class BlogController(AdminController):
             blog = model.Blog.get(blog_key)
 
         title = self.request.get("title", "")
+        description = self.request.get("description", "")
         url = self.request.get("url", "")
         template = self.request.get("template", "")
         comments = self.request.get("comments", None)
@@ -50,6 +51,7 @@ class BlogController(AdminController):
 
         if blog:
             blog.title = title
+            blog.description = description
             blog.comments = comments
             blog.url = url
             blog.template = template
@@ -60,11 +62,14 @@ class BlogController(AdminController):
                 self.response.out.write("A blog already exists with that URL.")
                 return
 
-            blog = model.Blog(title=title, comments=comments, url=url, template=template)
+            blog = model.Blog(title=title, description=description, comments=comments, url=url, template=template)
 
         blog.put()
 
-        self.redirect(blog.url + '/admin/author/')
+        if blog_key:
+            self.redirect(blog.url + '/admin')
+        else:
+            self.redirect(blog.url + '/admin/author/')
 
 
 class AuthorsController(AdminController):

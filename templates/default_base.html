@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+        <meta name="description" content="${blog_description or ''}" />
         <title>${blog_title or 'Blog'}</title>
     </head>
     <body>
@@ -10,9 +11,8 @@
 
             <div id="header">
                 <h1><a href="${blog_url}">${blog_title or 'Blog'}</a></h1>
+                <p><a href="${blog_url}/feed">Subscribe</a></p>
             </div>
-
-            <!-- TODO: link to rss feed somewhere -->
 
             <div id="content">
                 ${next.body()}

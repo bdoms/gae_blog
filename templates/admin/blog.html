@@ -11,6 +11,10 @@
         Blog Title: <input type="text" name="title" value="${blog and blog.title or ''}" />
     </p>
     <p>
+        Blog Description: <input type="text" name="description" value="${blog and blog.description or ''}" />
+        (used by RSS and default meta tags)
+    </p>
+    <p>
         Enable Comments:
         % if blog and blog.comments:
             <input type="checkbox" name="comments" checked="checked" />
