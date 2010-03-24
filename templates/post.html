@@ -14,7 +14,7 @@ ${renderPost(post)}
 
     <p class="post-author">By ${post.author.name}</p>
 
-    <p>At <span class="post-timestamp">${post.secondsSinceEpoch}</span></p>
+    <p class="post-timestamp">${post.secondsSinceEpoch}</p>
 
     <p class="post-body">
         ${post.body}
@@ -31,13 +31,14 @@ ${renderPost(post)}
                         <p class="comment-name">
                             % if comment.name:
                                 % if comment.url:
-                                    <a href="${comment.url}">${comment.name}</a>
+                                    <a target="_blank" href="${comment.url}">${comment.name}</a>
                                 % else:
                                     ${comment.name}
                                 % endif
                             % else:
                                 Anonymous
                             % endif
+                            says
                         </p>
                         <p class="comment-timestamp">${comment.secondsSinceEpoch}</p>
 
@@ -47,7 +48,7 @@ ${renderPost(post)}
             </div>
         % endif
 
-        <h4><a id="comment-link" href="#">Leave a Comment</a></h4>
+        <h4 id="comment-link-header"><a id="comment-link" href="#comment-link">Leave a Comment</a></h4>
         <form id="comment-form" action="" method="post" style="display: none;">
             <p>
                 Name:
@@ -70,7 +71,7 @@ ${renderPost(post)}
         </form>
         <script type="text/javascript">
             var link = document.getElementById("comment-link");
-            link.addEventListener("click", function() {
+            link.addEventListener("click", function(e) {
                 var form = document.getElementById("comment-form");
                 if (form.style.display == "none") {
                     form.style.display = "block";
@@ -82,7 +83,7 @@ ${renderPost(post)}
             }, false);
         </script>
     % else:
-        <p><a href="${blog_url}/post/${post.slug}">See all comments (${post.approved_comments.count()}).</a></p>
+        <p><a href="${blog_url}/post/${post.slug}">See All Comments (${post.approved_comments.count()})</a></p>
     % endif
 % endif
 
