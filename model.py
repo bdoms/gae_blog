@@ -1,4 +1,5 @@
 
+import re
 from time import mktime
 
 from google.appengine.ext import db
@@ -40,6 +41,15 @@ class BlogPost(db.Model):
     def secondsSinceEpoch(self):
         return mktime(self.timestamp.timetuple())
 
+    def summarize(self, length):
+        # returns a copy of the body truncated to the specified number of words
+        no_html = re.sub(r'<[^<]*?/?>', '', self.body)
+        words = no_html.split(" ")
+        if len(words) <= length:
+            return no_html
+        else:
+            return " ".join(words[:length]) + "..."
+
 class BlogComment(db.Model):
 
     name = db.StringProperty()
@@ -67,7 +77,7 @@ def makePostSlug(title, post=None):
     slug = title.lower().replace(" ", "-")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
     existing = BlogPost.all().filter("slug =", slug).get()
-    if post and post.key() != existing.key():
+    if (post and existing) and post.key() != existing.key():
         # only work on finding a new slug if this isn't the same post that already uses it
         i = 0
         while existing:

@@ -16,9 +16,9 @@ ${renderPost(post)}
 
     <p class="post-timestamp">${post.secondsSinceEpoch}</p>
 
-    <p class="post-body">
+    <div class="post-body">
         ${post.body}
-    </p>
+    </div>
 </div>
 
 % if blog_comments:
@@ -63,7 +63,7 @@ ${renderPost(post)}
             <p>
                 Email:
                 <input type="text" name="email" />
-                <span class="help">(required for verification, your first comment will be moderated)</span>
+                <span class="help">(required for verification, first comment is moderated)</span>
             </p>
             <p>Comment:</p>
             <textarea name="body"></textarea>
