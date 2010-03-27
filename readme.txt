@@ -7,12 +7,6 @@ It uses and includes a copy of Mako:
 Which is covered by the MIT License:
     http://www.opensource.org/licenses/mit-license.php
 
-And PyRSS2Gen:
-    http://www.dalkescientific.com/Python/PyRSS2Gen.html
-
-Which is covered by the BSD License:
-    http://www.opensource.org/licenses/bsd-license.php
-
 
 = Setup for Integrating with Your Project =
 
@@ -59,9 +53,9 @@ and modify these things:
 = Using a Custom Base Template =
 
 You can obviously modify the included base template as much as you want, but in
-order to avoid redundancy, if you already have one that you'd like to use all
-you have to do is modify the "Base Template" configuration option on the blog
-admin page (at /blog/admin) with a path relative to your project (i.e. the
+order to avoid redundancy, if you already have a Mako that you'd like to use
+all you have to do is modify the "Base Template" configuration option on the
+blog admin page (at /blog/admin) with a path relative to your project (i.e. the
 parent directory of the gaeblog folder). For example, if your directory
 structure looks like this:
 
