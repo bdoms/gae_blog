@@ -111,7 +111,11 @@ ${renderPost(post)}
         if (hours > 11) {ampm = "PM";}
         if (hours > 12) {hours = hours - 12;}
         if (hours == 0) {hours = 12;}
-        var time_string = hours.toString() + ":" + local.getMinutes().toString() + " " + ampm;
+
+        var minutes = local.getMinutes().toString();
+        if (minutes.length < 2) {minutes = "0" + minutes;}
+
+        var time_string = hours.toString() + ":" + minutes + " " + ampm;
 
         el.innerHTML = date_string + " at " + time_string;
     }
