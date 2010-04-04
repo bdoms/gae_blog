@@ -27,16 +27,38 @@ ${renderPost(post)}
             <h4 id="comments">Comments</h4>
             <div class="comments">
                 % for comment in post.approved_comments:
-                    <div class="comment">
+                    % if comment.author
+                        % if comment.author.key() == post.author.key():
+                            <div class="comment post-author-comment">
+                        % else:
+                            <div class="comment blog-author-comment">
+                        % endif
+                    % else:
+                        <div class="comment">
+                    % endif
                         <p class="comment-name">
-                            % if comment.name:
-                                % if comment.url:
-                                    <a target="_blank" href="${comment.url}">${comment.name}</a>
+                            % if comment.author:
+                                % if comment.author.url:
+                                    <a target="_blank" href="${comment.author.url}">${comment.author.name}</a>
                                 % else:
-                                    ${comment.name}
+                                    ${comment.author.name}
+                                % endif
+
+                                % if comment.author.key() == post.author.key():
+                                    (post author)
+                                % else:
+                                    (blog author)
                                 % endif
                             % else:
-                                Anonymous
+                                % if comment.name:
+                                    % if comment.url:
+                                        <a target="_blank" href="${comment.url}">${comment.name}</a>
+                                    % else:
+                                        ${comment.name}
+                                    % endif
+                                % else:
+                                    Anonymous
+                                % endif
                             % endif
                             says
                         </p>
@@ -49,38 +71,79 @@ ${renderPost(post)}
         % endif
 
         <h4 id="comment-link-header"><a id="comment-link" href="#comment-link">Leave a Comment</a></h4>
+
         <form id="comment-form" action="" method="post" style="display: none;">
-            <p>
-                Name:
-                <input type="text" name="name" />
-                <span class="help">(optional, appears with comment)</span>
-            </p>
-            <p>
-                URL:
-                <input type="text" name="url" />
-                <span class="help">(optional, your name links to this address if included)</span>
-            </p>
-            <p>
-                Email:
-                <input type="text" name="email" />
-                <span class="help">(required for verification, first comment is moderated)</span>
-            </p>
+            % if user_is_admin:
+                <ul>
+                    <li>
+                        <input id="author-choice-author" type="radio" name="author-choice" value="author" checked="checked" />
+                        <label for="author-choice-author">Leave comment as author:</label>
+                        <select name="author">
+                            % for author in authors:
+                                <option value="${author.key()}">${author.name}</option>
+                            % endfor
+                        </select>
+                        (bypasses moderation)
+                    </li>
+                    <li>
+                        <input id="author-choice-custom" type="radio" name="author-choice" value="custom" />
+                        <label for="author-choice-custom">Enter custom information</labael>
+                    </li>
+                </ul>
+
+                <div id="comment-author-info" style="display: none;">
+            % else:
+                <div id="comment-author-info">
+            % endif
+                <p>
+                    Name:
+                    <input type="text" name="name" />
+                    <span class="help">(optional, appears with comment)</span>
+                </p>
+                <p>
+                    URL:
+                    <input type="text" name="url" />
+                    <span class="help">(optional, your name links to this address if included)</span>
+                </p>
+                <p>
+                    Email:
+                    <input type="text" name="email" />
+                    <span class="help">(required for verification, first comment is moderated)</span>
+                </p>
+            </div>
             <p>Comment:</p>
             <textarea name="body"></textarea>
             <p><input type="submit" value="Make Comment" /></p>
         </form>
+
         <script type="text/javascript">
-            var link = document.getElementById("comment-link");
-            link.addEventListener("click", function(e) {
-                var form = document.getElementById("comment-form");
-                if (form.style.display == "none") {
-                    form.style.display = "block";
+            var comment_link = document.getElementById("comment-link");
+            comment_link.addEventListener("click", function(e) {
+                var comment_form = document.getElementById("comment-form");
+                if (comment_form.style.display == "none") {
+                    comment_form.style.display = "block";
                 }
                 else {
-                    form.style.display = "none";
+                    comment_form.style.display = "none";
                 }
                 return false;
             }, false);
+
+            % if user_is_admin:
+                var author_radio = document.getElementById("author-choice-author");
+                author_radio.addEventListener("click", function(e) {
+                    var author_info = document.getElementById("comment-author-info");
+                    author_info.style.display = "none";
+                    return false;
+                }, false);
+
+                var custom_radio = document.getElementById("author-choice-custom");
+                custom_radio.addEventListener("click", function(e) {
+                    var author_info = document.getElementById("comment-author-info");
+                    author_info.style.display = "block";
+                    return false;
+                }, false);
+            % endif
         </script>
     % else:
         <p><a href="${blog_url}/post/${post.slug}">See All Comments (${post.approved_comments.count()})</a></p>

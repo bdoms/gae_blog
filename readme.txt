@@ -19,7 +19,8 @@ Next, you need to initialize and update the submodule to get the data:
     git submodule init
     git submodule update
 
-And then just add this to your app.yaml 'handlers' section:
+And then just add this to your app.yaml 'handlers' section (note that the admin
+URL must come first in order to be secure):
 
     - url: /blog/admin.*
       script: gaeblog/blog.py
@@ -46,17 +47,17 @@ you just have to decide on a relative URL for each one ("/blog" by default)
 and modify these things:
 
     * add handlers for it to your app.yaml as mentioned above
-    * add it to the BLOG_URLS list in gaeblog/config.py
+    * add it to the BLOG_URLS list in config.py
     * create each blog with its respective URL from /blog/admin
 
 
 = Using a Custom Base Template =
 
 You can obviously modify the included base template as much as you want, but in
-order to avoid redundancy, if you already have a Mako that you'd like to use
-all you have to do is modify the "Base Template" configuration option on the
-blog admin page (at /blog/admin) with a path relative to your project (i.e. the
-parent directory of the gaeblog folder). For example, if your directory
+order to avoid redundancy, if you already have a Mako one that you'd like to
+use all you have to do is modify the "Base Template" configuration option on
+the blog admin page (at /blog/admin) with a path relative to your project (i.e.
+the parent directory of the gaeblog folder). For example, if your directory
 structure looks like this:
 
     - your_project

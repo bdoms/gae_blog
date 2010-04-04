@@ -5,6 +5,9 @@
     <thead>
         <tr>
             <th>Name</th>
+            <th>URL</th>
+            <th>Email</th>
+            <th># of Comments</th>
             <th># of Posts</th>
         </tr>
     </thead>
@@ -12,6 +15,9 @@
         % for author in authors:
             <tr>
                 <td><a href="${blog_url}/admin/author/${author.key()}">${author.name}</a></td>
+                <td>${author.url or ''}</td>
+                <td>${author.email or ''}</td>
+                <td>${author.comments.count()}</td>
                 <td>${author.posts.count()}</td>
             </tr>
         % endfor

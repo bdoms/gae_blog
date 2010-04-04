@@ -101,11 +101,15 @@ class AuthorController(AdminController):
             author = model.BlogAuthor.get(author_key)
 
         name = self.request.get("name")
+        url = self.request.get("url")
+        email = self.request.get("email")
 
         if author:
             author.name = name
+            author.url = url
+            author.email = email
         else:
-            author = model.BlogAuthor(name=name, blog=self.getBlog())
+            author = model.BlogAuthor(name=name, url=url, email=email, blog=self.getBlog())
 
         author.put()
 

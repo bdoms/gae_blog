@@ -21,6 +21,8 @@ class Blog(db.Model):
 class BlogAuthor(db.Model):
 
     name = db.StringProperty(required=True)
+    url = db.StringProperty()
+    email = db.StringProperty()
     blog = db.ReferenceProperty(Blog, required=True, collection_name="authors")
 
 class BlogPost(db.Model):
@@ -43,7 +45,7 @@ class BlogPost(db.Model):
 
     def summarize(self, length):
         # returns a copy of the body truncated to the specified number of words
-        no_html = re.sub(r'<[^<]*?/?>', '', self.body)
+        no_html = stripHTML(self.body)
         words = no_html.split(" ")
         if len(words) <= length:
             return no_html
@@ -54,11 +56,16 @@ class BlogComment(db.Model):
 
     name = db.StringProperty()
     url = db.StringProperty()
-    email = db.StringProperty(required=True)
+    email = db.StringProperty()
     body = db.StringProperty(required=True)
     approved = db.BooleanProperty(default=False)
     timestamp = db.DateTimeProperty(auto_now_add=True)
     post = db.ReferenceProperty(BlogPost, required=True, collection_name="comments")
+    author = db.ReferenceProperty(BlogAuthor, collection_name="comments")
+
+    def __init__(self, *args, **kwargs):
+        assert "email" in kwargs or "author" in kwargs, "A BlogComment needs either an email address or attached author for verification."
+        return super(BlogComment, self).__init__(*args, **kwargs)
 
     @property
     def secondsSinceEpoch(self):
@@ -70,7 +77,8 @@ def refresh(model_instance):
     # refeshes an instance in case things were updated since the last reference to this object (used in testing)
     return db.get(model_instance.key())
 
-
+def stripHTML(string):
+    return re.sub(r'<[^<]*?/?>', '', string)
 
 def makePostSlug(title, post=None):
     """ creates a slug for use in a url """
