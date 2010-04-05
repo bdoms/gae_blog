@@ -5,8 +5,8 @@ from google.appengine.ext import webapp
 from google.appengine.api import users
 
 # local
-from gaeblog.config import TEMPLATES_PATH, MAKO_PATH
-from gaeblog import model
+from gae_blog.config import TEMPLATES_PATH, MAKO_PATH
+from gae_blog import model
 
 # we have to force the use of the local Mako folder rather than the system one
 # this is a problem with how Mako does imports (assumes an installed package)
@@ -18,7 +18,7 @@ for path in sys.path:
         break
 
 sys.path.append(MAKO_PATH)
-from MakoTemplates.mako.lookup import TemplateLookup
+from mako_templates.mako.lookup import TemplateLookup
 
 
 class BaseController(webapp.RequestHandler):

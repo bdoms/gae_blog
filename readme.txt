@@ -12,7 +12,7 @@ Which is covered by the MIT License:
 
 In your pre-existing application add this project as a submodule, like so:
 
-    git submodule add git://github.com/bdoms/gaeblog.git gaeblog
+    git submodule add git://github.com/bdoms/gae_blog.git gae_blog
 
 Next, you need to initialize and update the submodule to get the data:
 
@@ -23,12 +23,12 @@ And then just add this to your app.yaml 'handlers' section (note that the admin
 URL must come first in order to be secure):
 
     - url: /blog/admin.*
-      script: gaeblog/blog.py
+      script: gae_blog/blog.py
       login: admin
     - url: /blog.*
-      script: gaeblog/blog.py
+      script: gae_blog/blog.py
 
-Now going to /blog on your app will be handled by gaeblog.
+Now going to /blog on your app will be handled by gae_blog.
 
 Go to /blog/admin to configure your blog, post to it, and moderate comments.
 
@@ -57,11 +57,11 @@ You can obviously modify the included base template as much as you want, but in
 order to avoid redundancy, if you already have a Mako one that you'd like to
 use all you have to do is modify the "Base Template" configuration option on
 the blog admin page (at /blog/admin) with a path relative to your project (i.e.
-the parent directory of the gaeblog folder). For example, if your directory
+the parent directory of the gae_blog folder). For example, if your directory
 structure looks like this:
 
     - your_project
-        - gaeblog
+        - gae_blog
         - your_templates
             - your_base_template.html
 

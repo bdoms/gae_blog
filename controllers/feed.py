@@ -2,7 +2,7 @@ from datetime import datetime
 
 from base import BaseController
 
-from gaeblog import model
+from gae_blog import model
 
 
 class FeedController(BaseController):

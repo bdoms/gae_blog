@@ -27,7 +27,7 @@ ${renderPost(post)}
             <h4 id="comments">Comments</h4>
             <div class="comments">
                 % for comment in post.approved_comments:
-                    % if comment.author
+                    % if comment.author:
                         % if comment.author.key() == post.author.key():
                             <div class="comment post-author-comment">
                         % else:

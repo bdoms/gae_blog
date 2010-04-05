@@ -4,7 +4,7 @@ from google.appengine.api import users
 
 from base import BaseController
 
-from gaeblog import model
+from gae_blog import model
 
 
 class AdminController(BaseController):

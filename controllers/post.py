@@ -2,7 +2,7 @@ from google.appengine.api import users
 
 from base import BaseController
 
-from gaeblog import model
+from gae_blog import model
 
 class PostController(BaseController):
     """ shows an individual post and saves comments to it """

@@ -6,7 +6,7 @@ import os
 TEMPLATES_DIR = 'templates'
 TEMPLATES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), TEMPLATES_DIR)
 
-MAKO_DIR = 'MakoTemplates'
+MAKO_DIR = 'mako_templates'
 MAKO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), MAKO_DIR)
 
 # url routes
