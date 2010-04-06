@@ -113,7 +113,11 @@ class AuthorController(AdminController):
 
         author.put()
 
-        self.redirect(self.blog_url + '/admin')
+        if model.BlogAuthor.all().count() > 1:
+            self.redirect(self.blog_url + '/admin/authors')
+
+        else:
+            self.redirect(self.blog_url + '/admin')
 
 
 class PostsController(AdminController):
