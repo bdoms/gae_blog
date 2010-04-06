@@ -186,7 +186,24 @@ class PostController(AdminController):
         if post.published:
             self.redirect(self.blog_url + '/post/' + post.slug)
         else:
-            self.redirect(self.blog_url + '/admin/posts')
+            if self.request.get("preview"):
+                self.redirect(self.blog_url + '/admin/preview/' + post.slug)
+            else:
+                self.redirect(self.blog_url + '/admin/posts')
+
+
+class PreviewController(AdminController):
+    """ handles showing an admin-only preview of a post """
+    def get(self, post_slug):
+
+        blog = self.getBlog()
+        post = None
+        if post_slug:
+            post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
+            if post:
+                return self.renderTemplate('admin/preview.html', post=post, logout_url=self.logout_url)
+
+        self.renderError(404)
 
 
 class CommentsController(AdminController):

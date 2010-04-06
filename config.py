@@ -25,5 +25,6 @@ for url in BLOG_URLS:
                    (url + '/admin/authors', admin.AuthorsController),
                    (url + '/admin/post/(.*)', admin.PostController),
                    (url + '/admin/posts', admin.PostsController),
+                   (url + '/admin/preview/(.*)', admin.PreviewController),
                    (url + '/admin/comments', admin.CommentsController)
                 ])

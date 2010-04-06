@@ -2,7 +2,7 @@
 
 <h3>
     Post
-    % if post:
+    % if post and post.published:
         (<a href="${blog_url}/post/${post.slug}">View</a>)
     % endif
 </h3>
@@ -52,12 +52,35 @@
     <p>
         Published:
         % if post and post.published:
-            <input type="checkbox" name="published" checked="checked" />
+            <input type="checkbox" name="published" checked="checked" id="published-box" />
         % else:
-            <input type="checkbox" name="published" />
+            <input type="checkbox" name="published" id="published-box" />
         % endif
     </p>
 
-    <p><input type="submit" value="Save Post" /></p>
+    % if post and post.published:
+        <p id="preview-button" style="display: none;">
+    % else:
+        <p id="preview-button">
+    % endif
+        <input type="submit" value="Save and Preview" name="preview" />
+        (you can only preview unpublished posts)
+    </p>
+
+    <p><input type="submit" value="Save and Stop Working" /></p>
 </form>
+
+<script type="text/javascript">
+    var published_box = document.getElementById("published-box");
+    published_box.addEventListener("click", function(e) {
+        var preview_button = document.getElementById("preview-button");
+        if (this.checked) {
+            preview_button.style.display = "none";
+        }
+        else {
+            preview_button.style.display = "block";
+        }
+        return false;
+    }, false);
+</script>
 

@@ -6,9 +6,15 @@ ${renderPost(post)}
 
 <div class="post">
     <h3 class="post-title">
-        <a href="${blog_url}/post/${post.slug}">${post.title}</a>
-        % if user_is_admin:
-            (<a href="${blog_url}/admin/post/${post.slug}">Edit</a>)
+        % if post.published:
+            <a href="${blog_url}/post/${post.slug}">${post.title}</a>
+            % if user_is_admin:
+                (<a href="${blog_url}/admin/post/${post.slug}">Edit</a>)
+            % endif
+        % else:
+            ${post.title}
+            (Preview Mode - 
+            <a href="${blog_url}/admin/post/${post.slug}">Continue Editing</a>)
         % endif
     </h3>
 
@@ -146,7 +152,9 @@ ${renderPost(post)}
             % endif
         </script>
     % else:
-        <p><a href="${blog_url}/post/${post.slug}">See All Comments (${post.approved_comments.count()})</a></p>
+        % if post.published:
+            <p><a href="${blog_url}/post/${post.slug}">See All Comments (${post.approved_comments.count()})</a></p>
+        % endif
     % endif
 % endif
 
