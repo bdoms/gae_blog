@@ -3,6 +3,7 @@ from google.appengine.api import users
 from base import BaseController
 
 from gae_blog import model
+from gae_blog.formencode.validators import UnicodeString, Email, URL
 
 class PostController(BaseController):
     """ shows an individual post and saves comments to it """
@@ -34,11 +35,18 @@ class PostController(BaseController):
                     email = self.request.get("email")
                     body = self.request.get("body", "")
 
-                    # TODO: validate that the email address and url are valid here
+                    # body validation and handling
+                    body = self.validate(UnicodeString(not_empty=True), body, "Comment")
+                    if not body: return
 
-                    # just stripping out all HTML for now to be on the safe side
-                    # TODO: allow some limited things (inline styles and links) in the future
+                    # strip out all HTML to be on the safe side
                     body = model.stripHTML(body)
+
+                    # turn URL's into links
+                    body = model.linkURLs(body)
+
+                    # finally, replace linebreaks with HTML linebreaks
+                    body = body.replace("\r\n", "<br/>")
 
                     if author_choice == "author":
                         # validate that if they want to comment as an author that it's valid and they're approved
@@ -50,12 +58,31 @@ class PostController(BaseController):
 
                         comment = model.BlogComment(body=body, approved=True, post=post, author=author)
                     else:
+                        # validate that the email address is valid
+                        email = self.validate(Email(), email, "Email")
+                        if not email: return
+
+                        # validate that the name, if present, is valid
+                        if name:
+                            name = self.validate(UnicodeString(max=500), name, "Name")
+                            if not name: return
+                            name = model.stripHTML(name)
+
+                        # validate that the url, if present, is valid
+                        if url:
+                            url = self.validate(URL(add_http=True), url, "URL")
+                            if not url: return
+
                         # look for a previously approved comment from this email address on this blog
                         approved = []
                         for post in self.getBlog().posts:
                             approved.extend(list(post.comments.filter("email =", email).filter("approved =", True)))
 
-                        comment = model.BlogComment(name=name, url=url, email=email, body=body, post=post)
+                        comment = model.BlogComment(email=email, body=body, post=post)
+                        if name:
+                            comment.name = name
+                        if url:
+                            comment.url = url
                         if approved:
                             comment.approved = True
 
@@ -64,4 +91,14 @@ class PostController(BaseController):
                     return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
         return self.renderError(404)
+
+    # helper function for validating comments
+    def validate(self, validator, value, name):
+        try:
+            value = validator.to_python(value)
+        except:
+            self.renderError(400)
+            self.response.out.write(" - Invalid " + name)
+            return None
+        return value
 

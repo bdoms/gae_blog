@@ -43,6 +43,7 @@ class BaseController(webapp.RequestHandler):
 
     def renderError(self, status_int):
         self.response.set_status(status_int)
+        self.response.out.write("You've Encountered An Error: ")
         self.response.out.write(str(status_int) + " - " + self.response.http_status_message(status_int))
 
     def getUser(self):

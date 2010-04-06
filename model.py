@@ -57,7 +57,7 @@ class BlogComment(db.Model):
     name = db.StringProperty()
     url = db.StringProperty()
     email = db.StringProperty()
-    body = db.StringProperty(required=True)
+    body = db.TextProperty(required=True)
     approved = db.BooleanProperty(default=False)
     timestamp = db.DateTimeProperty(auto_now_add=True)
     post = db.ReferenceProperty(BlogPost, required=True, collection_name="comments")
@@ -79,6 +79,19 @@ def refresh(model_instance):
 
 def stripHTML(string):
     return re.sub(r'<[^<]*?/?>', '', string)
+
+# based on formencode.validators.URL.url_re, with slight modifications
+URL_RE = re.compile(r'''
+        ((http|https)://
+        (?:[%:\w]*@)?                                               # authenticator
+        (?P<domain>[a-z0-9][a-z0-9\-]{1,62}\.)*                     # (sub)domain - alpha followed by 62max chars (63 total)
+        (?P<tld>[a-z]{2,})                                          # TLD
+        (?::[0-9]+)?                                                # port
+        (?P<path>/[a-z0-9\-\._~:/\?#\[\]@!%\$&\'\(\)\*\+,;=]*)?)    # files/delims/etc
+    ''', re.I | re.VERBOSE)
+
+def linkURLs(string):
+    return URL_RE.sub(r'<a href="\1" target="_blank">\1</a>', string)
 
 def makePostSlug(title, post=None):
     """ creates a slug for use in a url """
