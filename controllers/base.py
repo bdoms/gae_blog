@@ -5,7 +5,7 @@ from google.appengine.ext import webapp
 from google.appengine.api import users
 
 # local
-from gae_blog.config import TEMPLATES_PATH, MAKO_PATH
+from gae_blog.config import TEMPLATES_PATH, BLOG_PATH
 from gae_blog import model
 
 # we have to force the use of the local Mako folder rather than the system one
@@ -17,8 +17,8 @@ for path in sys.path:
         sys.path.remove(path)
         break
 
-sys.path.append(MAKO_PATH)
-from mako_templates.mako.lookup import TemplateLookup
+sys.path.append(BLOG_PATH)
+from mako.lookup import TemplateLookup
 
 
 class BaseController(webapp.RequestHandler):

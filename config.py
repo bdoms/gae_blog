@@ -6,8 +6,8 @@ import os
 TEMPLATES_DIR = 'templates'
 TEMPLATES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), TEMPLATES_DIR)
 
-MAKO_DIR = 'mako_templates'
-MAKO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), MAKO_DIR)
+BLOG_DIR = 'gae_blog'
+BLOG_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # url routes
 BLOG_URLS = ['/blog']
