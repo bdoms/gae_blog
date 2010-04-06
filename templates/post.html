@@ -167,7 +167,8 @@ ${renderPost(post)}
 
         var utc_ms = parseInt(el.innerHTML) * 1000; // convert from seconds to ms
         var local = new Date(utc_ms);
-        var date_string = days[local.getDay()] + ", " + months[local.getMonth()] + " " + local.getDate().toString();
+        var day_and_month = days[local.getDay()] + ", " + months[local.getMonth()];
+        var date_string = day_and_month + " " + local.getDate().toString() + ", " + local.getFullYear().toString();
 
         var hours = local.getHours();
         var ampm = "AM";
