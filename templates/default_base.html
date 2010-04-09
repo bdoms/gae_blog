@@ -3,14 +3,14 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
         <meta name="description" content="${blog_description or ''}" />
-        <title>${blog_title or 'Blog'}</title>
+        <title>${blog and blog.title or 'Blog'}</title>
     </head>
     <body>
 
         <div id="blog" class="container">
 
             <div id="header">
-                <h1><a href="${blog_url}">${blog_title or 'Blog'}</a></h1>
+                <h1><a href="${blog_url}">${blog and blog.title or 'Blog'}</a></h1>
                 <p><a href="${blog_url}/feed">Subscribe</a></p>
             </div>
 

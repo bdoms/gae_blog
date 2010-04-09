@@ -27,7 +27,7 @@ ${renderPost(post)}
     </div>
 </div>
 
-% if blog_comments:
+% if blog.comments:
     % if include_comments:
         % if post.approved_comments.count():
             <h4 id="comments">Comments</h4>
@@ -153,16 +153,13 @@ ${renderPost(post)}
         </script>
     % else:
         % if post.published:
-            <p><a href="${blog_url}/post/${post.slug}">See All Comments (${post.approved_comments.count()})</a></p>
+            <p class="all-comments"><a href="${blog_url}/post/${post.slug}">See All Comments (${post.approved_comments.count()})</a></p>
         % endif
     % endif
 % endif
 
 <script type="text/javascript">
-    var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    var els = document.getElementsByTagName("*");
+    var els = document.getElementsByTagName("p");
     var timestamp_els = [];
     for (var i=0; i < els.length; i++) {
         if (els[i].className == "post-timestamp" || els[i].className == "comment-timestamp") {
@@ -171,25 +168,7 @@ ${renderPost(post)}
     }
 
     for (var i=0; i < timestamp_els.length; i++) {
-        var el = timestamp_els[i];
-
-        var utc_ms = parseInt(el.innerHTML) * 1000; // convert from seconds to ms
-        var local = new Date(utc_ms);
-        var day_and_month = days[local.getDay()] + ", " + months[local.getMonth()];
-        var date_string = day_and_month + " " + local.getDate().toString() + ", " + local.getFullYear().toString();
-
-        var hours = local.getHours();
-        var ampm = "AM";
-        if (hours > 11) {ampm = "PM";}
-        if (hours > 12) {hours = hours - 12;}
-        if (hours == 0) {hours = 12;}
-
-        var minutes = local.getMinutes().toString();
-        if (minutes.length < 2) {minutes = "0" + minutes;}
-
-        var time_string = hours.toString() + ":" + minutes + " " + ampm;
-
-        el.innerHTML = date_string + " at " + time_string;
+        convert_timestamp(timestamp_els[i]);
     }
 </script>
 

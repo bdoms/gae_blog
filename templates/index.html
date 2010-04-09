@@ -4,9 +4,33 @@
 
 % if blog:
 
-    % for post in blog.published_posts:
-        ${renderPost(post, include_comments=False)}
-    % endfor
+    % if posts:
+        <div class="post-list">
+            % for post in posts:
+                <div class="post-list-post">
+                    ${renderPost(post, include_comments=False)}
+                </div>
+            % endfor
+        </div>
+        % if page or last_page > page:
+            <p class="post-nav">
+                % if last_page > page:
+                    <a href="${blog_url}?page=${page + 1}">&lt; Older Posts</a>
+                    % if page:
+                        |
+                    % endif
+                % endif
+                % if page:
+                    <a href="${blog_url}?page=${page - 1}">Newer Posts &gt;</a>
+                % endif
+            </p>
+        % endif
+    % else:
+        <p>
+            No posts yet.
+            Want to <a href="${blog_url}/admin/post/">go write one</a>?
+        </p>
+    % endif
 
 % else:
     <p>

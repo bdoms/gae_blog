@@ -45,6 +45,14 @@ class BlogController(AdminController):
         url = self.request.get("url", "")
         template = self.request.get("template", "")
         comments = self.request.get("comments", None)
+        posts_per_page = self.request.get("posts_per_page", None)
+
+        try:
+            posts_per_page = int(posts_per_page)
+        except:
+            self.renderError(400)
+            self.response.out.write(" - Posts Per Page value wasn't an integer.")
+            return
 
         if comments:
             comments = True
@@ -55,16 +63,18 @@ class BlogController(AdminController):
             blog.title = title
             blog.description = description
             blog.comments = comments
+            blog.posts_per_page = posts_per_page
             blog.url = url
             blog.template = template
         else:
             # check to make sure that there isn't already another blog at this URL
             existing = model.Blog.all().filter('url =', url).get()
             if existing:
-                self.response.out.write("A blog already exists with that URL.")
+                self.renderError(400)
+                self.response.out.write(" - A blog already exists with that URL.")
                 return
 
-            blog = model.Blog(title=title, description=description, comments=comments, url=url, template=template)
+            blog = model.Blog(title=title, description=description, comments=comments, posts_per_page=posts_per_page, url=url, template=template)
 
         blog.put()
 

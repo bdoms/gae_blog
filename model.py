@@ -11,12 +11,13 @@ class Blog(db.Model):
     title = db.StringProperty()
     description = db.StringProperty()
     comments = db.BooleanProperty(required=True)
+    posts_per_page = db.IntegerProperty(default=10)
     url = db.StringProperty(default='/blog')
     template = db.StringProperty()
 
     @property
     def published_posts(self):
-        return self.posts.filter('published =', True).order('timestamp')
+        return self.posts.filter('published =', True).order('-timestamp')
 
 class BlogAuthor(db.Model):
 

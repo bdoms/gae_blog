@@ -28,13 +28,8 @@ class BaseController(webapp.RequestHandler):
         template = self.template_lookup.get_template(filename)
         # add some standard variables
         kwargs["blog_url"] = self.blog_url
-        kwargs["blog_template"] = ""
         blog = self.getBlog()
-        if blog:
-            kwargs["blog_title"] = blog.title
-            kwargs["blog_description"] = blog.description
-            kwargs["blog_comments"] = blog.comments
-            kwargs["blog_template"] = blog.template
+        kwargs["blog"] = blog
         user = self.getUser()
         kwargs["user"] = user
         if user:

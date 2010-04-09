@@ -1,11 +1,50 @@
 <%!
       def determine_inherit(template, context):
-            if context['blog_template']:
-                  template = '../../' + context['blog_template']
+            blog = context['blog']
+            if blog and blog.template:
+                  template = '../../' + blog.template
             else:
                   template = 'default_base.html'
             return template
 %>
 <%inherit file="${determine_inherit(template, context)}"/>
+
+<script type="text/javascript">
+    var DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    var converted = [];
+
+    var convert_timestamp = function(el) {
+
+        for (var i=0; i < converted.length; i++) {
+            if (converted[i] == el) {
+                return;
+            }
+        }
+        converted.push(el);
+
+        var utc_ms = parseInt(el.innerHTML) * 1000; // convert from seconds to ms
+        console.log(utc_ms);
+        var local = new Date(utc_ms);
+        console.log(local);
+        var day_and_month = DAYS[local.getDay()] + ", " + MONTHS[local.getMonth()];
+        var date_string = day_and_month + " " + local.getDate().toString() + ", " + local.getFullYear().toString();
+
+        var hours = local.getHours();
+        var ampm = "AM";
+        if (hours > 11) {ampm = "PM";}
+        if (hours > 12) {hours = hours - 12;}
+        if (hours == 0) {hours = 12;}
+
+        var minutes = local.getMinutes().toString();
+        if (minutes.length < 2) {minutes = "0" + minutes;}
+
+        var time_string = hours.toString() + ":" + minutes + " " + ampm;
+
+        el.innerHTML = date_string + " at " + time_string;
+    };
+</script>
+
 ${next.body()}
 
