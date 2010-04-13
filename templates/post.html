@@ -20,7 +20,10 @@ ${renderPost(post)}
 
     <p class="post-author">By ${post.author.name}</p>
 
-    <p class="post-timestamp">${post.secondsSinceEpoch}</p>
+    <p class="post-timestamp">
+        ${post.timestamp.strftime("%c")}
+        <input type="hidden" value="${post.secondsSinceEpoch}"/>
+    </p>
 
     <div class="post-body">
         ${post.body}
@@ -68,8 +71,10 @@ ${renderPost(post)}
                             % endif
                             says
                         </p>
-                        <p class="comment-timestamp">${comment.secondsSinceEpoch}</p>
-
+                        <p class="comment-timestamp">
+                            ${comment.timestamp.strftime("%c")}
+                            <input type="hidden" value="${comment.secondsSinceEpoch}"/>
+                        </p>
                         <p class="comment-body">${comment.body}</p>
                     </div>
                 % endfor

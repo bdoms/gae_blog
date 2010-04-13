@@ -24,10 +24,9 @@
         }
         converted.push(el);
 
-        var utc_ms = parseInt(el.innerHTML) * 1000; // convert from seconds to ms
-        console.log(utc_ms);
+        var seconds = el.getElementsByTagName("input")[0].value;
+        var utc_ms = parseInt(seconds) * 1000; // convert from seconds to ms
         var local = new Date(utc_ms);
-        console.log(local);
         var day_and_month = DAYS[local.getDay()] + ", " + MONTHS[local.getMonth()];
         var date_string = day_and_month + " " + local.getDate().toString() + ", " + local.getFullYear().toString();
 
