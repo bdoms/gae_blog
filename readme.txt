@@ -14,8 +14,16 @@ In your pre-existing application add this project as a submodule, like so:
 
     git submodule add git://github.com/bdoms/gae_blog.git gae_blog
 
-Next, you need to initialize and update the submodule to get the data:
+Next, you need to initialize and update the submodule to get all the submodules
+that exist within the gae_blog project:
 
+    cd gae_blog
+    git submodule init
+    git submodule update
+
+Then repeat for your project:
+
+    cd ..
     git submodule init
     git submodule update
 
