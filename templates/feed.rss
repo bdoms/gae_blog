@@ -6,7 +6,7 @@
 
 	<link>http://${root_url}${blog_url}</link>
 	<description>${blog and blog.description or ''}</description>
-	<lastBuildDate>${build_date}</lastBuildDate>
+	<lastBuildDate>${build_date.strftime("%a, %d %b %Y %H:%M:%S GMT")}</lastBuildDate>
 	<generator>http://github.com/bdoms/gaeblog</generator>
 	<language>en</language>
 
@@ -17,7 +17,7 @@
         		<link>http://${root_url}${blog_url}/post/${post.slug}</link>
 
         		<comments>http://${root_url}${blog_url}/post/${post.slug}#comments</comments>
-        		<pubDate>${post.timestamp}</pubDate>
+        		<pubDate>${post.timestamp.strftime("%a, %d %b %Y %H:%M:%S GMT")}</pubDate>
         		<dc:creator>${post.author.name}</dc:creator>
 
 	        	<description><![CDATA[
