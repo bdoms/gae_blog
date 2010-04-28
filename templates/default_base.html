@@ -3,7 +3,12 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
         <meta name="description" content="${blog_description or ''}" />
-        <title>${blog and blog.title or 'Blog'}</title>
+        <title>
+            ${blog and blog.title or 'Blog'}
+            % if post:
+                - ${post.title}
+            % endif
+        </title>
     </head>
     <body>
 
