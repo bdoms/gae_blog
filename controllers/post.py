@@ -92,13 +92,3 @@ class PostController(BaseController):
 
         return self.renderError(404)
 
-    # helper function for validating comments
-    def validate(self, validator, value, name):
-        try:
-            value = validator.to_python(value)
-        except:
-            self.renderError(400)
-            self.response.out.write(" - Invalid " + name)
-            return None
-        return value
-

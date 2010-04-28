@@ -23,6 +23,14 @@
         % endif
     </p>
     <p>
+        Enable Contact Page:
+        % if blog and blog.contact:
+            <input type="checkbox" name="contact" checked="checked" />
+        % else:
+            <input type="checkbox" name="contact" />
+        % endif
+    </p>
+    <p>
         Posts Per Page: <input type="text" name="posts_per_page" value="${blog and blog.posts_per_page or 10}" />
         (control how many posts are shown at once on index pages)
     </p>

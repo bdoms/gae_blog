@@ -1,0 +1,67 @@
+<%inherit file="base.html"/>
+
+<%namespace file="post.html" import="renderPost"/>
+
+<h3>Contact</h3>
+
+% if sent:
+
+    <p>Message sent successfully. Thanks!</p>
+
+% else:
+
+    % if blog.authors:
+
+        % if authors:
+
+            <form action="" method="post">
+                <p>
+                    To:
+                    <select name="author">
+                        % if len(authors) > 1:
+                            <option value="all">Everyone</option>
+                        % endif
+                        % for author in authors:
+                            <option value="${author.key()}">${author.name}</option>
+                        % endfor
+                    </select>
+                </p>
+
+                <p>
+                    From Email Address:
+                    <input type="text" name="email" />
+                    <span class="help">(required for a response)</span>
+                </p>
+
+                <p>
+                    Subject:
+                    <input type="text" name="subject" />
+                    <span class="help">(optional)</span>
+                </p>
+
+                <p>
+                    Message:
+                    <span class="help">(plain text)</span>
+                </p>
+
+                <textarea name="body"></textarea>
+
+                <p><input type="submit" value="Send"/></p>
+            </form>
+
+        % else:
+            <p>
+                There aren't any emails associated with authors yet.
+                For this contact page to work you need to <a href="${blog_url}/admin/authors">add at least one</a>.
+            </p>
+        % endif
+
+    % else:
+        <p>
+            There aren't any authors for this blog yet.
+            You should <a href="${blog_url}/admin/author/">add one</a>.
+        </p>
+    % endif
+
+% endif
+

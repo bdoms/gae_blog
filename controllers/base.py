@@ -47,6 +47,16 @@ class BaseController(webapp.RequestHandler):
     def getBlog(self):
         return model.Blog.all().filter('url =', self.blog_url).get()
 
+    # helper function for validating comments
+    def validate(self, validator, value, name):
+        try:
+            value = validator.to_python(value)
+        except:
+            self.renderError(400)
+            self.response.out.write(" - Invalid " + name)
+            return None
+        return value
+
     @property
     def blog_url(self):
         return '/'.join(self.request.path.split('/')[0:2])

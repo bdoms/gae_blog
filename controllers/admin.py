@@ -45,6 +45,7 @@ class BlogController(AdminController):
         url = self.request.get("url", "")
         template = self.request.get("template", "")
         comments = self.request.get("comments", None)
+        contact = self.request.get("contact", None)
         posts_per_page = self.request.get("posts_per_page", None)
 
         try:
@@ -59,10 +60,16 @@ class BlogController(AdminController):
         else:
             comments = False
 
+        if contact:
+            contact = True
+        else:
+            contact = False
+
         if blog:
             blog.title = title
             blog.description = description
             blog.comments = comments
+            blog.contact = contact
             blog.posts_per_page = posts_per_page
             blog.url = url
             blog.template = template
@@ -74,7 +81,8 @@ class BlogController(AdminController):
                 self.response.out.write(" - A blog already exists with that URL.")
                 return
 
-            blog = model.Blog(title=title, description=description, comments=comments, posts_per_page=posts_per_page, url=url, template=template)
+            blog = model.Blog(title=title, description=description, comments=comments, contact=contact,
+                              posts_per_page=posts_per_page, url=url, template=template)
 
         blog.put()
 
@@ -113,6 +121,12 @@ class AuthorController(AdminController):
         name = self.request.get("name")
         url = self.request.get("url")
         email = self.request.get("email")
+
+        if url:
+            url = self.validate(URL(add_http=True), url, "URL")
+
+        if email:
+            email = self.validate(Email(), email, "Email")
 
         if author:
             author.name = name

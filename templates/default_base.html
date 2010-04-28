@@ -17,6 +17,9 @@
             <div id="header">
                 <h1><a href="${blog_url}">${blog and blog.title or 'Blog'}</a></h1>
                 <p><a href="${blog_url}/feed">Subscribe</a></p>
+                % if blog and blog.contact:
+                    <p><a href="${blog_url}/contact/">Contact</a></p>
+                % endif
             </div>
 
             <div id="content">

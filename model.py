@@ -11,7 +11,8 @@ class Blog(db.Model):
 
     title = db.StringProperty()
     description = db.StringProperty()
-    comments = db.BooleanProperty(required=True)
+    comments = db.BooleanProperty(default=False)
+    contact = db.BooleanProperty(default=False)
     posts_per_page = db.IntegerProperty(default=10)
     url = db.StringProperty(default='/blog')
     template = db.StringProperty()
