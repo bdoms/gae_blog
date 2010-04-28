@@ -1,6 +1,7 @@
 
 import re
 from time import mktime
+from datetime import datetime
 
 from google.appengine.ext import db
 
@@ -17,7 +18,7 @@ class Blog(db.Model):
 
     @property
     def published_posts(self):
-        return self.posts.filter('published =', True).order('-timestamp')
+        return self.posts.filter('published =', True).filter('timestamp <', datetime.utcnow()).order('-timestamp')
 
 class BlogAuthor(db.Model):
 
