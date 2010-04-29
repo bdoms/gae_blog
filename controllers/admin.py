@@ -252,16 +252,23 @@ class CommentsController(AdminController):
 
     def post(self):
 
-        # approve all the comments with the submitted email address here
-        email = self.request.get("email")
+        comment_key = self.request.get("comment")
+        if comment_key:
+            # delete this individual comment
+            comment = model.BlogComment.get(comment_key)
+            if comment:
+                comment.delete()
+        else:
+            # approve all the comments with the submitted email address here
+            email = self.request.get("email")
 
-        comments = []
-        for post in self.getBlog().posts:
-            comments.extend(list(post.comments.filter("email =", email)))
+            comments = []
+            for post in self.getBlog().posts:
+                comments.extend(list(post.comments.filter("email =", email)))
 
-        for comment in comments:
-            comment.approved = True
-            comment.put()
+            for comment in comments:
+                comment.approved = True
+                comment.put()
 
         self.redirect(self.blog_url + '/admin/comments')
 

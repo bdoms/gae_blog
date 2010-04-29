@@ -29,6 +29,10 @@
                         <input type="hidden" name="email" value="${comment.email}" />
                         <input type="submit" value="Approve" />
                     </form>
+                    <form action="" method="post">
+                        <input type="hidden" name="comment" value="${comment.key()}" />
+                        <input type="submit" value="Delete" />
+                    </form>
                 </td>
             </tr>
         % endfor
