@@ -18,7 +18,7 @@ class ContactController(BaseController):
 
         return self.renderTemplate('contact.html', sent=sent, authors=authors)
 
-    def post(self):
+    def post(self, sent=False):
 
         blog = self.getBlog()
         if blog and blog.contact:
@@ -33,20 +33,10 @@ class ContactController(BaseController):
 
             subject = self.validate(UnicodeString(), subject, "Subject")
             if subject is None: return
-            if not subject:
-                subject = "Contact Form Message"
+            subject = blog.title or "Blog" + " - Contact Form Message:" + subject
 
             body = self.validate(UnicodeString(not_empty=True), body, "Message")
             if not body: return
-
-            # strip out all HTML to be on the safe side
-            #body = model.stripHTML(body)
-
-            # turn URL's into links
-            #body = model.linkURLs(body)
-
-            # finally, replace linebreaks with HTML linebreaks
-            #body = body.replace("\r\n", "<br/>")
 
             if author_key == "all":
                 authors = [author for author in blog.authors if author.email]
@@ -58,11 +48,9 @@ class ContactController(BaseController):
                     return self.renderError(400)
                 authors = [author]
 
-            # sender MUST be a registered admin of the app or a logged in user, hence we use reply_to for the anonymous user
-            sender = authors[0].email
-
-            for author in authors:
-                mail.send_mail(sender=sender, reply_to=email, to=author.name + " <" + author.email + ">", subject=subject, body=body)
+            if blog.admin_email:
+                for author in authors:
+                    mail.send_mail(sender=blog.admin_email, reply_to=email, to=author.name + " <" + author.email + ">", subject=subject, body=body)
 
         return self.redirect(self.blog_url + '/contact/sent')
 

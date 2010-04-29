@@ -23,12 +23,24 @@
         % endif
     </p>
     <p>
+        Enable Email Alerts for Comments Needing Moderation:
+        % if blog and blog.moderation_alert:
+            <input type="checkbox" name="moderation_alert" checked="checked" />
+        % else:
+            <input type="checkbox" name="moderation_alert" />
+        % endif
+    </p>
+    <p>
         Enable Contact Page:
         % if blog and blog.contact:
             <input type="checkbox" name="contact" checked="checked" />
         % else:
             <input type="checkbox" name="contact" />
         % endif
+    </p>
+    <p>
+        Admin Email: <input type="text" name="description" value="${blog and blog.admin_email or ''}" />
+        (required for email alerts or the contact page to work correctly, must match the email address of a GAE admin)
     </p>
     <p>
         Posts Per Page: <input type="text" name="posts_per_page" value="${blog and blog.posts_per_page or 10}" />

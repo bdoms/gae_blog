@@ -5,6 +5,7 @@ from google.appengine.api import users
 from base import BaseController
 
 from gae_blog import model
+from gae_blog.formencode.validators import Email
 
 
 class AdminController(BaseController):
@@ -45,7 +46,9 @@ class BlogController(AdminController):
         url = self.request.get("url", "")
         template = self.request.get("template", "")
         comments = self.request.get("comments", None)
+        moderation_alert = self.request.get("moderation_alert", None)
         contact = self.request.get("contact", None)
+        admin_email = self.request.get("admin_email", "")
         posts_per_page = self.request.get("posts_per_page", None)
 
         try:
@@ -60,6 +63,11 @@ class BlogController(AdminController):
         else:
             comments = False
 
+        if moderation_alert:
+            moderation_alert = True
+        else:
+            moderation_alert = False
+
         if contact:
             contact = True
         else:
@@ -69,7 +77,9 @@ class BlogController(AdminController):
             blog.title = title
             blog.description = description
             blog.comments = comments
+            blog.moderation_alert = moderation_alert
             blog.contact = contact
+            blog.admin_email = admin_email
             blog.posts_per_page = posts_per_page
             blog.url = url
             blog.template = template
@@ -81,8 +91,8 @@ class BlogController(AdminController):
                 self.response.out.write(" - A blog already exists with that URL.")
                 return
 
-            blog = model.Blog(title=title, description=description, comments=comments, contact=contact,
-                              posts_per_page=posts_per_page, url=url, template=template)
+            blog = model.Blog(title=title, description=description, comments=comments, moderation_alert=moderation_alert,
+                              contact=contact, admin_email=admin_email, posts_per_page=posts_per_page, url=url, template=template)
 
         blog.put()
 

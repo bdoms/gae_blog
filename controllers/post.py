@@ -1,4 +1,4 @@
-from google.appengine.api import users
+from google.appengine.api import users, mail
 
 from base import BaseController
 
@@ -75,16 +75,26 @@ class PostController(BaseController):
 
                         # look for a previously approved comment from this email address on this blog
                         approved = []
-                        for post in self.getBlog().posts:
-                            approved.extend(list(post.comments.filter("email =", email).filter("approved =", True)))
+                        for blog_post in blog.posts:
+                            approved.extend(list(blog_post.comments.filter("email =", email).filter("approved =", True)))
 
                         comment = model.BlogComment(email=email, body=body, post=post)
                         if name:
                             comment.name = name
                         if url:
                             comment.url = url
+
                         if approved:
                             comment.approved = True
+                        elif blog.moderation_alert and blog.admin_email:
+                            # send out an email to the author of the post if they have an email address
+                            # informing them of the comment needing moderation
+                            author = post.author
+                            if author.email:
+                                subject = blog.title or "Blog" + " - Comment Awaiting Moderation"
+                                comments_url = "http://" + self.request.headers.get('host', '') + blog.url + "/admin/comments"
+                                body = "A comment on your post, " + post.title + " is waiting to be approved or denied at " + comments_url
+                                mail.send_mail(sender=blog.admin_email, to=author.name + " <" + author.email + ">", subject=subject, body=body)
 
                     comment.put()
 
