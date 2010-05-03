@@ -170,7 +170,7 @@ class PostController(AdminController):
         blog = self.getBlog()
         post = None
         if post_slug:
-            post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
+            post = blog.posts.filter("slug =", post_slug).get()
 
         authors = model.BlogAuthor.all().filter("blog =", blog)
 
@@ -202,17 +202,17 @@ class PostController(AdminController):
 
         post = None
         if post_slug:
-            post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
+            post = blog.posts.filter("slug =", post_slug).get()
 
         if post:
             post.title = title
             post.body = body
             post.timestamp = timestamp
             post.published = published
-            post.slug = model.makePostSlug(title, post)
+            post.slug = model.makePostSlug(title, blog, post)
             post.author = author
         else:
-            post = model.BlogPost(title=title, body=body, timestamp=timestamp, published=published, slug=model.makePostSlug(title), author=author, blog=blog)
+            post = model.BlogPost(title=title, body=body, timestamp=timestamp, published=published, slug=model.makePostSlug(title, blog), author=author, blog=blog)
 
         post.put()
 
@@ -233,7 +233,7 @@ class PreviewController(AdminController):
         blog = self.getBlog()
         post = None
         if post_slug:
-            post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
+            post = blog.posts.filter("slug =", post_slug).get()
             if post:
                 return self.renderTemplate('admin/preview.html', post=post, logout_url=self.logout_url)
 
@@ -271,4 +271,77 @@ class CommentsController(AdminController):
                 comment.put()
 
         self.redirect(self.blog_url + '/admin/comments')
+
+
+class ImagesController(AdminController):
+    """ handles managing images """
+    def get(self):
+
+        self.renderTemplate('admin/images.html', logout_url=self.logout_url)
+
+    def post(self):
+
+        image_key = self.request.get("image")
+        if image_key:
+            image = model.BlogImage.get(image_key)
+            if image:
+                # delete children first
+                for image_data in image.image_datas:
+                    image_data.delete()
+                # then this one
+                image.delete()
+
+        self.redirect(self.blog_url + '/admin/images')
+
+class ImageController(AdminController):
+    """ handles uploading or editing images """
+    def get(self, image_name):
+
+        blog = self.getBlog()
+        image = None
+        if image_name:
+            image = blog.images.filter("name =", image_name).get()
+
+        self.renderTemplate('admin/image.html', image=image, logout_url=self.logout_url)
+
+    def post(self, image_name):
+
+        blog = self.getBlog()
+
+        image = None
+        if image_name:
+            image = blog.images.filter("name =", image_name).get()
+
+        name = self.request.get("name")
+        timestamp = self.request.get("timestamp")
+        data = self.request.get("data")
+
+        name = model.checkImageName(name, blog, image)
+        if not name:
+            self.renderError(400)
+            self.response.out.write(" - Invalid filename: duplicate or bad extension.")
+            return
+
+        if not timestamp:
+            timestamp = datetime.utcnow()
+        else:
+            # try to parse it
+            timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+
+        if image:
+            if data:
+                image.setData(data)
+            image.name = name
+            image.timestamp = timestamp
+        else:
+            if not data:
+                self.renderError(400)
+                self.response.out.write(" - No file selected.")
+                return
+            image = model.BlogImage(name=name, timestamp=timestamp, blog=blog)
+            image.put() # needs to be in the DB so that setData can add entities that reference it
+            image.setData(data)
+        image.put()
+
+        self.redirect(self.blog_url + '/admin/images')
 

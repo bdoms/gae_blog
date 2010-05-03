@@ -11,12 +11,13 @@ TEMPLATES_PATH = os.path.join(BLOG_PATH, TEMPLATES_DIR)
 # url routes
 BLOG_URLS = ['/blog']
 
-from controllers import admin, contact, feed, index, post
+from controllers import admin, contact, feed, image, index, post
 
 ROUTES = []
 
 for url in BLOG_URLS:
     ROUTES.extend([(url, index.IndexController),
+                   (url + '/img/(.*)', image.ImageController),
                    (url + '/feed', feed.FeedController),
                    (url + '/contact/(.*)', contact.ContactController),
                    (url + '/post/(.*)', post.PostController),
@@ -27,5 +28,7 @@ for url in BLOG_URLS:
                    (url + '/admin/post/(.*)', admin.PostController),
                    (url + '/admin/posts', admin.PostsController),
                    (url + '/admin/preview/(.*)', admin.PreviewController),
-                   (url + '/admin/comments', admin.CommentsController)
+                   (url + '/admin/comments', admin.CommentsController),
+                   (url + '/admin/image/(.*)', admin.ImageController),
+                   (url + '/admin/images', admin.ImagesController)
                 ])

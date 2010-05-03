@@ -1,0 +1,36 @@
+<%inherit file="base.html"/>
+
+<h3>Image</h3>
+<form action="" enctype="multipart/form-data" method="post">
+
+    % if image:
+        <p>
+            Existing file (click for full):
+            <a href="${blog_url}/img/${image.name}">
+                <img src="${blog_url}/img/${image.name}?preview=1" alt="Image" style="max-width: 600px;"/>
+            </a>
+        </p>
+    % endif
+
+    <p>
+        File: <input type="file" name="data" />
+        % if image:
+            (leave blank to keep current file, select a new file to overwrite existing)
+        % endif
+    </p>
+
+    <p>
+        Filename:
+        ${blog_url}/img/ <input type="text" name="name" value="${image and image.name or ''}" />
+        (this is how you reference the image in a URL, must be unique, e.g. my_picture.png)
+    </p> 
+
+    <p>
+        Timestamp:
+        <input type="text" name="timestamp" value="${image and image.timestamp.strftime('%Y-%m-%d %H:%M:%S') or ''}" />
+        (leave blank for now, or like: 1970-01-21 13:35:16)
+    </p>
+
+    <p><input type="submit" value="${image and 'Save' or 'Upload'}" /></p>
+</form>
+
