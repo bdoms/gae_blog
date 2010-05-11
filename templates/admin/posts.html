@@ -19,9 +19,9 @@
                     <td><a href="${blog_url}/admin/post/${post.slug}">${post.title}</a></td>
                     <td>${post.author.name}</td>
                     % if post.published:
-                        <td>${post.published}</td>
-                    % else:
                         <td><a href="${blog_url}/post/${post.slug}">${post.published}</a></td>
+                    % else:
+                        <td>${post.published}</td>
                     % endif
                     <td>${post.approved_comments.count()}</td>
                     <td>${post.timestamp}</td>

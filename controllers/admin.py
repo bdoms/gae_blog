@@ -272,6 +272,11 @@ class CommentsController(AdminController):
             comment = model.BlogComment.get(comment_key)
             if comment:
                 comment.delete()
+
+            # return them to the post they were viewing if this was deleted from a post page
+            post_slug = self.request.get("post")
+            if post_slug:
+                return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
         else:
             # approve all the comments with the submitted email address here
             email = self.request.get("email")
