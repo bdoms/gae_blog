@@ -6,6 +6,14 @@
         (<a href="${blog_url}/post/${post.slug}">View</a>)
     % endif
 </h3>
+
+% if post:
+    <form id="delete-form" action="${blog_url}/admin/posts" method="post">
+        <input type="hidden" name="post" value="${post.key()}"/>
+        <p><input type="submit" value="Delete This Post"/></p>
+    </form>
+% endif
+
 <form action="" method="post">
     <p>
         Title: <input type="text" name="title" value="${post and post.title or ''}" />
@@ -71,6 +79,22 @@
 </form>
 
 <script type="text/javascript">
+    % if post:
+        var delete_form = document.getElementById("delete-form");
+        delete_form.addEventListener("submit", function(e) {
+            var response = confirm("Are you sure you want to permanently delete this post and all its comments?\n\nAny links to it will be broken.");
+            if (!response) {
+                if (e.stopPropagation) e.stopPropagation();
+                else e.cancelBubble = true;
+
+                if (e.preventDefault) e.preventDefault();
+                else e.returnValue = false;
+
+                return false;
+            }
+        }, false);
+    % endif
+
     var published_box = document.getElementById("published-box");
     published_box.addEventListener("click", function(e) {
         var preview_button = document.getElementById("preview-button");

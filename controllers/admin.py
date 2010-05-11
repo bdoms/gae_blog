@@ -162,6 +162,20 @@ class PostsController(AdminController):
 
         self.renderTemplate('admin/posts.html', posts=posts, logout_url=self.logout_url)
 
+    def post(self):
+
+        post_key = self.request.get("post")
+        if post_key:
+            # this is a request to delete this post
+            post = model.BlogPost.get(post_key)
+            if post:
+                # delete all the post's comments first
+                if post.comments.count() > 0:
+                    model.db.delete(list(post.comments))
+                # then the post itself
+                post.delete()
+
+        self.redirect(self.blog_url + '/admin/posts')
 
 class PostController(AdminController):
     """ handles editing and publishing posts """

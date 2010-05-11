@@ -6,9 +6,9 @@
     <table>
         <thead>
             <tr>
-                <th>Title</th>
+                <th>Title (Click to Edit)</th>
                 <th>Author</th>
-                <th>Published</th>
+                <th>Published (Click to View)</th>
                 <th># of Comments</th>
                 <th>Timestamp (UTC)</th>
             </tr>
@@ -18,7 +18,11 @@
                 <tr>
                     <td><a href="${blog_url}/admin/post/${post.slug}">${post.title}</a></td>
                     <td>${post.author.name}</td>
-                    <td>${post.published}</td>
+                    % if post.published:
+                        <td>${post.published}</td>
+                    % else:
+                        <td><a href="${blog_url}/post/${post.slug}">${post.published}</a></td>
+                    % endif
                     <td>${post.approved_comments.count()}</td>
                     <td>${post.timestamp}</td>
                 </tr>
