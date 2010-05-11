@@ -2,6 +2,10 @@
 
 <%namespace file="post.html" import="renderPost"/>
 
+% if author:
+    <h3>Posts By ${author.name}</h3>
+% endif
+
 % if blog:
 
     % if posts:

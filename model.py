@@ -27,9 +27,14 @@ class Blog(db.Model):
 class BlogAuthor(db.Model):
 
     name = db.StringProperty(required=True)
+    slug = db.StringProperty(default='') # TODO: switch to required=True after uploading new version and resaving authors
     url = db.StringProperty()
     email = db.StringProperty()
     blog = db.ReferenceProperty(Blog, required=True, collection_name="authors")
+
+    @property
+    def published_posts(self):
+        return self.posts.filter('published =', True).filter('timestamp <', datetime.utcnow()).order('-timestamp')
 
 class BlogPost(db.Model):
 
@@ -159,6 +164,22 @@ def makePostSlug(title, blog, post=None):
             i += 1
             new_slug = slug + "-" + str(i)
             existing = blog.posts.filter("slug =", new_slug).get()
+            if not existing:
+                slug = new_slug
+    return slug
+
+def makeAuthorSlug(name, blog, author=None):
+    """ creates a slug for use in a url """
+    slug = name.lower().replace(" ", "-")
+    slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
+    existing = blog.authors.filter("slug =", slug).get()
+    if (not author and existing) or ((author and existing) and author.key() != existing.key()):
+        # only work on finding a new slug if this isn't the same post that already uses it
+        i = 0
+        while existing:
+            i += 1
+            new_slug = slug + "-" + str(i)
+            existing = blog.authors.filter("slug =", new_slug).get()
             if not existing:
                 slug = new_slug
     return slug

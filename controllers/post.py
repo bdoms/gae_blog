@@ -11,7 +11,7 @@ class PostController(BaseController):
 
         if post_slug:
             blog = self.getBlog()
-            post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
+            post = blog.posts.filter("slug =", post_slug).get()
             if post and post.published:
                 # only display a post if it's actually published
                 return self.renderTemplate('post.html', post=post, authors=blog.authors)
@@ -24,7 +24,7 @@ class PostController(BaseController):
         if blog and blog.comments:
             # only allow comment posting if comments are enabled
             if post_slug:
-                post = model.BlogPost.all().filter("blog =", blog).filter("slug =", post_slug).get()
+                post = blog.posts.filter("slug =", post_slug).get()
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
 

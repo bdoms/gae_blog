@@ -138,12 +138,15 @@ class AuthorController(AdminController):
         if email:
             email = self.validate(Email(), email, "Email")
 
+        blog = self.getBlog()
+
         if author:
             author.name = name
             author.url = url
             author.email = email
+            author.slug = model.makeAuthorSlug(name, blog, author)
         else:
-            author = model.BlogAuthor(name=name, url=url, email=email, blog=self.getBlog())
+            author = model.BlogAuthor(name=name, url=url, email=email, slug=model.makeAuthorSlug(name, blog), blog=blog)
 
         author.put()
 

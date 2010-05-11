@@ -18,7 +18,14 @@ ${renderPost(post)}
         % endif
     </h3>
 
-    <p class="post-author">By ${post.author.name}</p>
+    <p class="post-author">
+        By
+        % if post.author.url:
+            <a href="${post.author.url}" target="_blank">${post.author.name}</a>
+        % else:
+            <a href="${blog_url}/author/${post.author.slug}">${post.author.name}</a>
+        % endif
+    </p>
 
     <p class="post-timestamp">
         ${post.timestamp.strftime("%c")}
@@ -50,7 +57,7 @@ ${renderPost(post)}
                                 % if comment.author.url:
                                     <a target="_blank" href="${comment.author.url}">${comment.author.name}</a>
                                 % else:
-                                    ${comment.author.name}
+                                    <a href="${blog_url}/author/${comment.author.slug}">${comment.author.name}</a>
                                 % endif
 
                                 % if comment.author.key() == post.author.key():

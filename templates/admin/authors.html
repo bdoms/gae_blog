@@ -4,8 +4,8 @@
 <table>
     <thead>
         <tr>
-            <th>Name</th>
-            <th>URL</th>
+            <th>Name (Click to Edit)</th>
+            <th>URL (Click to View)</th>
             <th>Email</th>
             <th># of Comments</th>
             <th># of Posts</th>
@@ -15,7 +15,11 @@
         % for author in authors:
             <tr>
                 <td><a href="${blog_url}/admin/author/${author.key()}">${author.name}</a></td>
-                <td>${author.url or ''}</td>
+                % if author.url:
+                    <td><a href="author.url" target="_blank">${author.url}</a></td>
+                % else:
+                    <td><a href="${blog_url}/author/${author.slug}">${blog_url}/author/${author.slug}</a></td>
+                % endif
                 <td>${author.email or ''}</td>
                 <td>${author.comments.count()}</td>
                 <td>${author.posts.count()}</td>
