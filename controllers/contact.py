@@ -33,7 +33,10 @@ class ContactController(BaseController):
 
             subject = self.validate(UnicodeString(), subject, "Subject")
             if subject is None: return
-            subject = blog.title or "Blog" + " - Contact Form Message:" + subject
+            if blog.title:
+                subject = blog.title + " - Contact Form Message:" + subject
+            else:
+                subject = "Blog - Contact Form Message:" + subject
 
             body = self.validate(UnicodeString(not_empty=True), body, "Message")
             if not body: return
