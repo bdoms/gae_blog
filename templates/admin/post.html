@@ -16,11 +16,39 @@
 
 <form action="" method="post">
     <p>
-        Title: <input type="text" name="title" value="${post and post.title or ''}" />
+        <label for="title">Title:</label>
+        <input type="text" name="title" value="${post and post.title or ''}" />
     </p>
 
     <p>
-        Author:
+        <label for="slug-choice">Slug:</label>
+        % if post and post.published:
+            <span class="help">(CAREFUL: changing the slug will break external links to published posts; changing the title and selecting automatic will also do this)</span>
+        % endif
+    </p>
+    <ul>
+        <li>
+            % if post and post.published:
+                <input type="radio" id="slug-auto" name="slug-choice" value="auto" />
+            % else:
+                <input type="radio" id="slug-auto" name="slug-choice" value="auto" checked="checked" />
+            % endif
+            <label for="slug-auto">Automatic</label>
+        </li>
+        <li>
+            % if post and post.published:
+                <input type="radio" id="slug-custom" name="slug-choice" value="custom" checked="checked" />
+            % else:
+                <input type="radio" id="slug-custom" name="slug-choice" value="custom" />
+            % endif
+            <label for="slug-custom">Custom:</label>
+            <input type="text" name="slug" value="${post and post.slug or ''}" />
+            <span class="help">(ex: my-post-slug)</span>
+        </li>
+    </ul>
+
+    <p>
+        <label for="author">Author:</label>
         <select name="author">
             % for author in authors:
                 <option value="${author.key()}">${author.name}</a>
@@ -28,14 +56,20 @@
         </select>
     </p> 
 
-    <p>Body (use HTML formatting here):</p>
+    <p>
+        <label for="body">Body:</label>
+        <span class="help">(use HTML formatting here)</span>
+    </p>
     % if post:
         <textarea name="body">${post.body}</textarea>        
     % else:
         <textarea name="body"></textarea>
     % endif
 
-    <p>Timestamp (make a future timestamp and check published to schedule for later):</p>
+    <p>
+        <label for="timestamp-choice">Timestamp:</label>
+        <span class="help">(make a future timestamp and check published to schedule for later)</span>
+    </p>
     <ul>
         <li>
             % if post:
@@ -53,12 +87,12 @@
             % endif
             <label for="timestamp-custom">Custom:</label>
             <input type="text" name="timestamp" value="${post and post.timestamp.strftime('%Y-%m-%d %H:%M:%S') or ''}" />
-            (ex: 1970-01-21 13:35:16)
+            <span class="help">(ex: 1970-01-21 13:35:16)</span>
         </li>
     </ul>
 
     <p>
-        Published:
+        <label for="published-box">Published:</label>
         % if post and post.published:
             <input type="checkbox" name="published" checked="checked" id="published-box" />
         % else:
@@ -72,7 +106,7 @@
         <p id="preview-button">
     % endif
         <input type="submit" value="Save and Preview" name="preview" />
-        (you can only preview unpublished posts)
+        <span class="help">(you can only preview unpublished posts)</span>
     </p>
 
     <p><input type="submit" value="Save and Stop Working" /></p>

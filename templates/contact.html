@@ -1,7 +1,5 @@
 <%inherit file="base.html"/>
 
-<%namespace file="post.html" import="renderPost"/>
-
 <h3>Contact</h3>
 
 % if sent:
@@ -15,8 +13,8 @@
         % if authors:
 
             <form action="" method="post">
-                <p>
-                    To:
+                <p class="contact-author">
+                    <label for="author">To:</label>
                     <select name="author">
                         % if len(authors) > 1:
                             <option value="all">Everyone</option>
@@ -27,26 +25,26 @@
                     </select>
                 </p>
 
-                <p>
-                    From Email Address:
+                <p class="contact-email">
+                    <label for="email">From Email Address:</label>
                     <input type="text" name="email" />
                     <span class="help">(required for a response)</span>
                 </p>
 
-                <p>
-                    Subject:
+                <p class="contact-subject">
+                    <label for="subject">Subject:</label>
                     <input type="text" name="subject" />
                     <span class="help">(optional)</span>
                 </p>
 
-                <p>
-                    Message:
+                <p class="contact-message">
+                    <label for="body">Message:</label>
                     <span class="help">(plain text)</span>
                 </p>
 
-                <textarea name="body"></textarea>
+                <textarea class="contact-body" name="body"></textarea>
 
-                <p><input type="submit" value="Send"/></p>
+                <p class="contact-submit"><input type="submit" value="Send"/></p>
             </form>
 
         % else:
