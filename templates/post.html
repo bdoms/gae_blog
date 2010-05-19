@@ -121,22 +121,25 @@ ${renderPost(post)}
                 <div id="comment-author-info">
             % endif
                 <p>
-                    Name:
+                    <label for="name">Name:</label>
                     <input type="text" name="name" />
                     <span class="help">(optional, appears with comment)</span>
                 </p>
                 <p>
-                    URL:
+                    <label for="url">URL:</label>
                     <input type="text" name="url" />
                     <span class="help">(optional, your name links to this address if included)</span>
                 </p>
                 <p>
-                    Email:
+                    <label for="email">Email:</label>
                     <input type="text" name="email" />
                     <span class="help">(required for verification, first comment is moderated)</span>
                 </p>
             </div>
-            <p>Comment: <span class="help">(HTML is stripped, URL's become links)</span></p>
+            <p>
+                <label for="body">Comment:</label>
+                <span class="help">(HTML is stripped, URL's become links)</span>
+            </p>
             <textarea name="body"></textarea>
             <p><input type="submit" value="Make Comment" /></p>
         </form>

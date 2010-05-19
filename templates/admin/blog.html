@@ -8,51 +8,57 @@
 
 <form action="" method="post">
     <p>
-        Blog Title: <input type="text" name="title" value="${blog and blog.title or ''}" />
+        <label for="title">Blog Title:</label>
+        <input type="text" name="title" value="${blog and blog.title or ''}" />
     </p>
     <p>
-        Blog Description: <input type="text" name="description" value="${blog and blog.description or ''}" />
-        (optional, used by RSS and default meta tags)
+        <label for="description">Blog Description:</label>
+        <input type="text" name="description" value="${blog and blog.description or ''}" />
+        <span class="help">(optional, used by RSS and default meta tags)</span>
     </p>
     <p>
-        Enable Comments:
+        <label for="comments-box">Enable Comments:</label>
         % if blog and blog.comments:
-            <input type="checkbox" name="comments" checked="checked" />
+            <input type="checkbox" name="comments" id="comments-box" checked="checked" />
         % else:
-            <input type="checkbox" name="comments" />
+            <input type="checkbox" name="comments" id="comments-box" />
         % endif
     </p>
     <p>
-        Enable Email Alerts for Comments Needing Moderation:
+        <label for="moderation_alert-box">Enable Email Alerts for Comments Needing Moderation:</label>
         % if blog and blog.moderation_alert:
-            <input type="checkbox" name="moderation_alert" checked="checked" />
+            <input type="checkbox" name="moderation_alert" id="moderation_alert-box" checked="checked" />
         % else:
-            <input type="checkbox" name="moderation_alert" />
+            <input type="checkbox" name="moderation_alert" id="moderation_alert-box" />
         % endif
     </p>
     <p>
-        Enable Contact Page:
+        <label for="contact-box">Enable Contact Page:</label>
         % if blog and blog.contact:
-            <input type="checkbox" name="contact" checked="checked" />
+            <input type="checkbox" name="contact" id="contact-box" checked="checked" />
         % else:
-            <input type="checkbox" name="contact" />
+            <input type="checkbox" name="contact" id="contact-box" />
         % endif
     </p>
     <p>
-        Admin Email: <input type="text" name="admin_email" value="${blog and blog.admin_email or ''}" />
-        (required for email alerts or the contact page to work correctly, must match the email address of a GAE admin)
+        <label for="admin_email">Admin Email:</label>
+        <input type="text" name="admin_email" value="${blog and blog.admin_email or ''}" />
+        <span class="help">(required for email alerts or the contact page to work correctly, must match the email address of a GAE admin)</span>
     </p>
     <p>
-        Posts Per Page: <input type="text" name="posts_per_page" value="${blog and blog.posts_per_page or 10}" />
-        (control how many posts are shown at once on index pages)
+        <label for="posts_per_page">Posts Per Page:</label>
+        <input type="text" name="posts_per_page" value="${blog and blog.posts_per_page or 10}" />
+        <span class="help">(control how many posts are shown at once on index pages)</span>
     </p>
     <p>
-        Blog URL: <input type="text" name="url" value="${blog and blog.url or blog_url}" />
-        (WARNING: changing this may break things, see readme for instructions)
+        <label for="url">Blog URL:</label>
+        <input type="text" name="url" value="${blog and blog.url or blog_url}" />
+        <span class="help">(WARNING: changing this may break things, see readme for instructions)</span>
     </p>
     <p>
-        Base Template: <input type="text" name="template" value="${blog and blog.template or ''}" />
-        (relative path from your parent project)
+        <label for="template">Base Template:</label>
+        <input type="text" name="template" value="${blog and blog.template or ''}" />
+        <span class="help">(relative path from your parent project)</span>
     </p>
 
     % if blog:
