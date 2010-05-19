@@ -198,11 +198,27 @@ class PostController(AdminController):
     def post(self, post_slug):
 
         title = self.request.get("title")
+        slug_choice = self.request.get("slug-choice")
+        slug = self.request.get("slug")
         author = self.request.get("author")
         body = self.request.get("body")
         timestamp_choice = self.request.get("timestamp-choice")
         timestamp = self.request.get("timestamp")
         published = self.request.get("published", None)
+
+        blog = self.getBlog()
+
+        post = None
+        if post_slug:
+            post = blog.posts.filter("slug =", post_slug).get()
+
+        if slug_choice == "custom":
+            # check to make sure that there isn't already another post with this slug
+            existing = blog.posts.filter('slug =', slug).get()
+            if existing and (not post or existing.key() != post.key()):
+                self.renderError(400)
+                self.response.out.write(" - A post already exists with that slug.")
+                return
 
         author = model.BlogAuthor.get(author)
 
@@ -217,21 +233,19 @@ class PostController(AdminController):
         else:
             published = False
 
-        blog = self.getBlog()
-
-        post = None
-        if post_slug:
-            post = blog.posts.filter("slug =", post_slug).get()
-
         if post:
             post.title = title
             post.body = body
             post.timestamp = timestamp
             post.published = published
-            post.slug = model.makePostSlug(title, blog, post)
+            if slug_choice == "auto":
+                slug = model.makePostSlug(title, blog, post)
+            post.slug = slug
             post.author = author
         else:
-            post = model.BlogPost(title=title, body=body, timestamp=timestamp, published=published, slug=model.makePostSlug(title, blog), author=author, blog=blog)
+            if slug_choice == "auto":
+                slug = model.makePostSlug(title, blog)
+            post = model.BlogPost(title=title, body=body, timestamp=timestamp, published=published, slug=slug, author=author, blog=blog)
 
         post.put()
 

@@ -21,6 +21,33 @@
     </p>
 
     <p>
+        <label for="slug-choice">Slug:</label>
+        % if post and post.published:
+            <span class="help">(CAREFUL: changing the slug will break external links to published posts; changing the title and selecting automatic will also do this)</span>
+        % endif
+    </p>
+    <ul>
+        <li>
+            % if post and post.published:
+                <input type="radio" id="slug-auto" name="slug-choice" value="auto" />
+            % else:
+                <input type="radio" id="slug-auto" name="slug-choice" value="auto" checked="checked" />
+            % endif
+            <label for="slug-auto">Automatic</label>
+        </li>
+        <li>
+            % if post and post.published:
+                <input type="radio" id="slug-custom" name="slug-choice" value="custom" checked="checked" />
+            % else:
+                <input type="radio" id="slug-custom" name="slug-choice" value="custom" />
+            % endif
+            <label for="slug-custom">Custom:</label>
+            <input type="text" name="slug" value="${post and post.slug or ''}" />
+            <span class="help">(ex: my-post-slug)</span>
+        </li>
+    </ul>
+
+    <p>
         <label for="author">Author:</label>
         <select name="author">
             % for author in authors:
