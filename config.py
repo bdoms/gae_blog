@@ -9,7 +9,7 @@ TEMPLATES_DIR = 'templates'
 TEMPLATES_PATH = os.path.join(BLOG_PATH, TEMPLATES_DIR)
 
 # url routes
-BLOG_URLS = ['/blog']
+BLOG_URLS = ['/blog', '/travel']
 
 from controllers import admin, author, contact, feed, image, index, post
 
