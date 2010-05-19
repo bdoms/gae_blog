@@ -7,6 +7,8 @@
             ${blog and blog.title or 'Blog'}
             % if post:
                 - ${post.title}
+            % elif page_title:
+                - ${page_title}
             % endif
         </title>
     </head>

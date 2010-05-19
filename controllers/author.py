@@ -31,7 +31,9 @@ class AuthorController(BaseController):
 
                 posts = published_posts.fetch(posts_per_page, page * posts_per_page)
 
-                self.renderTemplate('index.html', page=page, last_page=last_page, posts=posts, author=author)
+                page_title = "Author - " + author.name
+
+                self.renderTemplate('index.html', page=page, last_page=last_page, posts=posts, author=author, page_title=page_title)
 
         return self.renderError(404)
 

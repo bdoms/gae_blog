@@ -16,7 +16,7 @@ class ContactController(BaseController):
 
         authors = [author for author in blog.authors if author.email]
 
-        return self.renderTemplate('contact.html', sent=sent, authors=authors)
+        return self.renderTemplate('contact.html', sent=sent, authors=authors, page_title="Contact")
 
     def post(self, sent=False):
 

@@ -16,7 +16,7 @@ class AdminController(BaseController):
 
         if blog:
             other_blogs = model.Blog.all().filter("url !=", blog.url)
-            self.renderTemplate('admin/index.html', blog=blog, other_blogs=other_blogs, logout_url=self.logout_url)
+            self.renderTemplate('admin/index.html', blog=blog, other_blogs=other_blogs, page_title="Admin", logout_url=self.logout_url)
 
         else:
             self.redirect(self.blog_url + '/admin/blog/')
@@ -33,7 +33,7 @@ class BlogController(AdminController):
         if blog_key:
             blog = model.Blog.get(blog_key)
 
-        self.renderTemplate('admin/blog.html', blog=blog, logout_url=self.logout_url)
+        self.renderTemplate('admin/blog.html', blog=blog, page_title="Admin - Blog", logout_url=self.logout_url)
 
     def post(self, blog_key):
 
@@ -109,7 +109,7 @@ class AuthorsController(AdminController):
         blog = self.getBlog()
         authors = model.BlogAuthor.all().filter('blog =', blog)
 
-        self.renderTemplate('admin/authors.html', authors=authors, logout_url=self.logout_url)
+        self.renderTemplate('admin/authors.html', authors=authors, page_title="Admin - Authors", logout_url=self.logout_url)
 
 
 class AuthorController(AdminController):
@@ -117,10 +117,12 @@ class AuthorController(AdminController):
     def get(self, author_key):
 
         author = None
+        page_title = "Admin - Author"
         if author_key:
             author = model.BlogAuthor.get(author_key)
+            page_title += " - " + author.name
 
-        self.renderTemplate('admin/author.html', author=author, logout_url=self.logout_url)
+        self.renderTemplate('admin/author.html', author=author, page_title=page_title, logout_url=self.logout_url)
 
     def post(self, author_key):
 
@@ -163,7 +165,7 @@ class PostsController(AdminController):
 
         posts = self.getBlog().posts
 
-        self.renderTemplate('admin/posts.html', posts=posts, logout_url=self.logout_url)
+        self.renderTemplate('admin/posts.html', posts=posts, page_title="Admin - Posts", logout_url=self.logout_url)
 
     def post(self):
 
@@ -191,7 +193,7 @@ class PostController(AdminController):
 
         authors = model.BlogAuthor.all().filter("blog =", blog)
 
-        self.renderTemplate('admin/post.html', post=post, authors=authors, logout_url=self.logout_url)
+        self.renderTemplate('admin/post.html', post=post, authors=authors, page_title="Admin - Post", logout_url=self.logout_url)
 
     def post(self, post_slug):
 
@@ -265,7 +267,7 @@ class CommentsController(AdminController):
         for post in self.getBlog().posts:
             comments.extend(list(post.comments.filter("approved =", False)))
 
-        self.renderTemplate('admin/comments.html', comments=comments, logout_url=self.logout_url)
+        self.renderTemplate('admin/comments.html', comments=comments, page_title="Admin - Comments", logout_url=self.logout_url)
 
     def post(self):
 
@@ -299,7 +301,7 @@ class ImagesController(AdminController):
     """ handles managing images """
     def get(self):
 
-        self.renderTemplate('admin/images.html', logout_url=self.logout_url)
+        self.renderTemplate('admin/images.html', page_title="Admin - Images", logout_url=self.logout_url)
 
     def post(self):
 
@@ -321,10 +323,12 @@ class ImageController(AdminController):
 
         blog = self.getBlog()
         image = None
+        page_title = "Admin - Image",
         if image_name:
             image = blog.images.filter("name =", image_name).get()
+            page_title += " - " + image.name
 
-        self.renderTemplate('admin/image.html', image=image, logout_url=self.logout_url)
+        self.renderTemplate('admin/image.html', image=image, page_title=page_title, logout_url=self.logout_url)
 
     def post(self, image_name):
 
