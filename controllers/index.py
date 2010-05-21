@@ -23,7 +23,7 @@ class IndexController(BaseController):
             published_posts = blog.published_posts
             posts_per_page = blog.posts_per_page
 
-            last_page = published_posts.count() / posts_per_page - 1
+            last_page = (published_posts.count() - 1) / posts_per_page
             if last_page < 0:
                 last_page = 0
 
