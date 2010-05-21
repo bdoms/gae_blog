@@ -11,7 +11,7 @@
 	<language>en</language>
 
     % if blog:
-        % for post in blog.published_posts:
+        % for post in blog.published_posts.fetch(20):
             <item>
         		<title>${post.title}</title>
         		<link>http://${root_url}${blog_url}/post/${post.slug}</link>
