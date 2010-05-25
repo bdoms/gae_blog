@@ -5,7 +5,7 @@ from google.appengine.api import users
 from base import BaseController
 
 from gae_blog import model
-from gae_blog.formencode.validators import Email
+from gae_blog.formencode.validators import Email, URL
 
 
 class AdminController(BaseController):
