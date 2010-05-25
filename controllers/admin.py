@@ -107,7 +107,7 @@ class AuthorsController(AdminController):
     def get(self):
 
         blog = self.getBlog()
-        authors = model.BlogAuthor.all().filter('blog =', blog)
+        authors = model.BlogAuthor.all().filter('blog =', blog).order('name')
 
         self.renderTemplate('admin/authors.html', authors=authors, page_title="Admin - Authors", logout_url=self.logout_url)
 
@@ -163,7 +163,7 @@ class PostsController(AdminController):
     """ handles viewing all posts for this blog """
     def get(self):
 
-        posts = self.getBlog().posts
+        posts = self.getBlog().posts.order('-timestamp')
 
         self.renderTemplate('admin/posts.html', posts=posts, page_title="Admin - Posts", logout_url=self.logout_url)
 
