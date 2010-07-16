@@ -78,7 +78,7 @@ class PostController(BaseController):
                         for blog_post in blog.posts:
                             approved.extend(list(blog_post.comments.filter("email =", email).filter("approved =", True)))
 
-                        comment = model.BlogComment(email=email, body=body, post=post)
+                        comment = model.BlogComment(email=email, body=body, post=post, ip_address=self.request.remote_addr)
                         if name:
                             comment.name = name
                         if url:

@@ -71,6 +71,7 @@ class BlogComment(db.Model):
     body = db.TextProperty(required=True)
     approved = db.BooleanProperty(default=False)
     timestamp = db.DateTimeProperty(auto_now_add=True)
+    ip_address = db.StringProperty(default='')
     post = db.ReferenceProperty(BlogPost, required=True, collection_name="comments")
     author = db.ReferenceProperty(BlogAuthor, collection_name="comments")
 
