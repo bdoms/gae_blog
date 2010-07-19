@@ -20,8 +20,9 @@ class PostController(BaseController):
 
     def post(self, post_slug):
 
+        ip_address = self.request.remote_addr
         blog = self.getBlog()
-        if blog and blog.comments:
+        if blog and blog.comments and ip_address not in blog.blocklist:
             # only allow comment posting if comments are enabled
             if post_slug:
                 post = blog.posts.filter("slug =", post_slug).get()
@@ -78,7 +79,7 @@ class PostController(BaseController):
                         for blog_post in blog.posts:
                             approved.extend(list(blog_post.comments.filter("email =", email).filter("approved =", True)))
 
-                        comment = model.BlogComment(email=email, body=body, post=post, ip_address=self.request.remote_addr)
+                        comment = model.BlogComment(email=email, body=body, post=post, ip_address=ip_address)
                         if name:
                             comment.name = name
                         if url:
