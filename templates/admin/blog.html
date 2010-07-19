@@ -60,6 +60,11 @@
         <input type="text" name="template" value="${blog and blog.template or ''}" />
         <span class="help">(relative path from your parent project)</span>
     </p>
+    <p>
+        <label for="blocklist">IP Address Blocklist:</label>
+        <input type="text" name="blocklist" value="${blog and blog.blocklist and ','.join(blog.blocklist) or ''}" />
+        <span class="help">(comma separated)</span>
+    </p>
 
     % if blog:
         <p><input type="submit" value="Save Changes" /></p>

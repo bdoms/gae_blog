@@ -19,6 +19,7 @@ class Blog(db.Model):
     posts_per_page = db.IntegerProperty(default=10)
     url = db.StringProperty(default='/blog')
     template = db.StringProperty()
+    blocklist = db.ListProperty(str)
 
     @property
     def published_posts(self):
