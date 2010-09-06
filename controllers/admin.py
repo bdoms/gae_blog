@@ -344,7 +344,7 @@ class ImageController(AdminController):
 
         blog = self.getBlog()
         image = None
-        page_title = "Admin - Image",
+        page_title = "Admin - Image"
         if image_name:
             image = blog.images.filter("name =", image_name).get()
             page_title += " - " + image.name
