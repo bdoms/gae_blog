@@ -33,7 +33,12 @@
                     </form>
                     <form action="" method="post">
                         <input type="hidden" name="comment" value="${comment.key()}" />
-                        <input type="submit" value="Delete" />
+                        <input type="hidden" name="block" value="1" />
+                        <input type="submit" value="Block IP and Delete" />
+                    </form>
+                    <form action="" method="post">
+                        <input type="hidden" name="comment" value="${comment.key()}" />
+                        <input type="submit" value="Just Delete" />
                     </form>
                 </td>
             </tr>
