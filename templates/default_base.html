@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-        <meta name="description" content="${blog_description or ''}" />
+        <meta name="description" content="${blog_description and blog_description.replace('"', '&quot;') or ''}" />
         <title>
             ${blog and blog.title or 'Blog'}
             % if post:

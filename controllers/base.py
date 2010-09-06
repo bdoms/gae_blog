@@ -11,13 +11,15 @@ from gae_blog import model
 # we have to force the use of the local Mako folder rather than the system one
 # this is a problem with how Mako does imports (assumes an installed package)
 # also, this would never happen on production as Google blocks these things
-import sys
-for path in sys.path:
-    if 'Mako' in path:
-        sys.path.remove(path)
-        break
+import os
+if not os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
+    import sys
+    for path in sys.path:
+        if 'Mako' in path:
+            sys.path.remove(path)
+            break
+    sys.path.append(BLOG_PATH)
 
-sys.path.append(BLOG_PATH)
 from mako.lookup import TemplateLookup
 
 

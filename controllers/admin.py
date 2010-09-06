@@ -60,7 +60,7 @@ class BlogController(AdminController):
             return
 
         if blocklist:
-            blocklist = blocklist.split(",")
+            blocklist = blocklist.split("\n")
         else:
             blocklist = []
 
@@ -297,6 +297,13 @@ class CommentsController(AdminController):
             # delete this individual comment
             comment = model.BlogComment.get(comment_key)
             if comment:
+                block = self.request.get("block")
+                if block:
+                    # also block the IP address
+                    blog = self.getBlog()
+                    if comment.ip_address and comment.ip_address not in blog.blocklist:
+                        blog.blocklist.append(comment.ip_address)
+                        blog.put()
                 comment.delete()
 
             # return them to the post they were viewing if this was deleted from a post page
@@ -344,7 +351,7 @@ class ImageController(AdminController):
 
         blog = self.getBlog()
         image = None
-        page_title = "Admin - Image",
+        page_title = "Admin - Image"
         if image_name:
             image = blog.images.filter("name =", image_name).get()
             page_title += " - " + image.name

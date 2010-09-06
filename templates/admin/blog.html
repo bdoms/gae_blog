@@ -62,9 +62,17 @@
     </p>
     <p>
         <label for="blocklist">IP Address Blocklist:</label>
-        <input type="text" name="blocklist" value="${blog and blog.blocklist and ','.join(blog.blocklist) or ''}" />
-        <span class="help">(comma separated)</span>
+        <span class="help">(newline separated)</span>
     </p>
+    % if blog and blog.blocklist:
+<textarea name="blocklist">
+% for address in blog.blocklist:
+${address}
+% endfor
+</textarea>
+    % else:
+        <textarea name="blocklist"></textarea>
+    % endif
 
     % if blog:
         <p><input type="submit" value="Save Changes" /></p>
