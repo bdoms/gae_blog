@@ -60,7 +60,7 @@ class BlogController(AdminController):
             return
 
         if blocklist:
-            blocklist = blocklist.split(",")
+            blocklist = blocklist.split("\n")
         else:
             blocklist = []
 
