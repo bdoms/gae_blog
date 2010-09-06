@@ -17,7 +17,7 @@
 <form action="" method="post">
     <p>
         <label for="title">Title:</label>
-        <input type="text" name="title" value="${post and post.title or ''}" />
+        <input type="text" name="title" value="${post and post.title.replace('"', '&quot;') or ''}" />
     </p>
 
     <p>

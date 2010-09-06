@@ -28,7 +28,7 @@ class Blog(db.Model):
 class BlogAuthor(db.Model):
 
     name = db.StringProperty(required=True)
-    slug = db.StringProperty(default='') # TODO: switch to required=True after uploading new version and resaving authors
+    slug = db.StringProperty(required=True)
     url = db.StringProperty()
     email = db.StringProperty()
     blog = db.ReferenceProperty(Blog, required=True, collection_name="authors")
@@ -156,7 +156,7 @@ def linkURLs(string):
 
 def makePostSlug(title, blog, post=None):
     """ creates a slug for use in a url """
-    slug = title.lower().replace(" ", "-")
+    slug = title.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
     existing = blog.posts.filter("slug =", slug).get()
     if (not post and existing) or ((post and existing) and post.key() != existing.key()):
@@ -172,7 +172,7 @@ def makePostSlug(title, blog, post=None):
 
 def makeAuthorSlug(name, blog, author=None):
     """ creates a slug for use in a url """
-    slug = name.lower().replace(" ", "-")
+    slug = name.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
     existing = blog.authors.filter("slug =", slug).get()
     if (not author and existing) or ((author and existing) and author.key() != existing.key()):
@@ -188,7 +188,7 @@ def makeAuthorSlug(name, blog, author=None):
 
 def checkImageName(name, blog, image=None):
     """ make sure an image file name is unique and ok for use in a url """
-    name = name.lower().replace(" ", "_")
+    name = name.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
     name = ''.join([char for char in name if char.isalnum() or char in ['-', '_', '.']])
 
     if not name:
