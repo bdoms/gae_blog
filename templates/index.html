@@ -25,7 +25,11 @@
                     % endif
                 % endif
                 % if page:
-                    <a href="${blog_url}?page=${page - 1}">Newer Posts &gt;</a>
+                    % if page - 1 == 0:
+                        <a href="${blog_url}">Newer Posts &gt;</a>
+                    % else:
+                        <a href="${blog_url}?page=${page - 1}">Newer Posts &gt;</a>
+                    % endif
                 % endif
             </p>
         % endif
