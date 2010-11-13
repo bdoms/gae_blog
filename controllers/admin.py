@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 
 from base import BaseController
 
@@ -102,6 +102,7 @@ class BlogController(AdminController):
                               admin_email=admin_email, posts_per_page=posts_per_page, url=url, template=template, blocklist=blocklist)
 
         blog.put()
+        memcache.flush_all()
 
         if blog_key:
             self.redirect(blog.url + '/admin')
@@ -158,6 +159,7 @@ class AuthorController(AdminController):
             author = model.BlogAuthor(name=name, url=url, email=email, slug=model.makeAuthorSlug(name, blog), blog=blog)
 
         author.put()
+        memcache.flush_all()
 
         if model.BlogAuthor.all().count() > 1:
             self.redirect(self.blog_url + '/admin/authors')
@@ -186,6 +188,7 @@ class PostsController(AdminController):
                     model.db.delete(list(post.comments))
                 # then the post itself
                 post.delete()
+                memcache.flush_all()
 
         self.redirect(self.blog_url + '/admin/posts')
 
@@ -258,6 +261,7 @@ class PostController(AdminController):
 
         # send them back to the admin list of posts if it's not published or to the actual post if it is
         if post.published:
+            memcache.flush_all()
             self.redirect(self.blog_url + '/post/' + post.slug)
         else:
             if self.request.get("preview"):
@@ -291,7 +295,7 @@ class CommentsController(AdminController):
         self.renderTemplate('admin/comments.html', comments=comments, page_title="Admin - Comments", logout_url=self.logout_url)
 
     def post(self):
-
+        memcache.flush_all()
         comment_key = self.request.get("comment")
         if comment_key:
             # delete this individual comment

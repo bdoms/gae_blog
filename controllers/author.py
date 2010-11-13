@@ -1,9 +1,11 @@
-from base import BaseController
+from base import BaseController, renderIfCached
 
 from gae_blog import model
 
 class AuthorController(BaseController):
     """ handles request for an author's page """
+
+    @renderIfCached
     def get(self, author_slug):
 
         if author_slug:
@@ -33,7 +35,7 @@ class AuthorController(BaseController):
 
                 page_title = "Author - " + author.name
 
-                self.renderTemplate('index.html', page=page, last_page=last_page, posts=posts, author=author, page_title=page_title)
+                self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts, author=author, page_title=page_title)
 
         return self.renderError(404)
 

@@ -1,12 +1,14 @@
-from google.appengine.api import users, mail
+from google.appengine.api import users, mail, memcache
 
-from base import BaseController
+from base import BaseController, renderIfCached
 
 from gae_blog import model
 from gae_blog.formencode.validators import UnicodeString, Email, URL
 
 class PostController(BaseController):
     """ shows an individual post and saves comments to it """
+
+    @renderIfCached
     def get(self, post_slug):
 
         if post_slug:
@@ -14,7 +16,7 @@ class PostController(BaseController):
             post = blog.posts.filter("slug =", post_slug).get()
             if post and post.published:
                 # only display a post if it's actually published
-                return self.renderTemplate('post.html', post=post, authors=blog.authors)
+                return self.cacheAndRenderTemplate('post.html', post=post, authors=blog.authors)
 
         return self.renderError(404)
 
@@ -58,6 +60,7 @@ class PostController(BaseController):
                             return self.renderError(400)
 
                         comment = model.BlogComment(body=body, approved=True, post=post, author=author)
+                        memcache.delete(self.request.path + self.request.query_string)
                     else:
                         # validate that the email address is valid
                         email = self.validate(Email(), email, "Email")
@@ -87,6 +90,7 @@ class PostController(BaseController):
 
                         if approved:
                             comment.approved = True
+                            memcache.delete(self.request.path + self.request.query_string)
                         elif blog.moderation_alert and blog.admin_email:
                             # send out an email to the author of the post if they have an email address
                             # informing them of the comment needing moderation

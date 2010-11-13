@@ -1,12 +1,14 @@
 from google.appengine.api import mail
 
-from base import BaseController
+from base import BaseController, renderIfCached
 
 from gae_blog import model
 from gae_blog.formencode.validators import UnicodeString, Email
 
 class ContactController(BaseController):
     """ handles request for the contact page of the site """
+
+    @renderIfCached
     def get(self, sent=False):
 
         blog = self.getBlog()
@@ -16,7 +18,7 @@ class ContactController(BaseController):
 
         authors = [author for author in blog.authors if author.email]
 
-        return self.renderTemplate('contact.html', sent=sent, authors=authors, page_title="Contact")
+        return self.cacheAndRenderTemplate('contact.html', sent=sent, authors=authors, page_title="Contact")
 
     def post(self, sent=False):
 

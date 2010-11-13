@@ -8,6 +8,17 @@ from google.appengine.api import users
 from gae_blog.config import TEMPLATES_PATH, BLOG_PATH
 from gae_blog import model
 
+# see if caching is available
+try:
+    from gae_html import cacheHTML, renderIfCached
+except ImportError:
+    def cacheHTML(controller, function, **kwargs):
+        return function()
+    def renderIfCached(action):
+        def decorate(*args,  **kwargs):
+            return action(*args, **kwargs)
+        return decorate
+
 # we have to force the use of the local Mako folder rather than the system one
 # this is a problem with how Mako does imports (assumes an installed package)
 # also, this would never happen on production as Google blocks these things
@@ -26,7 +37,14 @@ from mako.lookup import TemplateLookup
 class BaseController(webapp.RequestHandler):
 
     template_lookup = TemplateLookup(directories=[TEMPLATES_PATH])
-    def renderTemplate(self, filename, **kwargs):
+
+    def cacheAndRenderTemplate(self, filename, **kwargs):
+        def renderHTML():
+            return self.compileTemplate(filename, **kwargs)
+        html = cacheHTML(self, renderHTML)
+        return self.response.out.write(html)
+
+    def compileTemplate(self, filename, **kwargs):
         template = self.template_lookup.get_template(filename)
         # add some standard variables
         kwargs["blog_url"] = self.blog_url
@@ -36,7 +54,10 @@ class BaseController(webapp.RequestHandler):
         kwargs["user"] = user
         if user:
             kwargs["user_is_admin"] = users.is_current_user_admin()
-        self.response.out.write(template.render_unicode(**kwargs))
+        return template.render_unicode(**kwargs)
+
+    def renderTemplate(self, filename, **kwargs):
+        self.response.out.write(self.compileTemplate(filename, **kwargs))
 
     def renderError(self, status_int):
         self.response.set_status(status_int)

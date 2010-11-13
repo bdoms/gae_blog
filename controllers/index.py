@@ -1,9 +1,11 @@
-from base import BaseController
+from base import BaseController, renderIfCached
 
 from gae_blog import model
 
 class IndexController(BaseController):
     """ handles request for the main index page of the site """
+
+    @renderIfCached
     def get(self):
 
         blog = self.getBlog()
@@ -29,5 +31,5 @@ class IndexController(BaseController):
 
             posts = published_posts.fetch(posts_per_page, page * posts_per_page)
 
-        self.renderTemplate('index.html', page=page, last_page=last_page, posts=posts)
+        self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts)
 
