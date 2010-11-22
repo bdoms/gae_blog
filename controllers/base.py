@@ -23,7 +23,7 @@ except ImportError:
 # this is a problem with how Mako does imports (assumes an installed package)
 # also, this would never happen on production as Google blocks these things
 import os
-if not os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
+if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
     import sys
     for path in sys.path:
         if 'Mako' in path:

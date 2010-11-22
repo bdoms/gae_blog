@@ -25,7 +25,8 @@
         converted.push(el);
 
         var seconds = el.getElementsByTagName("input")[0].value;
-        var utc_ms = parseInt(seconds) * 1000; // convert from seconds to ms
+        ## convert from seconds to ms
+        var utc_ms = parseInt(seconds) * 1000;
         var local = new Date(utc_ms);
         var day_and_month = DAYS[local.getDay()] + ", " + MONTHS[local.getMonth()];
         var date_string = day_and_month + " " + local.getDate().toString() + ", " + local.getFullYear().toString();
