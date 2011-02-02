@@ -14,5 +14,6 @@ class FeedController(BaseController):
         blog = self.getBlog()
         root_url = self.request.headers.get('host')
 
-        self.cacheAndRenderTemplate('feed.rss', blog=blog, root_url=root_url, build_date=datetime.now())
+        # the minifier does not play nice with RSS - CDATA and camelCased end tags are not handled properly
+        self.cacheAndRenderTemplate('feed.rss', minify=False, blog=blog, root_url=root_url, build_date=datetime.now())
 

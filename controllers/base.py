@@ -41,7 +41,7 @@ class BaseController(webapp.RequestHandler):
     def cacheAndRenderTemplate(self, filename, **kwargs):
         def renderHTML():
             return self.compileTemplate(filename, **kwargs)
-        html = cacheHTML(self, renderHTML)
+        html = cacheHTML(self, renderHTML, **kwargs)
         return self.response.out.write(html)
 
     def compileTemplate(self, filename, **kwargs):

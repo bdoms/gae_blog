@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
 
 <channel>
 	<title>${blog and blog.title or 'Blog'}</title>
@@ -11,7 +11,7 @@
 	<language>en</language>
 
     % if blog:
-        % for post in blog.published_posts.fetch(20):
+        % for post in blog.published_posts.fetch(blog.posts_per_page):
             <item>
         		<title>${post.title}</title>
         		<link>http://${root_url}${blog_url}/post/${post.slug}</link>
@@ -23,10 +23,6 @@
 	        	<description><![CDATA[
                     ${post.body}
                 ]]></description>
-
-			    <content:encoded><![CDATA[
-                    ${post.body}
-                ]]></content:encoded>
             </item>
         % endfor
     % endif
