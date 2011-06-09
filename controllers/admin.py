@@ -210,7 +210,7 @@ class PostController(AdminController):
         title = self.request.get("title")
         slug_choice = self.request.get("slug-choice")
         slug = self.request.get("slug")
-        author = self.request.get("author")
+        author_key = self.request.get("author")
         body = self.request.get("body")
         timestamp_choice = self.request.get("timestamp-choice")
         timestamp = self.request.get("timestamp")
@@ -230,7 +230,7 @@ class PostController(AdminController):
                 self.response.out.write(" - A post already exists with that slug.")
                 return
 
-        author = model.BlogAuthor.get(author)
+        author = model.BlogAuthor.get(author_key)
 
         if timestamp_choice == "now":
             timestamp = datetime.utcnow()
