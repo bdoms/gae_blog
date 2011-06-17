@@ -51,6 +51,16 @@
         <span class="help">(control how many posts are shown at once on index pages)</span>
     </p>
     <p>
+        <label for="posts_per_page">Image Preview Width:</label>
+        <input type="text" name="image_preview_width" value="${blog and blog.image_preview_width or 600}" />
+        <span class="help">(the maximum number of pixels wide for previews)</span>
+    </p>
+    <p>
+        <label for="posts_per_page">Image Preview Height:</label>
+        <input type="text" name="image_preview_height" value="${blog and blog.image_preview_height or 600}" />
+        <span class="help">(the maximum number of pixels high for previews)</span>
+    </p>
+    <p>
         <label for="url">Blog URL:</label>
         <input type="text" name="url" value="${blog and blog.url or blog_url}" />
         <span class="help">(WARNING: changing this may break things, see readme for instructions)</span>

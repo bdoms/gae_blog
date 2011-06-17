@@ -17,6 +17,8 @@ class Blog(db.Model):
     contact = db.BooleanProperty(default=False)
     admin_email = db.StringProperty()
     posts_per_page = db.IntegerProperty(default=10)
+    image_preview_width = db.IntegerProperty(default=600)
+    image_preview_height = db.IntegerProperty(default=600)
     url = db.StringProperty(default='/blog')
     template = db.StringProperty()
     blocklist = db.ListProperty(str)
@@ -88,6 +90,7 @@ class BlogImage(db.Model):
 
     name = db.StringProperty(required=True)
     preview = db.BlobProperty() # a smaller version of the full image
+    preview_size = db.StringProperty('')
     timestamp = db.DateTimeProperty(auto_now_add=True)
     blog = db.ReferenceProperty(Blog, required=True, collection_name="images")
 
@@ -96,15 +99,23 @@ class BlogImage(db.Model):
         # reconstruct all the data for viewing
         return ''.join([image_data.data for image_data in self.image_datas])
 
-    def setData(self, bits):
+    def getPreview(self, blog):
+        # calling this instead of just ".preview" ensures that if the blog configuration changes, the image preview stays up to date
+        preview_size = str(blog.image_preview_width) + "x" + str(blog.image_preview_height)
+        if preview_size != self.preview_size:
+            # remake the preview 
+            self.preview = db.Blob(images.resize(self.data, blog.image_preview_width, blog.image_preview_height))
+            self.preview_size = preview_size
+        return self.preview
+
+    def setData(self, bits, blog):
         # image data is added as other data entities dynamically, as needed
 
         split_bits = []
         if bits:
             # create the preview image
-            # NOTE: should this preview size be configurable?
-            # TODO: disabled until GAE fixes the limitation on resizing large images
-            #self.preview = db.Blob(images.resize(bits, 600, 600))
+            self.preview = db.Blob(images.resize(bits, blog.image_preview_width, blog.image_preview_height))
+            self.preview_size = str(blog.image_preview_width) + "x" + str(blog.image_preview_height)
 
             # cut it up into less than 1 MB chunks as necessary
             mb = 1048000 # needs to be less than an actual MB (2**20) to account for other data like the reference

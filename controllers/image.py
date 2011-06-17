@@ -13,11 +13,10 @@ class ImageController(BaseController):
             if image:
                 filename, ext = image_name.rsplit(".")
                 self.response.headers['Content-Type'] = "image/" + ext
-                # TODO: disabled until GAE allows resizing of larger images
-                #if self.request.get("preview"):
-                #    self.response.out.write(image.preview)
-                #else:
-                self.response.out.write(image.data)
+                if self.request.get("preview"):
+                    self.response.out.write(image.getPreview(blog))
+                else:
+                    self.response.out.write(image.data)
                 return
 
         return self.renderError(404)

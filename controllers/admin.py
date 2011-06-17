@@ -51,12 +51,28 @@ class BlogController(AdminController):
         contact = self.request.get("contact", None)
         admin_email = self.request.get("admin_email", "")
         posts_per_page = self.request.get("posts_per_page", None)
+        image_preview_width = self.request.get("image_preview_width", None)
+        image_preview_height = self.request.get("image_preview_height", None)
 
         try:
             posts_per_page = int(posts_per_page)
         except:
             self.renderError(400)
             self.response.out.write(" - Posts Per Page value wasn't an integer.")
+            return
+
+        try:
+            image_preview_width = int(image_preview_width)
+        except:
+            self.renderError(400)
+            self.response.out.write(" - Image Preview Width value wasn't an integer.")
+            return
+
+        try:
+            image_preview_height = int(image_preview_height)
+        except:
+            self.renderError(400)
+            self.response.out.write(" - Image Preview Height value wasn't an integer.")
             return
 
         if blocklist:
@@ -87,6 +103,8 @@ class BlogController(AdminController):
             blog.contact = contact
             blog.admin_email = admin_email
             blog.posts_per_page = posts_per_page
+            blog.image_preview_width = image_preview_width
+            blog.image_preview_height = image_preview_height
             blog.url = url
             blog.template = template
             blog.blocklist = blocklist
@@ -99,7 +117,8 @@ class BlogController(AdminController):
                 return
 
             blog = model.Blog(title=title, description=description, comments=comments, moderation_alert=moderation_alert, contact=contact,
-                              admin_email=admin_email, posts_per_page=posts_per_page, url=url, template=template, blocklist=blocklist)
+                              admin_email=admin_email, posts_per_page=posts_per_page, image_preview_width=image_preview_width,
+                              image_preview_height=image_preview_height, url=url, template=template, blocklist=blocklist)
 
         blog.put()
         memcache.flush_all()
@@ -388,9 +407,10 @@ class ImageController(AdminController):
 
         if image:
             if data:
-                image.setData(data)
+                image.setData(data, blog)
             image.name = name
             image.timestamp = timestamp
+            image.put()
         else:
             if not data:
                 self.renderError(400)
@@ -398,8 +418,7 @@ class ImageController(AdminController):
                 return
             image = model.BlogImage(name=name, timestamp=timestamp, blog=blog)
             image.put() # needs to be in the DB so that setData can add entities that reference it
-            image.setData(data)
-        image.put()
+            image.setData(data, blog)
 
         self.redirect(self.blog_url + '/admin/images')
 
