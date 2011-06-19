@@ -6,6 +6,8 @@ from datetime import datetime
 from google.appengine.ext import db
 from google.appengine.api import images
 
+MB = 1000000 # really 1048000 (2**20), but Google turns sets the limit artificially
+
 
 # standard model objects
 class Blog(db.Model):
@@ -118,11 +120,10 @@ class BlogImage(db.Model):
             self.preview_size = str(blog.image_preview_width) + "x" + str(blog.image_preview_height)
 
             # cut it up into less than 1 MB chunks as necessary
-            mb = 1048000 # needs to be less than an actual MB (2**20) to account for other data like the reference
-            while len(bits) > mb:
-                chunk = bits[:mb]
+            while len(bits) > MB:
+                chunk = bits[:MB]
                 split_bits.append(chunk)
-                bits = bits[mb:]
+                bits = bits[MB:]
             if bits:
                 # finally, add any leftover fraction that's less than 1 MB
                 split_bits.append(bits)

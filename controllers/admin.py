@@ -360,6 +360,10 @@ class ImagesController(AdminController):
         if image_key:
             image = model.BlogImage.get(image_key)
             if image:
+                # invalidate the cache (preview and chunk indexes)
+                key = image.blog.url + "/img/" + image.name
+                memcache.delete_multi((key, key + "?preview=1"))
+
                 # delete children first
                 for image_data in image.image_datas:
                     image_data.delete()
@@ -406,6 +410,10 @@ class ImageController(AdminController):
             timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
 
         if image:
+            # invalidate the cache (preview and chunk indexes)
+            key = blog.url + "/img/" + image.name
+            memcache.delete_multi((key, key + "?preview=1"))
+
             if data:
                 image.setData(data, blog)
             image.name = name
