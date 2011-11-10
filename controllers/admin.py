@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from google.appengine.api import users, memcache
+from google.appengine.ext import blobstore
+from google.appengine.ext.webapp import blobstore_handlers
 
 from base import BaseController
 
@@ -365,73 +367,43 @@ class ImagesController(AdminController):
         if image_key:
             image = model.BlogImage.get(image_key)
             if image:
-                # invalidate the cache (preview and chunk indexes)
-                key = image.blog.url + "/img/" + image.name
-                memcache.delete_multi((key, key + "?preview=1"))
-
                 # delete children first
-                for image_data in image.image_datas:
-                    image_data.delete()
+                image.blob.delete()
                 # then this one
                 image.delete()
 
         self.redirect(self.blog_url + '/admin/images')
 
-class ImageController(AdminController):
-    """ handles uploading or editing images """
-    def get(self, image_name):
 
-        blog = self.getBlog()
-        image = None
-        page_title = "Admin - Image"
-        if image_name:
-            image = blog.images.filter("name =", image_name).get()
-            page_title += " - " + image.name
+class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler):
+    """ handles uploading images """
 
-        self.renderTemplate('admin/image.html', image=image, page_title=page_title, logout_url=self.logout_url)
+    def get(self):
 
-    def post(self, image_name):
+        upload_url = blobstore.create_upload_url(self.blog_url + '/admin/image')
+        page_title = "Admin - Upload an Image"
 
-        blog = self.getBlog()
+        self.renderTemplate('admin/image.html', upload_url=upload_url, page_title=page_title, logout_url=self.logout_url)
 
-        image = None
-        if image_name:
-            image = blog.images.filter("name =", image_name).get()
+    def post(self):
+        upload_files = self.get_uploads('data')  # 'data' is file upload field in the form
 
-        name = self.request.get("name")
-        timestamp = self.request.get("timestamp")
-        data = self.request.get("data")
-
-        name = model.checkImageName(name, blog, image)
-        if not name:
+        if not upload_files:
             self.renderError(400)
-            self.response.out.write(" - Invalid filename: duplicate or bad extension.")
+            self.response.out.write(" - No file selected.")
             return
 
-        if not timestamp:
-            timestamp = datetime.utcnow()
-        else:
-            # try to parse it
-            timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+        blob_info = upload_files[0]
 
-        if image:
-            # invalidate the cache (preview and chunk indexes)
-            key = blog.url + "/img/" + image.name
-            memcache.delete_multi((key, key + "?preview=1"))
+        name = model.checkImageName(blob_info.filename)
+        if not name:
+            blob_info.delete()
+            self.renderError(400)
+            self.response.out.write(" - Invalid file extension.")
+            return
 
-            if data:
-                image.setData(data, blog)
-            image.name = name
-            image.timestamp = timestamp
-            image.put()
-        else:
-            if not data:
-                self.renderError(400)
-                self.response.out.write(" - No file selected.")
-                return
-            image = model.BlogImage(name=name, timestamp=timestamp, blog=blog)
-            image.put() # needs to be in the DB so that setData can add entities that reference it
-            image.setData(data, blog)
+        image = model.BlogImage(blog=self.getBlog(), blob=blob_info)
+        image.put()
 
         self.redirect(self.blog_url + '/admin/images')
 

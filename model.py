@@ -3,7 +3,7 @@ import re
 from time import mktime
 from datetime import datetime
 
-from google.appengine.ext import db
+from google.appengine.ext import db, blobstore
 from google.appengine.api import images
 
 MB = 1000000 # really 1048000 (2**20), but Google turns sets the limit artificially
@@ -29,6 +29,7 @@ class Blog(db.Model):
     def published_posts(self):
         return self.posts.filter('published =', True).filter('timestamp <', datetime.utcnow()).order('-timestamp')
 
+
 class BlogAuthor(db.Model):
 
     name = db.StringProperty(required=True)
@@ -40,6 +41,7 @@ class BlogAuthor(db.Model):
     @property
     def published_posts(self):
         return self.posts.filter('published =', True).filter('timestamp <', datetime.utcnow()).order('-timestamp')
+
 
 class BlogPost(db.Model):
 
@@ -68,6 +70,7 @@ class BlogPost(db.Model):
         else:
             return " ".join(words[:length]) + "..."
 
+
 class BlogComment(db.Model):
 
     name = db.StringProperty()
@@ -88,61 +91,15 @@ class BlogComment(db.Model):
     def secondsSinceEpoch(self):
         return mktime(self.timestamp.timetuple())
 
+
 class BlogImage(db.Model):
 
-    name = db.StringProperty(required=True)
-    preview = db.BlobProperty() # a smaller version of the full image
-    preview_size = db.StringProperty('')
-    timestamp = db.DateTimeProperty(auto_now_add=True)
     blog = db.ReferenceProperty(Blog, required=True, collection_name="images")
+    blob = blobstore.BlobReferenceProperty(required=True)
 
     @property
-    def data(self):
-        # reconstruct all the data for viewing
-        return ''.join([image_data.data for image_data in self.image_datas])
-
-    def getPreview(self, blog):
-        # calling this instead of just ".preview" ensures that if the blog configuration changes, the image preview stays up to date
-        preview_size = str(blog.image_preview_width) + "x" + str(blog.image_preview_height)
-        if preview_size != self.preview_size:
-            # remake the preview 
-            self.preview = db.Blob(images.resize(self.data, blog.image_preview_width, blog.image_preview_height))
-            self.preview_size = preview_size
-        return self.preview
-
-    def setData(self, bits, blog):
-        # image data is added as other data entities dynamically, as needed
-
-        split_bits = []
-        if bits:
-            # create the preview image
-            self.preview = db.Blob(images.resize(bits, blog.image_preview_width, blog.image_preview_height))
-            self.preview_size = str(blog.image_preview_width) + "x" + str(blog.image_preview_height)
-
-            # cut it up into less than 1 MB chunks as necessary
-            while len(bits) > MB:
-                chunk = bits[:MB]
-                split_bits.append(chunk)
-                bits = bits[MB:]
-            if bits:
-                # finally, add any leftover fraction that's less than 1 MB
-                split_bits.append(bits)
-
-        if split_bits:
-            # delete any pre-existing references
-            if self.image_datas.count() > 0:
-                db.delete(self.image_datas)
-
-            # add new stuff in
-            for d in split_bits:
-                image_data = BlogImageData(data=d, image=self)
-                image_data.put()
-
-class BlogImageData(db.Model):
-    # right now GAE limits not only Blobs to 1 MB, but entities as well
-    # so we create a collection of entities to store an image that's over that size
-    data = db.BlobProperty(required=True)
-    image = db.ReferenceProperty(BlogImage, required=True, collection_name="image_datas")
+    def url(self):
+        return images.get_serving_url(self.blob.key())
 
 
 # misc functions
@@ -198,22 +155,16 @@ def makeAuthorSlug(name, blog, author=None):
                 slug = new_slug
     return slug
 
-def checkImageName(name, blog, image=None):
-    """ make sure an image file name is unique and ok for use in a url """
-    name = name.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
-    name = ''.join([char for char in name if char.isalnum() or char in ['-', '_', '.']])
+def checkImageName(name):
+    """ make sure the file name is a supported image type """
+    name = name.lower()
 
-    if not name:
+    if not name or "." not in name:
         return None
 
     filename, ext = name.rsplit('.')
     if ext not in ['jpg', 'jpeg', 'gif', 'png']:
         # bad file extension
-        return None
-
-    existing = blog.images.filter("name =", name).get()
-    if not name or (not image and existing) or ((image and existing) and image.key() != existing.key()):
-        # already exists
         return None
 
     return name

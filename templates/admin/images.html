@@ -6,20 +6,22 @@
     <table>
         <thead>
             <tr>
-                <th>Thumbnail (Click to View)</th>
-                <th>Relative URL (Click to Edit)</th>
+                <th>Thumbnail</th>
+                <th>URL</th>
                 <th>Timestamp (UTC)</th>
+                <th>Size (Bytes)</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             % for image in blog.images:
                 <tr>
-                    <td><a href="${blog_url}/img/${image.name}">
-                        <img src="${blog_url}/img/${image.name}?preview=1" alt="${image.name} Preview" style="max-width: 100px;" />
+                    <td><a href="${image.url}">
+                        <img src="${image.url}=s100" alt="${image.blob.filename} Preview" />
                     </a></td>
-                    <td><a href="${blog_url}/admin/image/${image.name}">${blog_url}/img/${image.name}</a></td>
-                    <td>${image.timestamp}</td>
+                    <td><a href="${image.url}">${image.url}</a></td>
+                    <td>${image.blob.creation}</td>
+                    <td>${image.blob.size}</td>
                     <td>
                         <form action="" method="post" class="delete-form">
                             <input type="hidden" name="image" value="${image.key()}"/>
@@ -34,7 +36,7 @@
     <p>No images stored in the database yet.</p>
 % endif
 
-<h3><a href="${blog_url}/admin/image/">Upload a New Image</a></h3>
+<h3><a href="${blog_url}/admin/image">Upload a New Image</a></h3>
 
 <script type="text/javascript">
     var els = document.getElementsByTagName("form");
