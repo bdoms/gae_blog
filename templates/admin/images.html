@@ -16,7 +16,7 @@
             % for image in blog.images:
                 <tr>
                     <td><a href="${blog_url}/img/${image.name}">
-                        <img src="${blog_url}/img/${image.name}?preview=1" alt="Image Preview" style="max-width: 100px;" />
+                        <img src="${blog_url}/img/${image.name}?preview=1" alt="${image.name} Preview" style="max-width: 100px;" />
                     </a></td>
                     <td><a href="${blog_url}/admin/image/${image.name}">${blog_url}/img/${image.name}</a></td>
                     <td>${image.timestamp}</td>

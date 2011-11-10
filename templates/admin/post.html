@@ -57,13 +57,13 @@
     </p> 
 
     <p>
-        <label for="body">Body:</label>
-        <span class="help">(use HTML formatting here)</span>
+        <label for="post-body">Body:</label>
+        <span class="help">(uses HTML)</span>
     </p>
     % if post:
-        <textarea name="body">${post.body}</textarea>        
+        <textarea name="body" id="post-body">${post.body}</textarea>        
     % else:
-        <textarea name="body"></textarea>
+        <textarea name="body" id="post-body"></textarea>
     % endif
 
     <p>
@@ -112,6 +112,7 @@
     <p><input type="submit" value="Save and Stop Working" /></p>
 </form>
 
+<script type="text/javascript" src="/blog/static/nicEdit-0.9.min.js"></script>
 <script type="text/javascript">
     % if post:
         var delete_form = document.getElementById("delete-form");
@@ -129,6 +130,7 @@
         }, false);
     % endif
 
+    // don't display the preview button if the post is published
     var published_box = document.getElementById("published-box");
     published_box.addEventListener("click", function(e) {
         var preview_button = document.getElementById("preview-button");
@@ -140,5 +142,53 @@
         }
         return false;
     }, false);
+
+    // monkey patch the image button in the editor to use our own images
+    var image_names = ${[str(image.name) for image in blog.images]};
+    var blog_url = "${blog_url}";
+
+    // save a copy of the original function
+    var nicImageButtonOrig = nicImageButton;
+
+    var blogImageButton = nicEditorAdvancedButton.extend({
+	    addPane: function() {
+            // add images to a div that's attached to the pane
+            var div = new bkElement('div');
+            div.id = "editor-images";
+            for (var i=0; i < image_names.length; i++) {
+                var image_name = image_names[i];
+                var img = new bkElement('img');
+                img.setAttributes({src: blog_url + "/img/" + image_name + "?preview=1", alt: image_name + " Preview", style: "max-width: 100px;"});
+
+                // add events to the images that makes clicking them auto-fill the src field
+                img.addEvent("click", function(e) {
+                    var src = document.getElementById("src");
+                    src.value = this.src;
+                    return false;
+                }, false);
+                img.appendTo(div);
+            }
+            this.pane.append(div);
+
+            // standard plugin code to add the form
+		    this.im = this.ne.selectedInstance.selElm().parentTag('IMG');
+		    this.addForm({
+			    '' : {type : 'title', txt : 'Add/Edit Image'},
+			    'src' : {type : 'text', txt : 'URL', 'value' : 'http://', style : {width: '150px'}},
+			    'alt' : {type : 'text', txt : 'Alt Text', style : {width: '100px'}},
+			    'align' : {type : 'select', txt : 'Align', options : {none : 'Default','left' : 'Left', 'right' : 'Right'}}
+		    },this.im);
+	    },
+
+        // use the original submit function
+	    submit: nicImageButtonOrig.prototype.submit
+    });
+
+    // replace the original plugin with this one
+    nicImageButton = blogImageButton;
+
+    bkLib.onDomLoaded(function() {
+	    var editor = new nicEditor({iconsPath: '/blog/static/nicEditorIcons-0.9.gif', fullPanel: true}).panelInstance('post-body');
+    });
 </script>
 

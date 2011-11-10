@@ -1,2 +1,6 @@
 # excludes compiled python files
 *.pyc
+
+# exclude the index file
+index.yaml
+

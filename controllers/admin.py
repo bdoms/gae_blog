@@ -241,7 +241,12 @@ class PostController(AdminController):
         if post_slug:
             post = blog.posts.filter("slug =", post_slug).get()
 
-        if slug_choice == "custom":
+        if not title:
+            self.renderError(400)
+            self.response.out.write(" - A title is required.")
+            return
+
+        if slug_choice == "custom" and slug:
             # check to make sure that there isn't already another post with this slug
             existing = blog.posts.filter('slug =', slug).get()
             if existing and (not post or existing.key() != post.key()):

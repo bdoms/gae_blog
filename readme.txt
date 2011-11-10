@@ -27,16 +27,9 @@ Then repeat for your project:
     git submodule init
     git submodule update
 
-And then just add this to your app.yaml 'handlers' section (note that the admin
-URL must come first in order to be secure):
-
-    - url: /blog/admin.*
-      script: gae_blog/blog.py
-      login: admin
-    - url: /blog.*
-      script: gae_blog/blog.py
-
-Now going to /blog on your app will be handled by gae_blog.
+Finally, you need to merge the handlers from the example GAE Blog app.yaml
+into your project's top level app.yaml. After doing that, starting the
+development server and going to /blog will be handled by gae_blog.
 
 Go to /blog/admin to configure your blog, post to it, and moderate comments.
 
@@ -44,8 +37,7 @@ Go to /blog/admin to configure your blog, post to it, and moderate comments.
 = Setup for Using As a Parent Project =
 
 If you just want the blog to be the only part of your website, the process is
-fairly similar. Just clone (or fork) the repository and make your own app.yaml
-file that includes the handlers mentioned above.
+fairly similar. Just clone (or fork) the repository and you should be good.
 
 
 = Managing Multiple Blogs =
