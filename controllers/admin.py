@@ -7,7 +7,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 from base import BaseController
 
 from gae_blog import model
-from gae_blog.formencode.validators import Email, URL
+from gae_blog.formencode.validators import Email, Int, URL, UnicodeString
 
 
 class AdminController(BaseController):
@@ -32,7 +32,9 @@ class BlogController(AdminController):
     """ handles blog configuration and creation """
     def get(self):
 
-        self.renderTemplate('admin/blog.html', page_title="Admin - Blog", logout_url=self.logout_url)
+        form_data, errors = self.errorsFromSession()
+
+        self.renderTemplate('admin/blog.html', form_data=form_data, errors=errors, page_title="Admin - Blog", logout_url=self.logout_url)
 
     def post(self):
 
@@ -50,19 +52,44 @@ class BlogController(AdminController):
         posts_per_page = self.request.get("posts_per_page", None)
         image_preview_size = self.request.get("image_preview_size", None)
 
-        try:
-            posts_per_page = int(posts_per_page)
-        except:
-            self.renderError(400)
-            self.response.out.write(" - Posts Per Page value wasn't an integer.")
-            return
+        errors = {}
+        form_data = {"title": title, "description": description, "url": url, "template": template, "blocklist": blocklist,
+                     "enable_comments": enable_comments, "moderation_alert": moderation_alert, "contact": contact,
+                     "admin_email": admin_email, "posts_per_page": posts_per_page, "image_preview_size": image_preview_size}
 
-        try:
-            image_preview_size = int(image_preview_size)
-        except:
-            self.renderError(400)
-            self.response.out.write(" - Image Preview Size value wasn't an integer.")
-            return
+        title = self.validate(UnicodeString(not_empty=True), title)
+        if not title: errors["title"] = True
+
+        if description:
+            description = self.validate(UnicodeString(), description)
+            if not description: errors["description"] = True
+
+        url = self.validate(UnicodeString(not_empty=True), url)
+        if url:
+            if not blog or url != blog.slug:
+                # check to make sure that there isn't already another blog at this URL
+                existing = model.Blog.get_by_key_name(url)
+                if existing: errors["url_exists"] = True
+        else:
+            errors["url"] = True
+
+        if template:
+            template = self.validate(UnicodeString(), template)
+            if not template: errors["template"] = True
+
+        posts_per_page = self.validate(Int(), posts_per_page)
+        if not posts_per_page: errors["posts_per_page"] = True
+
+        image_preview_size = self.validate(Int(), image_preview_size)
+        if not image_preview_size: errors["image_preview_size"] = True
+
+        if admin_email:
+            admin_email = self.validate(Email(), admin_email)
+            if not admin_email: errors["admin_email"] = True
+
+        if errors:
+            self.errorsToSession(form_data, errors)
+            return self.redirect(self.blog_url + '/admin/blog')
 
         if blocklist:
             blocklist = blocklist.split("\n")
@@ -83,14 +110,6 @@ class BlogController(AdminController):
             contact = True
         else:
             contact = False
-
-        if not blog or url != blog.slug:
-            # check to make sure that there isn't already another blog at this URL
-            existing = model.Blog.get_by_key_name(url)
-            if existing:
-                self.renderError(400)
-                self.response.out.write(" - A blog already exists with that URL.")
-                return
 
         if blog:
             # if the URL is different, remake the entities since the key name needs to change
@@ -134,32 +153,50 @@ class AuthorsController(AdminController):
 
 class AuthorController(AdminController):
     """ handles creating and changing authors """
-    def get(self, author_key):
+    def get(self, author_slug):
 
         author = None
         page_title = "Admin - Author"
-        if author_key:
-            author = model.BlogAuthor.get_by_key_name(author_key, parent=self.getBlog())
+        if author_slug:
+            author = model.BlogAuthor.get_by_key_name(author_slug, parent=self.getBlog())
+            if not author:
+                return self.renderError(404)
             page_title += " - " + author.name
 
-        self.renderTemplate('admin/author.html', author=author, page_title=page_title, logout_url=self.logout_url)
+        form_data, errors = self.errorsFromSession()
 
-    def post(self, author_key):
+        self.renderTemplate('admin/author.html', author=author, form_data=form_data, errors=errors, page_title=page_title, logout_url=self.logout_url)
+
+    def post(self, author_slug):
 
         blog = self.getBlog()
         author = None
-        if author_key:
-            author = model.BlogAuthor.get_by_key_name(author_key, parent=blog)
+        if author_slug:
+            author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+            if not author:
+                return self.renderError(404)
 
         name = self.request.get("name")
         url = self.request.get("url")
         email = self.request.get("email")
 
+        errors = {}
+        form_data = {"name": name, "url": url, "email": email}
+
+        name = self.validate(UnicodeString(not_empty=True), name)
+        if not name: errors["name"] = True
+
         if url:
-            url = self.validate(URL(add_http=True), url, "URL")
+            url = self.validate(URL(add_http=True), url)
+            if not url: errors["url"] = True
 
         if email:
-            email = self.validate(Email(), email, "Email")
+            email = self.validate(Email(), email)
+            if not email: errors["email"] = True
+
+        if errors:
+            self.errorsToSession(form_data, errors)
+            return self.redirect(self.blog_url + '/admin/author/' + author_slug)
 
         slug = model.makeAuthorSlug(name, blog, author)
         if author:
@@ -218,6 +255,8 @@ class PostsController(AdminController):
                 # then the post itself
                 post.delete()
                 memcache.flush_all()
+            else:
+                return self.renderError(404)
 
         self.redirect(self.blog_url + '/admin/posts')
 
@@ -229,46 +268,67 @@ class PostController(AdminController):
         post = None
         if post_slug:
             post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            if not post:
+                return self.renderError(404)
 
-        self.renderTemplate('admin/post.html', post=post, page_title="Admin - Post", logout_url=self.logout_url)
+        form_data, errors = self.errorsFromSession()
+
+        self.renderTemplate('admin/post.html', post=post, form_data=form_data, errors=errors, page_title="Admin - Post", logout_url=self.logout_url)
 
     def post(self, post_slug):
+
+        blog = self.getBlog()
+        post = None
+        if post_slug:
+            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            if not post:
+                return self.renderError(404)
 
         title = self.request.get("title")
         slug_choice = self.request.get("slug-choice")
         slug = self.request.get("slug")
-        author_key = self.request.get("author")
+        author_slug = self.request.get("author")
         body = self.request.get("body")
         timestamp_choice = self.request.get("timestamp-choice")
         timestamp = self.request.get("timestamp")
         published = self.request.get("published", None)
 
-        blog = self.getBlog()
+        errors = {}
+        form_data = {"title": title, "slug-choice": slug_choice, "slug": slug, "author": author_slug, "body": body,
+                     "timestamp-choice": timestamp_choice, "timestamp": timestamp, "published": published}
 
-        post = None
-        if post_slug:
-            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+        title = self.validate(UnicodeString(not_empty=True), title)
+        if not title: errors["title"] = True
 
-        if not title:
-            self.renderError(400)
-            self.response.out.write(" - A title is required.")
-            return
+        if slug_choice == "custom":
+            slug = self.validate(UnicodeString(not_empty=True), slug)
+            if slug:
+                # check to make sure that there isn't already another post with this slug
+                existing = model.BlogPost.get_by_key_name(slug, parent=blog)
+                if existing and (not post or existing.key() != post.key()):
+                    errors["slug_exists"] = True
+            else:
+                errors["slug"] = True
 
-        if slug_choice == "custom" and slug:
-            # check to make sure that there isn't already another post with this slug
-            existing = model.BlogPost.get_by_key_name(slug, parent=blog)
-            if existing and (not post or existing.key() != post.key()):
-                self.renderError(400)
-                self.response.out.write(" - A post already exists with that slug.")
-                return
+        author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+        if not author: errors["author"] = True
 
-        author = model.BlogAuthor.get_by_key_name(author_key, parent=blog)
+        if body:
+            body = self.validate(UnicodeString(), body)
+            if not body: errors["body"] = True
 
         if timestamp_choice == "now":
             timestamp = datetime.utcnow()
         else:
             # try to parse it
-            timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+            try:
+                timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+            except:
+                errors["timestamp"] = True
+
+        if errors:
+            self.errorsToSession(form_data, errors)
+            return self.redirect(self.blog_url + '/admin/post/' + post_slug)
 
         if published:
             published = True
@@ -340,6 +400,8 @@ class CommentsController(AdminController):
                         blog.blocklist.append(comment.ip_address)
                         blog.put()
                 comment.delete()
+            else:
+                return self.renderError(404)
 
             # return them to the post they were viewing if this was deleted from a post page
             post_slug = self.request.get("post")
@@ -374,6 +436,8 @@ class ImagesController(AdminController):
                 image.blob.delete()
                 # then this one
                 image.delete()
+            else:
+                return self.renderError(404)
 
         self.redirect(self.blog_url + '/admin/images')
 
@@ -386,24 +450,28 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
         upload_url = blobstore.create_upload_url(self.blog_url + '/admin/image')
         page_title = "Admin - Upload an Image"
 
-        self.renderTemplate('admin/image.html', upload_url=upload_url, page_title=page_title, logout_url=self.logout_url)
+        form_data, errors = self.errorsFromSession()
+
+        self.renderTemplate('admin/image.html', upload_url=upload_url, errors=errors, page_title=page_title, logout_url=self.logout_url)
 
     def post(self):
         upload_files = self.get_uploads('data')  # 'data' is file upload field in the form
+        errors = {}
 
-        if not upload_files:
-            self.renderError(400)
-            self.response.out.write(" - No file selected.")
-            return
+        if upload_files:
+            blob_info = upload_files[0]
+            name = model.checkImageName(blob_info.filename)
+            if not name:
+                errors["type"] = True
 
-        blob_info = upload_files[0]
+            if errors:
+                blob_info.delete()
+        else:
+            errors["file"] = True
 
-        name = model.checkImageName(blob_info.filename)
-        if not name:
-            blob_info.delete()
-            self.renderError(400)
-            self.response.out.write(" - Invalid file extension.")
-            return
+        if errors:
+            self.errorsToSession({}, errors)
+            return self.redirect(self.blog_url + '/admin/image')
 
         image = model.BlogImage(parent=self.getBlog(), blob=blob_info)
         image.put()

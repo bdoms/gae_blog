@@ -6,6 +6,12 @@
     <p>
         <label for="data">File:</label>
         <input type="file" name="data" />
+        % if "file" in errors:
+            <span class="error">no file selected</span>
+        % endif
+        % if "type" in errors:
+            <span class="error">invalid file type</span>
+        % endif
     </p>
     <p><input type="submit" value="Upload" /></p>
 </form>

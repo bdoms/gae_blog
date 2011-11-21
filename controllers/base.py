@@ -2,7 +2,7 @@
 
 # app engine imports
 from google.appengine.ext import webapp
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 
 # local
 from gae_blog.config import TEMPLATES_PATH, BLOG_PATH
@@ -41,7 +41,10 @@ class BaseController(webapp.RequestHandler):
     def cacheAndRenderTemplate(self, filename, **kwargs):
         def renderHTML():
             return self.compileTemplate(filename, **kwargs)
-        html = cacheHTML(self, renderHTML, **kwargs)
+        if "errors" in kwargs:
+            html = renderHTML()
+        else:
+            html = cacheHTML(self, renderHTML, **kwargs)
         return self.response.out.write(html)
 
     def compileTemplate(self, filename, **kwargs):
@@ -73,15 +76,52 @@ class BaseController(webapp.RequestHandler):
     def getBlog(self):
         return model.Blog.get_by_key_name(self.blog_slug)
 
-    # helper function for validating comments
-    def validate(self, validator, value, name):
+    def getSession(self):
+        """ returns dictionary-like object for storing data across requests """
+        value = {}
+        # look for a session id in the cookies
+        sid = self.request.cookies.get("sid")
+        if sid:
+            value = memcache.get(sid)
+        return value
+
+    def saveSession(self, session):
+        # look for a session id in the cookies
+        sid = self.request.cookies.get("sid")
+        # if it's not there, generate one and set it
+        if not sid:
+            sid = ''.join('%02x' % ord(x) for x in os.urandom(16))
+            self.response.headers.add_header('Set-Cookie', 'sid=' + sid + '; Path=/;')
+        # save the session to memcache under that id
+        memcache.set(sid, session)
+
+    # helper functions for validating
+    def validate(self, validator, value):
         try:
             value = validator.to_python(value)
         except:
-            self.renderError(400)
-            self.response.out.write(" - Invalid " + name)
-            return None
+            value = None
         return value
+
+    def errorsToSession(self, form_data, errors):
+        session = self.getSession()
+        session["form_data"] = form_data
+        session["errors"] = errors
+        self.saveSession(session)
+
+    def errorsFromSession(self):
+        session = self.getSession()
+        form_data = {}
+        if "form_data" in session:
+            form_data = session["form_data"]
+            del session["form_data"]
+        errors = {}
+        if "errors" in session:
+            errors = session["errors"]
+            del session["errors"]
+        if form_data or errors:
+            self.saveSession(session)
+        return form_data, errors
 
     @property
     def blog_slug(self):
@@ -90,4 +130,16 @@ class BaseController(webapp.RequestHandler):
     @property
     def blog_url(self):
         return '/' + self.blog_slug
+
+
+# decorators
+def renderIfCachedNoErrors(action):
+    def decorate(*args,  **kwargs):
+        controller = args[0]
+        session = controller.getSession()
+        if "errors" in session:
+            return action(*args, **kwargs)
+        else:
+            return renderIfCached(action)(*args, **kwargs)
+    return decorate
 

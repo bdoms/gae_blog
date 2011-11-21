@@ -4,20 +4,41 @@
 <form action="" method="post">
     <p>
         <label for="name">Name:</label>
-        <input type="text" name="name" value="${author and author.name or ''}" />
+        % if "name" in form_data:
+            <input type="text" name="name" value="${form_data['name']}" />
+        % else:
+            <input type="text" name="name" value="${author and author.name or ''}" />
+        % endif
         <span class="help">(required)</span>
+        % if "name" in errors:
+            <span class="error">please enter a valid name</span>
+        % endif
     </p>
 
     <p>
         <label for="url">URL:</label>
-        <input type="text" name="url" value="${author and author.url or ''}" />
+        % if "url" in form_data:
+            <input type="text" name="url" value="${form_data['url']}" />
+        % else:
+            <input type="text" name="url" value="${author and author.url or ''}" />
+        % endif
         <span class="help">(optional, overrides links to author index)</span>
+        % if "url" in errors:
+            <span class="error">please enter a valid URL</span>
+        % endif
     </p>
 
     <p>
         <label for="email">Email:</label>
-        <input type="text" name="email" value="${author and author.email or ''}" />
+        % if "email" in form_data:
+            <input type="text" name="email" value="${form_data['email']}" />
+        % else:
+            <input type="text" name="email" value="${author and author.email or ''}" />
+        % endif
         <span class="help">(optional, for messages from the contact page)</span>
+        % if "email" in errors:
+            <span class="error">please enter a valid email</span>
+        % endif
     </p>
 
     % if author:

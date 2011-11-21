@@ -102,50 +102,81 @@ ${renderPost(post)}
 
         <h4 id="comment-link-header"><a id="comment-link" href="#comment-link">Leave a Comment</a></h4>
 
-        <form id="comment-form" action="" method="post" style="display: none;">
+        <form id="comment-form" action="" method="post" ${not errors and 'style="display: none;"' or ''}>
             % if user_is_admin:
                 <ul>
                     <li>
-                        <input id="author-choice-author" type="radio" name="author-choice" value="author" checked="checked" />
+                        % if form_data.get('author-choice') != 'custom':
+                            <input id="author-choice-author" type="radio" name="author-choice" value="author" checked="checked" />
+                        % else:
+                            <input id="author-choice-author" type="radio" name="author-choice" value="author" />
+                        % endif
                         <label for="author-choice-author">Leave comment as author:</label>
                         <select name="author">
                             % for author in blog.authors:
-                                <option value="${author.slug}">${author.name}</option>
+                                % if form_data.get('author') == author.slug:
+                                    <option value="${author.slug}" selected="selected">${author.name}</option>
+                                % else:
+                                    <option value="${author.slug}">${author.name}</option>
+                                % endif
                             % endfor
                         </select>
-                        <span class="help">(bypasses moderation)</help>
+                        <span class="help">(bypasses moderation)</span>
+                        % if "author" in errors:
+                            <span class="error">please select a valid author</span>
+                        % endif
                     </li>
                     <li>
-                        <input id="author-choice-custom" type="radio" name="author-choice" value="custom" />
-                        <label for="author-choice-custom">Enter custom information</labael>
+                        % if form_data.get('author-choice') == 'custom':
+                            <input id="author-choice-custom" type="radio" name="author-choice" value="custom" checked="checked" />
+                        % else:
+                            <input id="author-choice-custom" type="radio" name="author-choice" value="custom" />
+                        % endif
+                        <label for="author-choice-custom">Enter custom information</label>
                     </li>
                 </ul>
 
-                <div id="comment-author-info" style="display: none;">
+                % if form_data.get('author-choice') != 'custom':
+                    <div id="comment-author-info" style="display: none;">
+                % else:
+                    <div id="comment-author-info">
+                % endif
             % else:
                 <div id="comment-author-info">
             % endif
                 <p>
                     <label for="name">Name:</label>
-                    <input type="text" name="name" />
+                    <input type="text" name="name" value="${form_data.get('name', '')}"/>
                     <span class="help">(optional, appears with comment)</span>
+                    % if "name" in errors:
+                        <span class="error">please enter a valid name</span>
+                    % endif
                 </p>
                 <p>
                     <label for="url">URL:</label>
-                    <input type="text" name="url" />
+                    <input type="text" name="url" value="${form_data.get('url', '')}"/>
                     <span class="help">(optional, your name links to this address if included)</span>
+                    % if "url" in errors:
+                        <span class="error">please enter a valid URL</span>
+                    % endif
                 </p>
                 <p>
                     <label for="email">Email:</label>
-                    <input type="text" name="email" />
+                    <input type="text" name="email" value="${form_data.get('email', '')}"/>
                     <span class="help">(required for verification, first comment is moderated)</span>
+                    % if "email" in errors:
+                        <span class="error">please enter a valid email</span>
+                    % endif
                 </p>
             </div>
             <p>
                 <label for="body">Comment:</label>
                 <span class="help">(HTML is stripped, URL's become links)</span>
+                % if "body" in errors:
+                    <span class="error">please enter a valid comment</span>
+                % endif
             </p>
-            <textarea name="body"></textarea>
+            <textarea name="body">${form_data.get('body', '')}</textarea>
             <p><input type="submit" value="Make Comment" /></p>
         </form>
 

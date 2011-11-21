@@ -17,32 +17,52 @@
                     <label for="author">To:</label>
                     <select name="author">
                         % if len(authors) > 1:
-                            <option value="all">Everyone</option>
+                            % if form_data.get('author') == 'all':
+                                <option value="all" selected="selected">Everyone</option>
+                            % else:
+                                <option value="all">Everyone</option>
+                            % endif
                         % endif
                         % for author in authors:
-                            <option value="${author.slug}">${author.name}</option>
+                            % if form_data.get('author') == author.slug:
+                                <option value="${author.slug}" selected="selected">${author.name}</option>
+                            % else:
+                                <option value="${author.slug}">${author.name}</option>
+                            % endif
                         % endfor
                     </select>
+                    % if "author" in errors:
+                        <span class="error">please select a valid recipient</span>
+                    % endif
                 </p>
 
                 <p class="contact-email">
                     <label for="email">From Email Address:</label>
-                    <input type="text" name="email" />
+                    <input type="text" name="email" value="${form_data.get('email', '')}"/>
                     <span class="help">(required for a response)</span>
+                    % if "email" in errors:
+                        <span class="error">please enter a valid email</span>
+                    % endif
                 </p>
 
                 <p class="contact-subject">
                     <label for="subject">Subject:</label>
-                    <input type="text" name="subject" />
+                    <input type="text" name="subject" value="${form_data.get('subject', '')}"/>
                     <span class="help">(optional)</span>
+                    % if "subject" in errors:
+                        <span class="error">please enter a valid subject</span>
+                    % endif
                 </p>
 
                 <p class="contact-message">
                     <label for="body">Message:</label>
                     <span class="help">(plain text)</span>
+                    % if "body" in errors:
+                        <span class="error">please enter a valid message</span>
+                    % endif
                 </p>
 
-                <textarea class="contact-body" name="body"></textarea>
+                <textarea class="contact-body" name="body">${form_data.get('body', '')}</textarea>
 
                 <p class="contact-submit"><input type="submit" value="Send"/></p>
             </form>

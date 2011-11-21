@@ -1,6 +1,6 @@
 from google.appengine.api import mail, memcache
 
-from base import BaseController, renderIfCached
+from base import BaseController, renderIfCachedNoErrors
 
 from gae_blog import model
 from gae_blog.formencode.validators import UnicodeString, Email, URL
@@ -8,7 +8,7 @@ from gae_blog.formencode.validators import UnicodeString, Email, URL
 class PostController(BaseController):
     """ shows an individual post and saves comments to it """
 
-    @renderIfCached
+    @renderIfCachedNoErrors
     def get(self, post_slug):
 
         if post_slug:
@@ -16,7 +16,8 @@ class PostController(BaseController):
             post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
             if post and post.published:
                 # only display a post if it's actually published
-                return self.cacheAndRenderTemplate('post.html', post=post)
+                form_data, errors = self.errorsFromSession()
+                return self.cacheAndRenderTemplate('post.html', post=post, form_data=form_data, errors=errors)
 
         return self.renderError(404)
 
@@ -38,18 +39,21 @@ class PostController(BaseController):
                     email = self.request.get("email")
                     body = self.request.get("body", "")
 
-                    # body validation and handling
-                    body = self.validate(UnicodeString(not_empty=True), body, "Comment")
-                    if not body: return
+                    errors = {}
+                    form_data = {"author-choice": author_choice, "author": author_slug, "name": name, "url": url, "email": email, "body": body}
 
                     # strip out all HTML to be on the safe side
                     body = model.stripHTML(body)
 
-                    # turn URL's into links
-                    body = model.linkURLs(body)
-
-                    # finally, replace linebreaks with HTML linebreaks
-                    body = body.replace("\r\n", "<br/>")
+                    # validate
+                    body = self.validate(UnicodeString(not_empty=True), body)
+                    if body:
+                        # turn URL's into links
+                        body = model.linkURLs(body)
+                        # finally, replace linebreaks with HTML linebreaks
+                        body = body.replace("\r\n", "<br/>")
+                    else:
+                        errors["body"] = True
 
                     if author_choice == "author":
                         # validate that if they want to comment as an author that it's valid and they're approved
@@ -57,25 +61,33 @@ class PostController(BaseController):
                             return self.renderError(403)
                         author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
                         if not author:
-                            return self.renderError(400)
+                            errors["author"] = True
+
+                        if errors:
+                            self.errorsToSession(form_data, errors)
+                            return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
                         comment = model.BlogComment(body=body, approved=True, author=author, parent=post)
                         memcache.delete(self.request.path + self.request.query_string)
                     else:
                         # validate that the email address is valid
-                        email = self.validate(Email(), email, "Email")
-                        if not email: return
+                        email = self.validate(Email(), email)
+                        if not email: errors["email"] = True
 
                         # validate that the name, if present, is valid
                         if name:
-                            name = self.validate(UnicodeString(max=500), name, "Name")
-                            if not name: return
                             name = model.stripHTML(name)
+                            name = self.validate(UnicodeString(max=500), name)
+                            if not name: errors["name"] = True
 
                         # validate that the url, if present, is valid
                         if url:
                             url = self.validate(URL(add_http=True), url, "URL")
-                            if not url: return
+                            if not url: errors["url"] = True
+
+                        if errors:
+                            self.errorsToSession(form_data, errors)
+                            return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
                         # look for a previously approved comment from this email address on this blog
                         approved = blog.comments.filter("email =", email).filter("approved =", True)

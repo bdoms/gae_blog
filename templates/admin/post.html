@@ -17,7 +17,14 @@
 <form action="" method="post">
     <p>
         <label for="title">Title:</label>
-        <input type="text" name="title" value="${post and post.title.replace('"', '&quot;') or ''}" />
+        % if "title" in form_data:
+            <input type="text" name="title" value="${form_data['title']}" />
+        % else:
+            <input type="text" name="title" value="${post and post.title.replace('"', '&quot;') or ''}" />
+        % endif
+        % if "title" in errors:
+            <span class="error">please enter a valid title</span>
+        % endif
     </p>
 
     <p>
@@ -28,22 +35,40 @@
     </p>
     <ul>
         <li>
-            % if post and post.published:
-                <input type="radio" id="slug-auto" name="slug-choice" value="auto" />
+            % if "slug-choice" in form_data:
+                <input type="radio" id="slug-auto" name="slug-choice" value="auto" ${form_data['slug-choice'] == 'auto' and 'checked="checked"' or ''} />
             % else:
-                <input type="radio" id="slug-auto" name="slug-choice" value="auto" checked="checked" />
+                % if post and post.published:
+                    <input type="radio" id="slug-auto" name="slug-choice" value="auto" />
+                % else:
+                    <input type="radio" id="slug-auto" name="slug-choice" value="auto" checked="checked" />
+                % endif
             % endif
             <label for="slug-auto">Automatic</label>
         </li>
         <li>
-            % if post and post.published:
-                <input type="radio" id="slug-custom" name="slug-choice" value="custom" checked="checked" />
+            % if "slug-choice" in form_data:
+                <input type="radio" id="slug-custom" name="slug-choice" value="custom" ${form_data['slug-choice'] == 'custom' and 'checked="checked"' or ''} />
             % else:
-                <input type="radio" id="slug-custom" name="slug-choice" value="custom" />
+                % if post and post.published:
+                    <input type="radio" id="slug-custom" name="slug-choice" value="custom" checked="checked" />
+                % else:
+                    <input type="radio" id="slug-custom" name="slug-choice" value="custom" />
+                % endif
             % endif
             <label for="slug-custom">Custom:</label>
-            <input type="text" name="slug" value="${post and post.slug or ''}" />
+            % if "slug" in form_data:
+                <input type="text" name="slug" value="${form_data['slug']}" />
+            % else:
+                <input type="text" name="slug" value="${post and post.slug or ''}" />
+            % endif
             <span class="help">(ex: my-post-slug)</span>
+            % if "slug" in errors:
+                <span class="error">please enter a valid slug</span>
+            % endif
+            % if "slug_exists" in errors:
+                <span class="error">the slug you entered is already being used by another post on this blog</span>
+            % endif
         </li>
     </ul>
 
@@ -51,19 +76,33 @@
         <label for="author">Author:</label>
         <select name="author">
             % for author in blog.authors:
-                <option value="${author.slug}">${author.name}</a>
+                % if form_data.get("author") == author.slug:
+                    <option value="${author.slug}" selected="selected">${author.name}</option>
+                % else:
+                    <option value="${author.slug}">${author.name}</option>
+                % endif
             % endfor
         </select>
-    </p> 
+        % if "author" in errors:
+            <span class="error">please select a valid author</span>
+        % endif
+    </p>
 
     <p>
         <label for="post-body">Body:</label>
         <span class="help">(uses HTML)</span>
+        % if "body" in errors:
+            <span class="error">please enter a valid body</span>
+        % endif
     </p>
-    % if post:
-        <textarea name="body" id="post-body">${post.body}</textarea>        
+    % if "body" in form_data:
+        <textarea name="body" id="post-body">${form_data['body']}</textarea>
     % else:
-        <textarea name="body" id="post-body"></textarea>
+        % if post:
+            <textarea name="body" id="post-body">${post.body}</textarea>
+        % else:
+            <textarea name="body" id="post-body"></textarea>
+        % endif
     % endif
 
     <p>
@@ -72,38 +111,61 @@
     </p>
     <ul>
         <li>
-            % if post:
-                <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" />
+            % if "timestamp-choice" in form_data:
+                <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" ${form_data['timestamp-choice'] == 'now' and 'checked="checked"' or ''} />
             % else:
-                <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" checked="checked" />
+                % if post:
+                    <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" />
+                % else:
+                    <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" checked="checked" />
+                % endif
             % endif
             <label for="timestamp-now">Now</label>
         </li>
         <li>
-            % if post:
-                <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" checked="checked" />
+            % if "timestamp-choice" in form_data:
+                <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" ${form_data['timestamp-choice'] == 'custom' and 'checked="checked"' or ''} />
             % else:
-                <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" />
+                % if post:
+                    <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" checked="checked" />
+                % else:
+                    <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" />
+                % endif
             % endif
             <label for="timestamp-custom">Custom:</label>
-            <input type="text" name="timestamp" value="${post and post.timestamp.strftime('%Y-%m-%d %H:%M:%S') or ''}" />
+            % if "timestamp" in form_data:
+                <input type="text" name="timestamp" value="${form_data['timestamp']}" />
+            % else:
+                <input type="text" name="timestamp" value="${post and post.timestamp.strftime('%Y-%m-%d %H:%M:%S') or ''}" />
+            % endif
             <span class="help">(ex: 1970-01-21 13:35:16)</span>
+            % if "timestamp" in errors:
+                <span class="error">please enter a valid timestamp</span>
+            % endif
         </li>
     </ul>
 
     <p>
         <label for="published-box">Published:</label>
-        % if post and post.published:
-            <input type="checkbox" name="published" checked="checked" id="published-box" />
+        % if "published" in form_data:
+            <input type="checkbox" name="published" id="published-box" ${form_data['published'] and 'checked="checked"' or ''}/>
         % else:
-            <input type="checkbox" name="published" id="published-box" />
+            % if post and post.published:
+                <input type="checkbox" name="published" id="published-box" checked="checked" />
+            % else:
+                <input type="checkbox" name="published" id="published-box" />
+            % endif
         % endif
     </p>
 
-    % if post and post.published:
-        <p id="preview-button" style="display: none;">
+    % if "published" in form_data:
+        <p id="preview-button" ${form_data['published'] and 'style="display: none;"' or ''}>
     % else:
-        <p id="preview-button">
+        % if post and post.published:
+            <p id="preview-button" style="display: none;">
+        % else:
+            <p id="preview-button">
+        % endif
     % endif
         <input type="submit" value="Save and Preview" name="preview" />
         <span class="help">(you can only preview unpublished posts)</span>
