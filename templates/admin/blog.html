@@ -17,11 +17,11 @@
         <span class="help">(optional, used by RSS and default meta tags)</span>
     </p>
     <p>
-        <label for="comments-box">Enable Comments:</label>
-        % if blog and blog.comments:
-            <input type="checkbox" name="comments" id="comments-box" checked="checked" />
+        <label for="enable_comments">Enable Comments:</label>
+        % if blog and blog.enable_comments:
+            <input type="checkbox" name="enable_comments" id="enable_comments" checked="checked" />
         % else:
-            <input type="checkbox" name="comments" id="comments-box" />
+            <input type="checkbox" name="enable_comments" id="enable_comments" />
         % endif
     </p>
     <p>
@@ -51,18 +51,13 @@
         <span class="help">(control how many posts are shown at once on index pages)</span>
     </p>
     <p>
-        <label for="posts_per_page">Image Preview Width:</label>
-        <input type="text" name="image_preview_width" value="${blog and blog.image_preview_width or 600}" />
-        <span class="help">(the maximum number of pixels wide for previews)</span>
-    </p>
-    <p>
-        <label for="posts_per_page">Image Preview Height:</label>
-        <input type="text" name="image_preview_height" value="${blog and blog.image_preview_height or 600}" />
-        <span class="help">(the maximum number of pixels high for previews)</span>
+        <label for="image_preview_size">Image Preview Size:</label>
+        <input type="text" name="image_preview_size" value="${blog and blog.image_preview_size or 600}" />
+        <span class="help">(the maximum number of pixels wide or high for previews, applies to the larger dimension)</span>
     </p>
     <p>
         <label for="url">Blog URL:</label>
-        <input type="text" name="url" value="${blog and blog.url or blog_url}" />
+        /<input type="text" name="url" value="${blog and blog.slug or blog_url[1:]}" />
         <span class="help">(WARNING: changing this may break things, see readme for instructions)</span>
     </p>
     <p>

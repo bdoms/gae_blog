@@ -42,7 +42,7 @@ ${renderPost(post)}
     </div>
 </div>
 
-% if blog.comments:
+% if blog.enable_comments:
     % if include_comments:
         % if post.approved_comments.count():
             <h4 id="comments">Comments</h4>
@@ -109,8 +109,8 @@ ${renderPost(post)}
                         <input id="author-choice-author" type="radio" name="author-choice" value="author" checked="checked" />
                         <label for="author-choice-author">Leave comment as author:</label>
                         <select name="author">
-                            % for author in authors:
-                                <option value="${author.key()}">${author.name}</option>
+                            % for author in blog.authors:
+                                <option value="${author.slug}">${author.name}</option>
                             % endfor
                         </select>
                         <span class="help">(bypasses moderation)</help>
@@ -198,7 +198,7 @@ ${renderPost(post)}
         </script>
     % else:
         % if post.published:
-            <p class="all-comments"><a href="${blog_url}/post/${post.slug}">See All Comments (${post.approved_comments.count()})</a></p>
+            <p class="all-comments"><a href="${blog_url}/post/${post.slug}#comments">See All Comments (${post.approved_comments.count()})</a></p>
         % endif
     % endif
 % endif

@@ -50,8 +50,8 @@
     <p>
         <label for="author">Author:</label>
         <select name="author">
-            % for author in authors:
-                <option value="${author.key()}">${author.name}</a>
+            % for author in blog.authors:
+                <option value="${author.slug}">${author.name}</a>
             % endfor
         </select>
     </p> 
@@ -158,12 +158,12 @@
             for (var i=0; i < image_names.length; i++) {
                 var image_name = image_names[i];
                 var img = new bkElement('img');
-                img.setAttributes({src: blog_url + "/img/" + image_name + "?preview=1", alt: image_name + " Preview", style: "max-width: 100px;"});
+                img.setAttributes({src: blog_url + "/img/" + image_name + "?s100", alt: image_name + " Preview"});
 
                 // add events to the images that makes clicking them auto-fill the src field
                 img.addEvent("click", function(e) {
                     var src = document.getElementById("src");
-                    src.value = this.src;
+                    src.value = this.src.replace("?s100", "?s${blog.image_preview_size}");
                     return false;
                 }, false);
                 img.appendTo(div);

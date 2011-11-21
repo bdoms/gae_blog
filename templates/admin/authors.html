@@ -1,32 +1,36 @@
 <%inherit file="base.html"/>
 
 <h3>Authors</h3>
-<table>
-    <thead>
-        <tr>
-            <th>Name (Click to Edit)</th>
-            <th>URL (Click to View)</th>
-            <th>Email</th>
-            <th># of Comments</th>
-            <th># of Posts</th>
-        </tr>
-    </thead>
-    <tbody>
-        % for author in authors:
+% if authors.count():
+    <table>
+        <thead>
             <tr>
-                <td><a href="${blog_url}/admin/author/${author.key()}">${author.name}</a></td>
-                % if author.url:
-                    <td><a href="author.url" target="_blank">${author.url}</a></td>
-                % else:
-                    <td><a href="${blog_url}/author/${author.slug}">${blog_url}/author/${author.slug}</a></td>
-                % endif
-                <td>${author.email or ''}</td>
-                <td>${author.comments.count()}</td>
-                <td>${author.posts.count()}</td>
+                <th>Name (Click to Edit)</th>
+                <th>URL (Click to View)</th>
+                <th>Email</th>
+                <th># of Comments</th>
+                <th># of Posts</th>
             </tr>
-        % endfor
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            % for author in authors:
+                <tr>
+                    <td><a href="${blog_url}/admin/author/${author.slug}">${author.name}</a></td>
+                    % if author.url:
+                        <td><a href="author.url" target="_blank">${author.url}</a></td>
+                    % else:
+                        <td><a href="${blog_url}/author/${author.slug}">${blog_url}/author/${author.slug}</a></td>
+                    % endif
+                    <td>${author.email or ''}</td>
+                    <td>${author.comments.count()}</td>
+                    <td>${author.posts.count()}</td>
+                </tr>
+            % endfor
+        </tbody>
+    </table>
+% else:
+    <p>No authors for this blog yet.</p>
+% endif
 
 <h3><a href="${blog_url}/admin/author/">Add a New Author</a></h3>
 

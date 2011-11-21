@@ -7,15 +7,15 @@
     <li><a href="${blog_url}/admin/images">Upload or View Images</a></li>
     <li><a href="${blog_url}/admin/comments">Moderate Comments</a></li>
     <li><a href="${blog_url}/admin/authors">Manage Authors</a></li>
-    <li><a href="${blog_url}/admin/blog/${blog.key()}">Change Configuration</a></li>
+    <li><a href="${blog_url}/admin/blog">Change Configuration</a></li>
 </ul>
 
-% if other_blogs.count():
+% if other_blogs:
     <h3>Other Blogs</h3>
     <ul>
         % for other_blog in other_blogs:
             <li>
-                <a href="${other_blog.url}/admin">Switch to Admin for ${other_blog.title}</a>
+                <a href="/${other_blog.slug}/admin">Switch to Admin for ${other_blog.title}</a>
             </li>
         % endfor
     </ul>

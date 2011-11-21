@@ -1,4 +1,4 @@
-from google.appengine.api import users, mail, memcache
+from google.appengine.api import mail, memcache
 
 from base import BaseController, renderIfCached
 
@@ -13,10 +13,10 @@ class PostController(BaseController):
 
         if post_slug:
             blog = self.getBlog()
-            post = blog.posts.filter("slug =", post_slug).get()
+            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
             if post and post.published:
                 # only display a post if it's actually published
-                return self.cacheAndRenderTemplate('post.html', post=post, authors=blog.authors)
+                return self.cacheAndRenderTemplate('post.html', post=post)
 
         return self.renderError(404)
 
@@ -24,15 +24,15 @@ class PostController(BaseController):
 
         ip_address = self.request.remote_addr
         blog = self.getBlog()
-        if blog and blog.comments and ip_address not in blog.blocklist:
+        if blog and blog.enable_comments and ip_address not in blog.blocklist:
             # only allow comment posting if comments are enabled
             if post_slug:
-                post = blog.posts.filter("slug =", post_slug).get()
+                post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
 
                     author_choice = self.request.get("author-choice")
-                    author_key = self.request.get("author")
+                    author_slug = self.request.get("author")
                     name = self.request.get("name")
                     url = self.request.get("url")
                     email = self.request.get("email")
@@ -53,13 +53,13 @@ class PostController(BaseController):
 
                     if author_choice == "author":
                         # validate that if they want to comment as an author that it's valid and they're approved
-                        if not users.is_current_user_admin():
+                        if not self.isUserAdmin():
                             return self.renderError(403)
-                        author = model.BlogAuthor.get(author_key)
+                        author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
                         if not author:
                             return self.renderError(400)
 
-                        comment = model.BlogComment(body=body, approved=True, post=post, author=author)
+                        comment = model.BlogComment(body=body, approved=True, author=author, parent=post)
                         memcache.delete(self.request.path + self.request.query_string)
                     else:
                         # validate that the email address is valid
@@ -78,17 +78,15 @@ class PostController(BaseController):
                             if not url: return
 
                         # look for a previously approved comment from this email address on this blog
-                        approved = []
-                        for blog_post in blog.posts:
-                            approved.extend(list(blog_post.comments.filter("email =", email).filter("approved =", True)))
+                        approved = blog.comments.filter("email =", email).filter("approved =", True)
 
-                        comment = model.BlogComment(email=email, body=body, post=post, ip_address=ip_address)
+                        comment = model.BlogComment(email=email, body=body, ip_address=ip_address, parent=post)
                         if name:
                             comment.name = name
                         if url:
                             comment.url = url
 
-                        if approved:
+                        if approved.count():
                             comment.approved = True
                             memcache.delete(self.request.path + self.request.query_string)
                         elif blog.moderation_alert and blog.admin_email:

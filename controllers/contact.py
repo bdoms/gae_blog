@@ -24,7 +24,7 @@ class ContactController(BaseController):
 
         blog = self.getBlog()
         if blog and blog.contact:
-            author_key = self.request.get("author")
+            author_slug = self.request.get("author")
             email = self.request.get("email")
             subject = self.request.get("subject", "")
             body = self.request.get("body")
@@ -43,12 +43,12 @@ class ContactController(BaseController):
             body = self.validate(UnicodeString(not_empty=True), body, "Message")
             if not body: return
 
-            if author_key == "all":
+            if author_slug == "all":
                 authors = [author for author in blog.authors if author.email]
                 if not authors:
                     return self.renderError(400)
             else:
-                author = model.BlogAuthor.get(author_key)
+                author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
                 if not author or not author.email:
                     return self.renderError(400)
                 authors = [author]

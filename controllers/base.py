@@ -53,7 +53,7 @@ class BaseController(webapp.RequestHandler):
         user = self.getUser()
         kwargs["user"] = user
         if user:
-            kwargs["user_is_admin"] = users.is_current_user_admin()
+            kwargs["user_is_admin"] = self.isUserAdmin()
         return template.render_unicode(**kwargs)
 
     def renderTemplate(self, filename, **kwargs):
@@ -67,8 +67,11 @@ class BaseController(webapp.RequestHandler):
     def getUser(self):
         return users.get_current_user()
 
+    def isUserAdmin(self):
+        return users.is_current_user_admin()
+
     def getBlog(self):
-        return model.Blog.all().filter('url =', self.blog_url).get()
+        return model.Blog.get_by_key_name(self.blog_slug)
 
     # helper function for validating comments
     def validate(self, validator, value, name):
@@ -81,6 +84,10 @@ class BaseController(webapp.RequestHandler):
         return value
 
     @property
+    def blog_slug(self):
+        return self.request.path.split('/')[1] # we add the slash for easy URL making
+
+    @property
     def blog_url(self):
-        return '/'.join(self.request.path.split('/')[0:2])
+        return '/' + self.blog_slug
 

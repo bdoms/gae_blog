@@ -10,7 +10,7 @@ class AuthorController(BaseController):
 
         if author_slug:
             blog = self.getBlog()
-            author = blog.authors.filter("slug =", author_slug).get()
+            author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
 
             if author:
                 page = 0
@@ -35,7 +35,7 @@ class AuthorController(BaseController):
 
                 page_title = "Author - " + author.name
 
-                self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts, author=author, page_title=page_title)
+                return self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts, author=author, page_title=page_title)
 
         return self.renderError(404)
 

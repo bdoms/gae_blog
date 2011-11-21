@@ -22,7 +22,7 @@ for url in BLOG_URLS:
                    (url + '/post/(.*)', post.PostController),
                    (url + '/author/(.*)', author.AuthorController),
                    (url + '/admin', admin.AdminController),
-                   (url + '/admin/blog/(.*)', admin.BlogController),
+                   (url + '/admin/blog', admin.BlogController),
                    (url + '/admin/author/(.*)', admin.AuthorController),
                    (url + '/admin/authors', admin.AuthorsController),
                    (url + '/admin/post/(.*)', admin.PostController),

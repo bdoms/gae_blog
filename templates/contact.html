@@ -20,7 +20,7 @@
                             <option value="all">Everyone</option>
                         % endif
                         % for author in authors:
-                            <option value="${author.key()}">${author.name}</option>
+                            <option value="${author.slug}">${author.name}</option>
                         % endfor
                     </select>
                 </p>

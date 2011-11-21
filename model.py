@@ -6,24 +6,45 @@ from datetime import datetime
 from google.appengine.ext import db, blobstore
 from google.appengine.api import images
 
-MB = 1000000 # really 1048000 (2**20), but Google turns sets the limit artificially
-
 
 # standard model objects
 class Blog(db.Model):
 
     title = db.StringProperty()
     description = db.StringProperty()
-    comments = db.BooleanProperty(default=False)
+    enable_comments = db.BooleanProperty(default=False)
     moderation_alert = db.BooleanProperty(default=False)
     contact = db.BooleanProperty(default=False)
     admin_email = db.StringProperty()
     posts_per_page = db.IntegerProperty(default=10)
-    image_preview_width = db.IntegerProperty(default=600)
-    image_preview_height = db.IntegerProperty(default=600)
-    url = db.StringProperty(default='/blog')
+    image_preview_size = db.IntegerProperty(default=600)
     template = db.StringProperty()
     blocklist = db.ListProperty(str)
+
+    @property
+    def slug(self):
+        return self.key().name()
+
+    @property
+    def posts(self):
+        return BlogPost.all().ancestor(self)
+
+    @property
+    def authors(self):
+        return BlogAuthor.all().ancestor(self)
+
+    @property
+    def comments(self):
+        return BlogComment.all().ancestor(self)
+
+    @property
+    def images(self):
+        return BlogImage.all().ancestor(self)
+
+    @property
+    def children(self):
+        # comments are grand children, not direct children, so they are not included here
+        return list(self.posts) + list(self.authors) + list(self.images)
 
     @property
     def published_posts(self):
@@ -33,10 +54,16 @@ class Blog(db.Model):
 class BlogAuthor(db.Model):
 
     name = db.StringProperty(required=True)
-    slug = db.StringProperty(required=True)
     url = db.StringProperty()
     email = db.StringProperty()
-    blog = db.ReferenceProperty(Blog, required=True, collection_name="authors")
+
+    @property
+    def slug(self):
+        return self.key().name()
+
+    @property
+    def blog(self):
+        return self.parent()
 
     @property
     def published_posts(self):
@@ -46,16 +73,30 @@ class BlogAuthor(db.Model):
 class BlogPost(db.Model):
 
     title = db.StringProperty(required=True) # max of 500 chars
-    slug = db.StringProperty(required=True)
     body = db.TextProperty() # returns type db.Text (a subclass of unicode)
     published = db.BooleanProperty(default=False)
     timestamp = db.DateTimeProperty(auto_now_add=True)
     author = db.ReferenceProperty(BlogAuthor, required=True, collection_name="posts")
-    blog = db.ReferenceProperty(Blog, required=True, collection_name="posts")
+
+    @property
+    def slug(self):
+        return self.key().name()
+
+    @property
+    def blog(self):
+        return self.parent()
+
+    @property
+    def comments(self):
+        return BlogComment.all().ancestor(self)
 
     @property
     def approved_comments(self):
         return self.comments.filter('approved =', True).order('timestamp')
+
+    @property
+    def children(self):
+        return self.comments
 
     @property
     def secondsSinceEpoch(self):
@@ -80,12 +121,15 @@ class BlogComment(db.Model):
     approved = db.BooleanProperty(default=False)
     timestamp = db.DateTimeProperty(auto_now_add=True)
     ip_address = db.StringProperty(default='')
-    post = db.ReferenceProperty(BlogPost, required=True, collection_name="comments")
     author = db.ReferenceProperty(BlogAuthor, collection_name="comments")
 
     def __init__(self, *args, **kwargs):
         assert "email" in kwargs or "author" in kwargs, "A BlogComment needs either an email address or attached author for verification."
         return super(BlogComment, self).__init__(*args, **kwargs)
+
+    @property
+    def post(self):
+        return self.parent()
 
     @property
     def secondsSinceEpoch(self):
@@ -94,8 +138,11 @@ class BlogComment(db.Model):
 
 class BlogImage(db.Model):
 
-    blog = db.ReferenceProperty(Blog, required=True, collection_name="images")
     blob = blobstore.BlobReferenceProperty(required=True)
+
+    @property
+    def blog(self):
+        return self.parent()
 
     @property
     def url(self):
@@ -123,18 +170,59 @@ URL_RE = re.compile(r'''
 def linkURLs(string):
     return URL_RE.sub(r'<a href="\1" target="_blank">\1</a>', string)
 
+
+# model helper functions
+def toDict(model_object):
+    """ convert a model object to a dictionary """
+    d = {}
+    for prop in model_object.properties():
+        # we must avoid de-referencing the values for the reference properties in case this is run in a transaction
+        if type(getattr(model_object.__class__, prop)) == db.ReferenceProperty:
+            d[prop] = getattr(model_object.__class__, prop).get_value_for_datastore(model_object)
+        else:
+            d[prop] = getattr(model_object, prop)
+    return d
+
+def makeNew(model_object, key_name=None, parent=None, use_transaction=True):
+    """ if a key name or parent changes then the key does - since it's immutable per object we must recreate it entirely """
+    def transaction(model_object, key_name=key_name, parent=None):
+        # get old info
+        d = toDict(model_object)
+        # list forces execution, which we need since we're about to delete this
+        children = hasattr(model_object, "children") and list(model_object.children) or []
+        # delete current (must come first so that the key name can be made the same if necessary)
+        model_object.delete()
+        # make new
+        new_object = model_object.__class__(key_name=key_name, parent=parent, **d)
+        new_object.put()
+
+        # replace the parent on all the children
+        # NOTE that nested transactions aren't supported, so these must use_transaction=False
+        for child in children:
+            child_name = hasattr(child, "slug") and child.slug or None
+            new_child = makeNew(child, key_name=child_name, parent=new_object, use_transaction=False)
+
+        return new_object
+
+    if use_transaction:
+        new_object = db.run_in_transaction(transaction, model_object, key_name=key_name, parent=parent)
+    else:
+        new_object = transaction(model_object, key_name=key_name, parent=parent)
+
+    return new_object
+
 def makePostSlug(title, blog, post=None):
     """ creates a slug for use in a url """
     slug = title.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
-    existing = blog.posts.filter("slug =", slug).get()
+    existing = BlogPost.get_by_key_name(slug, parent=blog)
     if (not post and existing) or ((post and existing) and post.key() != existing.key()):
         # only work on finding a new slug if this isn't the same post that already uses it
         i = 0
         while existing:
             i += 1
             new_slug = slug + "-" + str(i)
-            existing = blog.posts.filter("slug =", new_slug).get()
+            existing = BlogPost.get_by_key_name(new_slug, parent=blog)
             if not existing:
                 slug = new_slug
     return slug
@@ -143,14 +231,14 @@ def makeAuthorSlug(name, blog, author=None):
     """ creates a slug for use in a url """
     slug = name.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
-    existing = blog.authors.filter("slug =", slug).get()
+    existing = BlogAuthor.get_by_key_name(slug, parent=blog)
     if (not author and existing) or ((author and existing) and author.key() != existing.key()):
         # only work on finding a new slug if this isn't the same post that already uses it
         i = 0
         while existing:
             i += 1
             new_slug = slug + "-" + str(i)
-            existing = blog.authors.filter("slug =", new_slug).get()
+            existing = BlogAuthor.get_by_key_name(new_slug, parent=blog)
             if not existing:
                 slug = new_slug
     return slug
