@@ -12,6 +12,15 @@ from gae_blog.formencode.validators import Email, Int, URL, UnicodeString
 
 class AdminController(BaseController):
     """ shows the index page for the admin section, and handles sitewide configuration """
+
+    # override and add in a check to make sure the user accessing this page has admin privileges
+    def __getattribute__(self, name):
+        if name in ["get", "post"] and not self.isUserAdmin():
+            self.renderError(403)
+            def pass_through(*args, **kwargs): pass
+            return pass_through
+        return BaseController.__getattribute__(self, name)
+
     def get(self):
 
         blog = self.getBlog()
