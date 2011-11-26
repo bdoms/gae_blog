@@ -7,7 +7,7 @@
 	<link>http://${root_url}${blog_url}</link>
 	<description>${blog and blog.description or ''}</description>
 	<lastBuildDate>${build_date.strftime("%a, %d %b %Y %H:%M:%S GMT")}</lastBuildDate>
-	<generator>http://github.com/bdoms/gaeblog</generator>
+	<generator>http://github.com/bdoms/gae_blog</generator>
 	<language>en</language>
 
     % if blog:
