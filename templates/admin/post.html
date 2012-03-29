@@ -76,8 +76,8 @@
         <label for="author">Author:</label>
         <select name="author">
             % for author in blog.authors:
-                % if form_data.get("author") == author.slug:
-                    <option value="${author.slug}" selected="selected">${author.name}</option>
+                % if "author" in form_data:
+                    <option value="${author.slug}" ${form_data['author'] == author.slug and 'selected="selected"' or ''}>${author.name}</option>
                 % else:
                     <option value="${author.slug}" ${(post and post.author.slug == author.slug) and 'selected="selected"' or ''}>${author.name}</option>
                 % endif
