@@ -79,7 +79,7 @@
                 % if form_data.get("author") == author.slug:
                     <option value="${author.slug}" selected="selected">${author.name}</option>
                 % else:
-                    <option value="${author.slug}">${author.name}</option>
+                    <option value="${author.slug}" ${(post and post.author.slug == author.slug) and 'selected="selected"' or ''}>${author.name}</option>
                 % endif
             % endfor
         </select>
