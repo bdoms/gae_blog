@@ -206,8 +206,7 @@
     }, false);
 
     // monkey patch the image button in the editor to use our own images
-    var image_names = ${[str(image.name) for image in blog.images]};
-    var blog_url = "${blog_url}";
+    var image_urls = ${[str(image.url) for image in blog.images]};
 
     // save a copy of the original function
     var nicImageButtonOrig = nicImageButton;
@@ -217,15 +216,15 @@
             // add images to a div that's attached to the pane
             var div = new bkElement('div');
             div.id = "editor-images";
-            for (var i=0; i < image_names.length; i++) {
-                var image_name = image_names[i];
+            for (var i=0; i < image_urls.length; i++) {
+                var image_url = image_urls[i];
                 var img = new bkElement('img');
-                img.setAttributes({src: blog_url + "/img/" + image_name + "?s100", alt: image_name + " Preview"});
+                img.setAttributes({src: image_url + "=s100", alt: "Image Preview"});
 
                 // add events to the images that makes clicking them auto-fill the src field
                 img.addEvent("click", function(e) {
                     var src = document.getElementById("src");
-                    src.value = this.src.replace("?s100", "?s${blog.image_preview_size}");
+                    src.value = this.src.replace("=s100", "=s${blog.image_preview_size}");
                     return false;
                 }, false);
                 img.appendTo(div);
