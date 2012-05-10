@@ -28,7 +28,7 @@
                         <td>${post.published}</td>
                     % endif
                     <td>${post.approved_comments.count()}</td>
-                    <td>${post.timestamp}</td>
+                    <td>${post.timestamp.strftime("%Y-%m-%d %H:%M:%S")}</td>
                 </tr>
             % endfor
         </tbody>

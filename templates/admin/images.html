@@ -20,7 +20,7 @@
                         <img src="${image.url}=s100" alt="${image.blob.filename} Preview" />
                     </a></td>
                     <td>${image.blob.filename}</td>
-                    <td>${image.blob.creation}</td>
+                    <td>${image.blob.creation.strftime("%Y-%m-%d %H:%M:%S")}</td>
                     <td>${image.blob.size}</td>
                     <td>
                         <form action="" method="post" class="delete-form">
