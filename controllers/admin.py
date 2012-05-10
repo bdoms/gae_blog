@@ -454,7 +454,7 @@ class ImagesController(AdminController):
             if last_page < 0:
                 last_page = 0
 
-            images = blog_images.fetch(images_per_page, page * images_per_page)
+            images = blog_images.order("-timestamp").fetch(images_per_page, page * images_per_page)
 
         self.renderTemplate('admin/images.html', page=page, last_page=last_page, images=images,
                             page_title="Admin - Images", logout_url=self.logout_url)
