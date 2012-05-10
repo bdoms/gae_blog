@@ -139,6 +139,7 @@ class BlogComment(db.Model):
 class BlogImage(db.Model):
 
     blob = blobstore.BlobReferenceProperty(required=True)
+    timestamp = db.DateTimeProperty(auto_now_add=True) # this information is also on the blob, but having it here makes it possible to order by
 
     @property
     def blog(self):

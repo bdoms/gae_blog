@@ -433,7 +433,31 @@ class ImagesController(AdminController):
     """ handles managing images """
     def get(self):
 
-        self.renderTemplate('admin/images.html', page_title="Admin - Images", logout_url=self.logout_url)
+        blog = self.getBlog()
+
+        page = 0
+        last_page = 0
+        images = []
+
+        if blog:
+            page_str = self.request.get("page")
+            if page_str:
+                try:
+                    page = int(page_str)
+                except:
+                    pass
+
+            blog_images = blog.images
+            images_per_page = blog.posts_per_page
+
+            last_page = (blog_images.count() - 1) / images_per_page
+            if last_page < 0:
+                last_page = 0
+
+            images = blog_images.fetch(images_per_page, page * images_per_page)
+
+        self.renderTemplate('admin/images.html', page=page, last_page=last_page, images=images,
+                            page_title="Admin - Images", logout_url=self.logout_url)
 
     def post(self):
 
