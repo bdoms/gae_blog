@@ -2,7 +2,7 @@
 
 <h3>Posts</h3>
 
-% if posts.count():
+% if posts:
     <table>
         <thead>
             <tr>
@@ -33,6 +33,23 @@
             % endfor
         </tbody>
     </table>
+    % if page or last_page > page:
+        <p class="post-nav">
+            % if last_page > page:
+                <a href="${blog_url}/admin/posts?page=${page + 1}">&lt; Older Posts</a>
+                % if page:
+                    |
+                % endif
+            % endif
+            % if page:
+                % if page - 1 == 0:
+                    <a href="${blog_url}/admin/posts">Newer Posts &gt;</a>
+                % else:
+                    <a href="${blog_url}/admin/posts?page=${page - 1}">Newer Posts &gt;</a>
+                % endif
+            % endif
+        </p>
+    % endif
 % else:
     <p>No posts yet.</p>
 % endif

@@ -247,9 +247,31 @@ class PostsController(AdminController):
     """ handles viewing all posts for this blog """
     def get(self):
 
-        posts = self.getBlog().posts.order('-timestamp')
+        blog = self.getBlog()
 
-        self.renderTemplate('admin/posts.html', posts=posts, page_title="Admin - Posts", logout_url=self.logout_url)
+        page = 0
+        last_page = 0
+        posts = []
+
+        if blog:
+            page_str = self.request.get("page")
+            if page_str:
+                try:
+                    page = int(page_str)
+                except:
+                    pass
+
+            blog_posts = blog.posts.order('-timestamp')
+            posts_per_page = blog.posts_per_page
+
+            last_page = (blog_posts.count() - 1) / posts_per_page
+            if last_page < 0:
+                last_page = 0
+
+            posts = blog_posts.fetch(posts_per_page, page * posts_per_page)
+
+        self.renderTemplate('admin/posts.html', page=page, last_page=last_page, posts=posts,
+                            page_title="Admin - Posts", logout_url=self.logout_url)
 
     def post(self):
 
