@@ -110,7 +110,7 @@ class PostController(BaseController):
                                     subject = blog.title + " - Comment Awaiting Moderation"
                                 else:
                                     subject = "Blog - Comment Awaiting Moderation"
-                                comments_url = "http://" + self.request.headers.get('host', '') + blog.url + "/admin/comments"
+                                comments_url = "http://" + self.request.headers.get('host', '') + self.blog_url + "/admin/comments"
                                 body = "A comment on your post \"" + post.title + "\" is waiting to be approved or denied at " + comments_url
                                 mail.send_mail(sender=blog.admin_email, to=author.name + " <" + author.email + ">", subject=subject, body=body)
 
