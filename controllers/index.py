@@ -1,6 +1,5 @@
 from base import BaseController, renderIfCached
 
-from gae_blog import model
 
 class IndexController(BaseController):
     """ handles request for the main index page of the site """

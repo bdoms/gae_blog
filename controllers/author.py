@@ -1,7 +1,5 @@
 from base import BaseController, renderIfCached
 
-from gae_blog import model
-
 class AuthorController(BaseController):
     """ handles request for an author's page """
 
@@ -10,7 +8,7 @@ class AuthorController(BaseController):
 
         if author_slug:
             blog = self.getBlog()
-            author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+            author = self.model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
 
             if author:
                 page = 0

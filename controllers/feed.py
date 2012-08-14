@@ -2,8 +2,6 @@ from datetime import datetime
 
 from base import BaseController, renderIfCached
 
-from gae_blog import model
-
 
 class FeedController(BaseController):
     """ handles request for news feeds like RSS """

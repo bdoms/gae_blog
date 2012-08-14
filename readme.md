@@ -1,4 +1,4 @@
-Copyright &copy; 2010, [Brendan Doms](http://www.bdoms.com/)  
+Copyright &copy; 2010, [Brendan Doms](http://www.bdoms.com/)
 Licensed under the [MIT license](http://www.opensource.org/licenses/MIT)
 
 
@@ -53,7 +53,7 @@ you just have to decide on a relative URL for each one (`/blog` by default)
 and modify these things:
 
  * add handlers for it to your `app.yaml` as mentioned above
- * add it to the `BLOG_URLS` list in `config.py`
+ * add it to the `BLOG_URLS` list in `blog.py`
  * create each blog with its respective URL from `/blog/admin`
 
 

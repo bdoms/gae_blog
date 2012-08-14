@@ -6,7 +6,6 @@ from google.appengine.ext.webapp import blobstore_handlers
 
 from base import BaseController
 
-from gae_blog import model
 from gae_blog.formencode.validators import Email, Int, URL, UnicodeString
 
 
@@ -26,7 +25,7 @@ class AdminController(BaseController):
         blog = self.getBlog()
 
         if blog:
-            other_blogs = [b for b in model.Blog.all() if b.slug != blog.slug]
+            other_blogs = [b for b in self.model.Blog.all() if b.slug != blog.slug]
             self.renderTemplate('admin/index.html', blog=blog, other_blogs=other_blogs, page_title="Admin", logout_url=self.logout_url)
 
         else:
@@ -77,7 +76,7 @@ class BlogController(AdminController):
         if url:
             if not blog or url != blog.slug:
                 # check to make sure that there isn't already another blog at this URL
-                existing = model.Blog.get_by_key_name(url)
+                existing = self.model.Blog.get_by_key_name(url)
                 if existing: errors["url_exists"] = True
         else:
             errors["url"] = True
@@ -123,7 +122,7 @@ class BlogController(AdminController):
         if blog:
             # if the URL is different, remake the entities since the key name needs to change
             if url != blog.slug:
-                blog = model.makeNew(blog, key_name=url, use_transaction=False) # each blog is its own entity group, so can't run in a transaction
+                blog = self.model.makeNew(blog, key_name=url, use_transaction=False) # each blog is its own entity group, so can't run in a transaction
             blog.title = title
             blog.description = description
             blog.enable_comments = enable_comments
@@ -136,9 +135,9 @@ class BlogController(AdminController):
             blog.blocklist = blocklist
             existed = True
         else:
-            blog = model.Blog(key_name=url, title=title, description=description, enable_comments=enable_comments, moderation_alert=moderation_alert,
-                              contact=contact, admin_email=admin_email, posts_per_page=posts_per_page, image_preview_size=image_preview_size,
-                              template=template, blocklist=blocklist)
+            blog = self.model.Blog(key_name=url, title=title, description=description, enable_comments=enable_comments,
+                                   moderation_alert=moderation_alert, contact=contact, admin_email=admin_email, posts_per_page=posts_per_page,
+                                   image_preview_size=image_preview_size, template=template, blocklist=blocklist)
             existed = False
 
         blog.put()
@@ -167,7 +166,7 @@ class AuthorController(AdminController):
         author = None
         page_title = "Admin - Author"
         if author_slug:
-            author = model.BlogAuthor.get_by_key_name(author_slug, parent=self.getBlog())
+            author = self.model.BlogAuthor.get_by_key_name(author_slug, parent=self.getBlog())
             if not author:
                 return self.renderError(404)
             page_title += " - " + author.name
@@ -181,7 +180,7 @@ class AuthorController(AdminController):
         blog = self.getBlog()
         author = None
         if author_slug:
-            author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+            author = self.model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
             if not author:
                 return self.renderError(404)
 
@@ -207,7 +206,7 @@ class AuthorController(AdminController):
             self.errorsToSession(form_data, errors)
             return self.redirect(self.blog_url + '/admin/author/' + author_slug)
 
-        slug = model.makeAuthorSlug(name, blog, author)
+        slug = self.model.makeAuthorSlug(name, blog, author)
         if author:
             # if the name is different, remake the entity since the key name needs to change
             if name != author.name:
@@ -217,21 +216,21 @@ class AuthorController(AdminController):
                 # update all the posts and comments referencing the author at the same time that a new author object is created
                 def author_transaction(author, slug, blog, ref_lists):
                     # re-create the author object
-                    author = model.makeNew(author, key_name=slug, parent=blog, use_transaction=False) # no nested transactions
+                    author = self.model.makeNew(author, key_name=slug, parent=blog, use_transaction=False) # no nested transactions
                     # update the others to reference the new object
                     for ref_list in ref_lists:
                         new_objects = []
                         for ref_object in ref_list:
                             ref_object.author = author
                             new_objects.append(ref_object)
-                        model.db.put(new_objects)
+                        self.model.db.put(new_objects)
                     return author
-                author = model.db.run_in_transaction(author_transaction, author, slug, blog, [posts, comments])
+                author = self.model.db.run_in_transaction(author_transaction, author, slug, blog, [posts, comments])
             author.name = name
             author.url = url
             author.email = email
         else:
-            author = model.BlogAuthor(key_name=slug, name=name, url=url, email=email, parent=blog)
+            author = self.model.BlogAuthor(key_name=slug, name=name, url=url, email=email, parent=blog)
 
         author.put()
         memcache.flush_all()
@@ -278,11 +277,11 @@ class PostsController(AdminController):
         post_slug = self.request.get("post")
         if post_slug:
             # this is a request to delete this post
-            post = model.BlogPost.get_by_key_name(post_slug, parent=self.getBlog())
+            post = self.model.BlogPost.get_by_key_name(post_slug, parent=self.getBlog())
             if post:
                 # delete all the post's comments first
                 if post.comments.count() > 0:
-                    model.db.delete(list(post.comments))
+                    self.model.db.delete(list(post.comments))
                 # then the post itself
                 post.delete()
                 memcache.flush_all()
@@ -298,7 +297,7 @@ class PostController(AdminController):
         blog = self.getBlog()
         post = None
         if post_slug:
-            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            post = self.model.BlogPost.get_by_key_name(post_slug, parent=blog)
             if not post:
                 return self.renderError(404)
 
@@ -311,7 +310,7 @@ class PostController(AdminController):
         blog = self.getBlog()
         post = None
         if post_slug:
-            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            post = self.model.BlogPost.get_by_key_name(post_slug, parent=blog)
             if not post:
                 return self.renderError(404)
 
@@ -335,13 +334,13 @@ class PostController(AdminController):
             slug = self.validate(UnicodeString(not_empty=True), slug)
             if slug:
                 # check to make sure that there isn't already another post with this slug
-                existing = model.BlogPost.get_by_key_name(slug, parent=blog)
+                existing = self.model.BlogPost.get_by_key_name(slug, parent=blog)
                 if existing and (not post or existing.key() != post.key()):
                     errors["slug_exists"] = True
             else:
                 errors["slug"] = True
 
-        author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+        author = self.model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
         if not author: errors["author"] = True
 
         if body:
@@ -367,19 +366,19 @@ class PostController(AdminController):
             published = False
 
         if slug_choice == "auto":
-            slug = model.makePostSlug(title, blog, post)
+            slug = self.model.makePostSlug(title, blog, post)
 
         if post:
             # if the slug is different, remake the entities since the key name needs to change
             if slug != post.slug:
-                post = model.makeNew(post, key_name=slug, parent=blog)
+                post = self.model.makeNew(post, key_name=slug, parent=blog)
             post.title = title
             post.body = body
             post.timestamp = timestamp
             post.published = published
             post.author = author
         else:
-            post = model.BlogPost(key_name=slug, title=title, body=body, timestamp=timestamp, published=published, author=author, parent=blog)
+            post = self.model.BlogPost(key_name=slug, title=title, body=body, timestamp=timestamp, published=published, author=author, parent=blog)
 
         post.put()
 
@@ -401,7 +400,7 @@ class PreviewController(AdminController):
         blog = self.getBlog()
         post = None
         if post_slug:
-            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            post = self.model.BlogPost.get_by_key_name(post_slug, parent=blog)
             if post:
                 return self.renderTemplate('admin/preview.html', post=post, logout_url=self.logout_url)
 
@@ -421,7 +420,7 @@ class CommentsController(AdminController):
         comment_key = self.request.get("comment")
         if comment_key:
             # delete this individual comment
-            comment = model.BlogComment.get(comment_key)
+            comment = self.model.BlogComment.get(comment_key)
             if comment:
                 block = self.request.get("block")
                 if block:
@@ -485,7 +484,7 @@ class ImagesController(AdminController):
 
         image_key = self.request.get("image")
         if image_key:
-            image = model.BlogImage.get(image_key)
+            image = self.model.BlogImage.get(image_key)
             if image:
                 # delete children first
                 image.blob.delete()
@@ -515,7 +514,7 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
 
         if upload_files:
             blob_info = upload_files[0]
-            name = model.checkImageName(blob_info.filename)
+            name = self.model.checkImageName(blob_info.filename)
             if not name:
                 errors["type"] = True
 
@@ -528,7 +527,7 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
             self.errorsToSession({}, errors)
             return self.redirect(self.blog_url + '/admin/image')
 
-        image = model.BlogImage(parent=self.getBlog(), blob=blob_info)
+        image = self.model.BlogImage(parent=self.getBlog(), blob=blob_info)
         image.put()
 
         self.redirect(self.blog_url + '/admin/images')

@@ -36,6 +36,7 @@ from mako.lookup import TemplateLookup
 
 class BaseController(webapp.RequestHandler):
 
+    model = model
     template_lookup = TemplateLookup(directories=[TEMPLATES_PATH])
 
     def cacheAndRenderTemplate(self, filename, **kwargs):
@@ -74,7 +75,7 @@ class BaseController(webapp.RequestHandler):
         return users.is_current_user_admin()
 
     def getBlog(self):
-        return model.Blog.get_by_key_name(self.blog_slug)
+        return self.model.Blog.get_by_key_name(self.blog_slug)
 
     def getSession(self):
         """ returns dictionary-like object for storing data across requests """
