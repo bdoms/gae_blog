@@ -9,7 +9,9 @@
                 <th>Title (Click to Edit)</th>
                 <th>Author</th>
                 <th>Published (Click to View)</th>
-                <th># of Comments</th>
+                % if blog.enable_comments:
+                    <th># of Comments</th>
+                % endif
                 <th>Timestamp (UTC)</th>
             </tr>
         </thead>
@@ -27,7 +29,9 @@
                     % else:
                         <td>${post.published}</td>
                     % endif
-                    <td>${post.approved_comments.count()}</td>
+                    % if blog.enable_comments:
+                        <td>${post.approved_comments.count()}</td>
+                    % endif
                     <td>${post.timestamp.strftime("%Y-%m-%d %H:%M:%S")}</td>
                 </tr>
             % endfor
