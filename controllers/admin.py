@@ -275,10 +275,10 @@ class PostsController(AdminController):
 
     def post(self):
 
-        post_key = self.request.get("post")
-        if post_key:
+        post_slug = self.request.get("post")
+        if post_slug:
             # this is a request to delete this post
-            post = model.BlogPost.get_by_key_name(post_key, parent=self.getBlog())
+            post = model.BlogPost.get_by_key_name(post_slug, parent=self.getBlog())
             if post:
                 # delete all the post's comments first
                 if post.comments.count() > 0:

@@ -9,7 +9,7 @@
 
 % if post:
     <form id="delete-form" action="${blog_url}/admin/posts" method="post">
-        <input type="hidden" name="post" value="${post.key()}"/>
+        <input type="hidden" name="post" value="${post.slug}"/>
         <p><input type="submit" value="Delete This Post"/></p>
     </form>
 % endif
