@@ -156,7 +156,10 @@ def refresh(model_instance):
     return db.get(model_instance.key())
 
 def stripHTML(string):
-    return re.sub(r'<[^<]*?/?>', '', string)
+    # remove style or script tags first, and that includes anything inside them
+    some_html = re.sub(r'(<style>.*</style>)*(<script>.*</script>)*', '', string)
+    # now remove all other tags, but keep their inner content intact
+    return re.sub(r'<[^<]*?/?>', '', some_html)
 
 # based on formencode.validators.URL.url_re, with slight modifications
 URL_RE = re.compile(r'''
