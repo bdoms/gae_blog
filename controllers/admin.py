@@ -378,7 +378,8 @@ class PostController(AdminController):
             post.published = published
             post.author = author
         else:
-            post = self.model.BlogPost(key_name=slug, title=title, body=body, timestamp=timestamp, published=published, author=author, parent=blog)
+            post = self.model.BlogPost(key_name=slug, title=title, body=body, timestamp=timestamp,
+                                       published=published, author=author.key(), parent=blog)
 
         post.put()
 

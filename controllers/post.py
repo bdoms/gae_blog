@@ -66,7 +66,7 @@ class PostController(BaseController):
                             self.errorsToSession(form_data, errors)
                             return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
-                        comment = self.model.BlogComment(body=body, approved=True, author=author, parent=post)
+                        comment = self.model.BlogComment(body=body, approved=True, author=author.key(), parent=post)
                         memcache.delete(self.request.path + self.request.query_string)
                     else:
                         # validate that the email address is valid

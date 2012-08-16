@@ -84,6 +84,7 @@ class BaseController(webapp.RequestHandler):
         sid = self.request.cookies.get("sid")
         if sid:
             value = memcache.get(sid)
+            if value is None: value = {}
         return value
 
     def saveSession(self, session):

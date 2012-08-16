@@ -2,17 +2,18 @@
 
 import os
 import sys
-PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if PARENT_DIR not in sys.path:
-    sys.path.append(PARENT_DIR)
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
+PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PARENT_DIR not in sys.path:
+    sys.path.append(PARENT_DIR)
+
+from gae_blog.controllers import admin, author, contact, feed, index, post
+
 # url routes
 BLOG_URLS = ['/blog']
-
-from controllers import admin, author, contact, feed, index, post
 
 ROUTES = []
 
