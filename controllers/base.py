@@ -25,10 +25,12 @@ except ImportError:
 import os
 if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
     import sys
+    paths_to_remove = []
     for path in sys.path:
-        if 'mako' in path.lower():
-            sys.path.remove(path)
-            break
+        if 'mako' in path.lower() or 'dist-packages' in path:
+            paths_to_remove.append(path)
+    for path in paths_to_remove:
+        sys.path.remove(path)
     sys.path.append(BLOG_PATH)
 
 from mako.lookup import TemplateLookup
