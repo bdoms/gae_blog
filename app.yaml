@@ -1,30 +1,38 @@
 application: your-app-id
 version: 1
-runtime: python
+runtime: python27
 api_version: 1
+threadsafe: true
+
+
+# If GAE Blog is a submodule then you must have webapp2 enabled in your own app.yaml lke this:
+libraries:
+- name: webapp2
+  version: latest
+
 
 handlers:
 - url: /blog/static
   static_dir: static
 
 - url: /blog/admin.*
-  script: blog.py
+  script: blog.app
   login: admin
 
 - url: /blog.*
-  script: blog.py
+  script: blog.app
 
 # If GAE Blog is a submodule then you need to copy these handlers to your own app.yaml
-# and modify their paths to include where the directory where GAE Blog is located.
+# and modify their paths to include the directory where GAE Blog is located.
 # Assuming it's in a directory called "gae_blog", they should look like this:
 #
 # - url: /blog/static
 #   static_dir: gae_blog/static
 #
 # - url: /blog/admin.*
-#   script: gae_blog/blog.py
+#   script: gae_blog/blog.app
 #   login: admin
 #
 # - url: /blog.*
-#   script: gae_blog/blog.py
+#   script: gae_blog/blog.app
 

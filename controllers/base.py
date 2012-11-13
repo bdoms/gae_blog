@@ -1,8 +1,8 @@
 # the base file and class for all controllers to inherit from
 
 # app engine imports
-from google.appengine.ext import webapp
 from google.appengine.api import users, memcache
+import webapp2
 
 # local
 from gae_blog.config import TEMPLATES_PATH, BLOG_PATH
@@ -34,7 +34,7 @@ if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
 from mako.lookup import TemplateLookup
 
 
-class BaseController(webapp.RequestHandler):
+class BaseController(webapp2.RequestHandler):
 
     model = model
     template_lookup = TemplateLookup(directories=[TEMPLATES_PATH])
@@ -144,4 +144,3 @@ def renderIfCachedNoErrors(action):
         else:
             return renderIfCached(action)(*args, **kwargs)
     return decorate
-

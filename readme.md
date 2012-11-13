@@ -33,9 +33,9 @@ git submodule init
 git submodule update
 ```
 
-Finally, you need to merge the handlers from the example GAE Blog `app.yaml`
-into your project's top level `app.yaml`. After doing that, starting the
-development server and going to `/blog` will be handled by `gae_blog`.
+Finally, you need to merge the libraries and handlers from the example GAE Blog
+`app.yaml` into your project's top level `app.yaml`. After doing that, starting
+the development server and going to `/blog` will be handled by `gae_blog`.
 
 Go to `/blog/admin` to configure your blog, post to it, and moderate comments.
 

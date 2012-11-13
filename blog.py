@@ -3,8 +3,7 @@
 import os
 import sys
 
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import util
+import webapp2
 
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PARENT_DIR not in sys.path:
@@ -35,13 +34,4 @@ for url in BLOG_URLS:
                    (url + '/admin/images', admin.ImagesController)
                 ])
 
-def main():
-    app = application()
-    util.run_wsgi_app(app)
-
-def application():
-    return webapp.WSGIApplication(ROUTES, debug=True)
-
-if __name__ == "__main__":
-    main()
-
+app = webapp2.WSGIApplication(ROUTES, debug=True)
