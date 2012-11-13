@@ -26,7 +26,7 @@ import os
 if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
     import sys
     for path in sys.path:
-        if 'Mako' in path:
+        if 'mako' in path.lower():
             sys.path.remove(path)
             break
     sys.path.append(BLOG_PATH)
