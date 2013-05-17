@@ -1,5 +1,8 @@
 # the base file and class for all controllers to inherit from
 
+# standard library
+import json
+
 # app engine imports
 from google.appengine.api import users, memcache
 import webapp2
@@ -69,6 +72,9 @@ class BaseController(webapp2.RequestHandler):
         self.response.set_status(status_int)
         error_message = "Error " + str(status_int) + ": " + self.response.http_status_message(status_int)
         self.renderTemplate("error.html", error_message=error_message)
+
+    def renderJSON(self, data):
+        self.response.out.write(json.dumps(data))
 
     def getUser(self):
         return users.get_current_user()

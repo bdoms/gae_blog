@@ -478,8 +478,11 @@ class ImagesController(AdminController):
 
             images = blog_images.order("-timestamp").fetch(images_per_page, page * images_per_page)
 
-        self.renderTemplate('admin/images.html', page=page, last_page=last_page, images=images,
-                            page_title="Admin - Images", logout_url=self.logout_url)
+        if self.request.get("json"):
+            self.renderJSON({'page': page, 'last_page': last_page, 'images': [img.url for img in images]})
+        else:
+            self.renderTemplate('admin/images.html', page=page, last_page=last_page, images=images,
+                                page_title="Admin - Images", logout_url=self.logout_url)
 
     def post(self):
 
