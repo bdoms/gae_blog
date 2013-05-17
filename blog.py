@@ -9,7 +9,7 @@ PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PARENT_DIR not in sys.path:
     sys.path.append(PARENT_DIR)
 
-from gae_blog.controllers import admin, author, contact, feed, index, post
+from gae_blog.controllers import admin, author, contact, error, feed, index, post
 
 # url routes
 BLOG_URLS = ['/blog']
@@ -31,7 +31,8 @@ for url in BLOG_URLS:
                    (url + '/admin/preview/(.*)', admin.PreviewController),
                    (url + '/admin/comments', admin.CommentsController),
                    (url + '/admin/image', admin.ImageController),
-                   (url + '/admin/images', admin.ImagesController)
+                   (url + '/admin/images', admin.ImagesController),
+                   (url + '/(.*)', error.ErrorController)
                 ])
 
 app = webapp2.WSGIApplication(ROUTES, debug=True)
