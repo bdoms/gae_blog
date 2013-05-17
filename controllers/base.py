@@ -2,6 +2,7 @@
 
 # standard library
 import json
+import logging
 
 # app engine imports
 from google.appengine.api import users, memcache
@@ -75,6 +76,25 @@ class BaseController(webapp2.RequestHandler):
 
     def renderJSON(self, data):
         self.response.out.write(json.dumps(data))
+
+    # this overrides the base class for handling things like 500 errors
+    def handle_exception(self, exception, debug):
+        # log the error
+        logging.exception(exception)
+
+        # if this is development, then print out a stack trace
+        if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
+            super(BaseController, self).handle_exception(exception, True)
+            return
+
+        # if the exception is a HTTPException, use its error code
+        # otherwise use a generic 500 error code
+        if isinstance(exception, webapp2.HTTPException):
+            status_int = exception.code
+        else:
+            status_int = 500
+
+        self.renderError(status_int)
 
     def getUser(self):
         return users.get_current_user()
