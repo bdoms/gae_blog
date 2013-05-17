@@ -81,7 +81,7 @@ class PostController(BaseController):
 
                         # validate that the url, if present, is valid
                         if url:
-                            url = self.validate(URL(add_http=True), url, "URL")
+                            url = self.validate(URL(add_http=True), url)
                             if not url: errors["url"] = True
 
                         if errors:
