@@ -3,6 +3,7 @@ from google.appengine.api import mail
 from base import BaseController, renderIfCachedNoErrors
 
 from gae_blog.formencode.validators import UnicodeString, Email
+from gae_blog import model
 
 class ContactController(BaseController):
     """ handles request for the contact page of the site """
@@ -52,7 +53,7 @@ class ContactController(BaseController):
                 if not authors:
                     errors["author_slug"] = True
             else:
-                author = self.model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+                author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
                 if not author or not author.email:
                     errors["author_slug"] = True
                 authors = [author]

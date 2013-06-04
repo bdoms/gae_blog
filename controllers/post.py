@@ -3,6 +3,7 @@ from google.appengine.api import mail, memcache
 from base import BaseController, renderIfCachedNoErrors
 
 from gae_blog.formencode.validators import UnicodeString, Email, URL
+from gae_blog import model
 
 class PostController(BaseController):
     """ shows an individual post and saves comments to it """
@@ -12,7 +13,7 @@ class PostController(BaseController):
 
         if post_slug:
             blog = self.getBlog()
-            post = self.model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
             if post and post.published:
                 # only display a post if it's actually published
                 form_data, errors = self.errorsFromSession()
@@ -27,7 +28,7 @@ class PostController(BaseController):
         if blog and blog.enable_comments and ip_address not in blog.blocklist:
             # only allow comment posting if comments are enabled
             if post_slug:
-                post = self.model.BlogPost.get_by_key_name(post_slug, parent=blog)
+                post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
 
@@ -42,13 +43,13 @@ class PostController(BaseController):
                     form_data = {"author-choice": author_choice, "author": author_slug, "name": name, "url": url, "email": email, "body": body}
 
                     # strip out all HTML to be on the safe side
-                    body = self.model.stripHTML(body)
+                    body = model.stripHTML(body)
 
                     # validate
                     body = self.validate(UnicodeString(not_empty=True), body)
                     if body:
                         # turn URL's into links
-                        body = self.model.linkURLs(body)
+                        body = model.linkURLs(body)
                         # finally, replace linebreaks with HTML linebreaks
                         body = body.replace("\r\n", "<br/>")
                     else:
@@ -58,7 +59,7 @@ class PostController(BaseController):
                         # validate that if they want to comment as an author that it's valid and they're approved
                         if not self.isUserAdmin():
                             return self.renderError(403)
-                        author = self.model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+                        author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
                         if not author:
                             errors["author"] = True
 
@@ -66,7 +67,7 @@ class PostController(BaseController):
                             self.errorsToSession(form_data, errors)
                             return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
-                        comment = self.model.BlogComment(body=body, approved=True, author=author.key(), parent=post)
+                        comment = model.BlogComment(body=body, approved=True, author=author.key(), parent=post)
                         memcache.delete(self.request.path + self.request.query_string)
                     else:
                         # validate that the email address is valid
@@ -75,7 +76,7 @@ class PostController(BaseController):
 
                         # validate that the name, if present, is valid
                         if name:
-                            name = self.model.stripHTML(name)
+                            name = model.stripHTML(name)
                             name = self.validate(UnicodeString(max=500), name)
                             if not name: errors["name"] = True
 
@@ -91,7 +92,7 @@ class PostController(BaseController):
                         # look for a previously approved comment from this email address on this blog
                         approved = blog.comments.filter("email =", email).filter("approved =", True)
 
-                        comment = self.model.BlogComment(email=email, body=body, ip_address=ip_address, parent=post)
+                        comment = model.BlogComment(email=email, body=body, ip_address=ip_address, parent=post)
                         if name:
                             comment.name = name
                         if url:
