@@ -422,7 +422,10 @@ class CommentsController(AdminController):
         comment_key = self.request.get("comment")
         if comment_key:
             # delete this individual comment
-            comment = model.BlogComment.get(comment_key)
+            comment = model.db.get(comment_key)
+            # this is hacky but we avoid a potential KindError if the imports don't match
+            if comment.kind() != 'BlogComment':
+                return self.renderError(400)
             if comment:
                 block = self.request.get("block")
                 if block:
@@ -489,7 +492,10 @@ class ImagesController(AdminController):
 
         image_key = self.request.get("image")
         if image_key:
-            image = model.BlogImage.get(image_key)
+            image = model.db.get(image_key)
+            # this is hacky but we avoid a potential KindError if the imports don't match
+            if image.kind() != 'BlogImage':
+                return self.renderError(400)
             if image:
                 # delete children first
                 image.blob.delete()
