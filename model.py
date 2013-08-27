@@ -254,7 +254,7 @@ def checkImageName(name):
     if not name or "." not in name:
         return None
 
-    filename, ext = name.rsplit('.')
+    filename, ext = name.rsplit('.', 1)
     if ext not in ['jpg', 'jpeg', 'gif', 'png']:
         # bad file extension
         return None
