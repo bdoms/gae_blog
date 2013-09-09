@@ -31,8 +31,13 @@ class ContactController(BaseController):
                 email = self.request.get("email")
                 subject = self.request.get("subject", "")
                 body = self.request.get("body")
+                honeypot = self.request.get("required")
             except UnicodeDecodeError:
                 return seld.renderError(400)
+
+            if honeypot:
+                # act perfectly normal so the bot thinks the request worked
+                return self.redirect(self.blog_url + '/contact/sent')
 
             errors = {}
             form_data = {"author": author_slug, "email": email, "subject": subject, "body": body}

@@ -62,6 +62,12 @@
                     % endif
                 </p>
 
+                <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
+                    <label for="required">Required:</label>
+                    <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
+                    <span class="help">(required for verification)</span>
+                </p>
+
                 <textarea class="contact-body" name="body">${form_data.get('body', '')}</textarea>
 
                 <p class="contact-submit"><input type="submit" value="Send"/></p>

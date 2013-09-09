@@ -168,6 +168,11 @@ ${renderPost(post)}
                         <span class="error">please enter a valid email</span>
                     % endif
                 </p>
+                <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
+                    <label for="required">Required:</label>
+                    <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
+                    <span class="help">(required for verification)</span>
+                </p>
             </div>
             <p>
                 <label for="body">Comment:</label>

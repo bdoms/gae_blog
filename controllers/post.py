@@ -39,8 +39,13 @@ class PostController(BaseController):
                         url = self.request.get("url")
                         email = self.request.get("email")
                         body = self.request.get("body", "")
+                        honeypot = self.request.get("required")
                     except UnicodeDecodeError:
                         return seld.renderError(400)
+
+                    if honeypot:
+                        # act perfectly normal so the bot thinks the request worked
+                        return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
                     errors = {}
                     form_data = {"author-choice": author_choice, "author": author_slug, "name": name, "url": url, "email": email, "body": body}
