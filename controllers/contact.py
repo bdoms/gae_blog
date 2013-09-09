@@ -55,11 +55,13 @@ class ContactController(BaseController):
                 authors = [author for author in blog.authors if author.email]
                 if not authors:
                     errors["author_slug"] = True
-            else:
+            elif author_slug:
                 author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
                 if not author or not author.email:
                     errors["author_slug"] = True
                 authors = [author]
+            else:
+                errors["author_slug"] = True
 
             if errors:
                 self.errorsToSession(form_data, errors)
