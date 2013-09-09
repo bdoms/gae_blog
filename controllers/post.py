@@ -32,12 +32,15 @@ class PostController(BaseController):
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
 
-                    author_choice = self.request.get("author-choice")
-                    author_slug = self.request.get("author")
-                    name = self.request.get("name")
-                    url = self.request.get("url")
-                    email = self.request.get("email")
-                    body = self.request.get("body", "")
+                    try:
+                        author_choice = self.request.get("author-choice")
+                        author_slug = self.request.get("author")
+                        name = self.request.get("name")
+                        url = self.request.get("url")
+                        email = self.request.get("email")
+                        body = self.request.get("body", "")
+                    except UnicodeDecodeError:
+                        return seld.renderError(400)
 
                     errors = {}
                     form_data = {"author-choice": author_choice, "author": author_slug, "name": name, "url": url, "email": email, "body": body}

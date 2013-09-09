@@ -26,10 +26,13 @@ class ContactController(BaseController):
 
         blog = self.getBlog()
         if blog and blog.contact:
-            author_slug = self.request.get("author")
-            email = self.request.get("email")
-            subject = self.request.get("subject", "")
-            body = self.request.get("body")
+            try:
+                author_slug = self.request.get("author")
+                email = self.request.get("email")
+                subject = self.request.get("subject", "")
+                body = self.request.get("body")
+            except UnicodeDecodeError:
+                return seld.renderError(400)
 
             errors = {}
             form_data = {"author": author_slug, "email": email, "subject": subject, "body": body}
