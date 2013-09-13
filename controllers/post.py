@@ -41,7 +41,7 @@ class PostController(BaseController):
                         body = self.request.get("body", "")
                         honeypot = self.request.get("required")
                     except UnicodeDecodeError:
-                        return seld.renderError(400)
+                        return self.renderError(400)
 
                     if honeypot:
                         # act perfectly normal so the bot thinks the request worked
