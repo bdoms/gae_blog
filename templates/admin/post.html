@@ -227,7 +227,8 @@
 
     // clicking on pagination fires an ajax request to re-populate images
     var imagePage = function(e) {
-        var page = this.href.split("-")[1];
+        var hash = this.href.split("#")[1];
+        var page = hash.split("-")[1];
         getImages(page);
 
         if (e.stopPropagation) e.stopPropagation();
