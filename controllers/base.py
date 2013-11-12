@@ -74,7 +74,8 @@ class BaseController(webapp2.RequestHandler):
         self.renderTemplate("error.html", error_message=error_message)
 
     def renderJSON(self, data):
-        self.response.out.write(json.dumps(data))
+        self.response.headers['Content-Type'] = "application/json"
+        self.response.out.write(json.dumps(data, ensure_ascii=False, encoding='utf-8'))
 
     # this overrides the base class for handling things like 500 errors
     def handle_exception(self, exception, debug):
