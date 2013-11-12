@@ -154,7 +154,7 @@ ${renderPost(post)}
                 </p>
                 <p>
                     <label for="url">URL:</label>
-                    <input type="text" name="url" value="${form_data.get('url', '')}"/>
+                    <input type="url" name="url" value="${form_data.get('url', '')}"/>
                     <span class="help">(optional, your name links to this address if included)</span>
                     % if "url" in errors:
                         <span class="error">please enter a valid URL</span>
@@ -162,7 +162,7 @@ ${renderPost(post)}
                 </p>
                 <p>
                     <label for="email">Email:</label>
-                    <input type="text" name="email" value="${form_data.get('email', '')}"/>
+                    <input type="email" name="email" value="${form_data.get('email', '')}"/>
                     <span class="help">(required for verification, first comment is moderated)</span>
                     % if "email" in errors:
                         <span class="error">please enter a valid email</span>
