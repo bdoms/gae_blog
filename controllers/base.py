@@ -23,6 +23,13 @@ except ImportError:
             return action(*args, **kwargs)
         return decorate
 
+# see if asset management is available
+try:
+    from gae_deploy import static
+except ImportError:
+    def static(url):
+        return url
+
 # we have to force the use of the local Mako folder rather than the system one
 # this is a problem with how Mako does imports (assumes an installed package)
 # also, this would never happen on production as Google blocks these things
@@ -63,6 +70,7 @@ class BaseController(webapp2.RequestHandler):
         kwargs["user"] = user
         if user:
             kwargs["user_is_admin"] = self.isUserAdmin()
+        kwargs["static"] = static
         return template.render_unicode(**kwargs)
 
     def renderTemplate(self, filename, **kwargs):

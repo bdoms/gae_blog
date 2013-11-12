@@ -11,8 +11,8 @@
 
 ${next.body()}
 
-<script src="${blog_url}/static/blog.js"></script>
+<script src="${static(blog_url + '/static/blog.js')}"></script>
 
 % if user_is_admin:
-    <script src="${blog_url}/static/blog-admin.js"></script>
+    <script src="${static(blog_url + '/static/blog-admin.js')}"></script>
 % endif
