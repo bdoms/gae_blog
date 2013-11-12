@@ -86,7 +86,8 @@ class PostController(BaseController):
                         if name:
                             name = model.stripHTML(name)
                             name = self.validate(UnicodeString(max=500), name)
-                            if not name: errors["name"] = True
+                            if not name or "\n" in name or "\r" in name:
+                                errors["name"] = True
 
                         # validate that the url, if present, is valid
                         if url:

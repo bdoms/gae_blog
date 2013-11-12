@@ -47,7 +47,8 @@ class ContactController(BaseController):
             if not email: errors["email"] = True
 
             subject = self.validate(UnicodeString(), subject)
-            if subject is None: errors["subject"] = True
+            if subject is None or "\n" in subject or "\r" in subject:
+                errors["subject"] = True
             if blog.title:
                 subject = blog.title + " - Contact Form Message: " + subject
             else:
