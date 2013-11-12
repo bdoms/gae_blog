@@ -1,6 +1,7 @@
 from google.appengine.api import mail
 
 from base import BaseController, renderIfCachedNoErrors
+from verify import generateToken
 
 from gae_blog.formencode.validators import UnicodeString, Email
 from gae_blog import model
@@ -32,12 +33,20 @@ class ContactController(BaseController):
                 subject = self.request.get("subject", "")
                 body = self.request.get("body")
                 honeypot = self.request.get("required")
+                token = self.request.get("token")
             except UnicodeDecodeError:
                 return self.renderError(400)
 
             if honeypot:
                 # act perfectly normal so the bot thinks the request worked
                 return self.redirect(self.blog_url + '/contact/sent')
+
+            challenge = generateToken(self.request.url)
+            if token != challenge:
+                challenge = generateToken(self.request.url, again=True)
+                if token != challenge:
+                    # act perfectly normal so the bot thinks the request worked
+                    return self.redirect(self.blog_url + '/contact/sent')
 
             errors = {}
             form_data = {"author": author_slug, "email": email, "subject": subject, "body": body}

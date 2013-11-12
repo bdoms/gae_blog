@@ -26,12 +26,7 @@ for (var i=0; i < forms.length; i++) {
         forms[i].addEventListener("submit", function(e) {
             var response = confirm("Are you sure you want to permanently delete this comment?");
             if (!response) {
-                if (e.stopPropagation) e.stopPropagation();
-                else e.cancelBubble = true;
-
-                if (e.preventDefault) e.preventDefault();
-                else e.returnValue = false;
-
+                stopEvent(e);
                 return false;
             }
         }, false);
@@ -45,12 +40,7 @@ for (var i=0; i < forms.length; i++) {
         forms[i].addEventListener("submit", function(e) {
             var response = confirm("Are you sure you want to permanently delete this image?\n\nAny references to it will be broken.");
             if (!response) {
-                if (e.stopPropagation) e.stopPropagation();
-                else e.cancelBubble = true;
-
-                if (e.preventDefault) e.preventDefault();
-                else e.returnValue = false;
-
+                stopEvent(e);
                 return false;
             }
         }, false);
@@ -64,12 +54,7 @@ if (delete_form) {
     delete_form.addEventListener("submit", function(e) {
         var response = confirm("Are you sure you want to permanently delete this post and all its comments?\n\nAny links to it will be broken.");
         if (!response) {
-            if (e.stopPropagation) e.stopPropagation();
-            else e.cancelBubble = true;
-
-            if (e.preventDefault) e.preventDefault();
-            else e.returnValue = false;
-
+            stopEvent(e);
             return false;
         }
     }, false);
