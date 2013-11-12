@@ -47,7 +47,7 @@ class BaseController(webapp2.RequestHandler):
     def cacheAndRenderTemplate(self, filename, **kwargs):
         def renderHTML():
             return self.compileTemplate(filename, **kwargs)
-        if "errors" in kwargs:
+        if "errors" in kwargs or self.isUserAdmin():
             html = renderHTML()
         else:
             html = cacheHTML(self, renderHTML, **kwargs)
@@ -167,7 +167,7 @@ def renderIfCachedNoErrors(action):
     def decorate(*args,  **kwargs):
         controller = args[0]
         session = controller.getSession()
-        if "errors" in session:
+        if "errors" in session or controller.isUserAdmin():
             return action(*args, **kwargs)
         else:
             return renderIfCached(action)(*args, **kwargs)
