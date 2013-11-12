@@ -54,24 +54,3 @@
 % endif
 
 <h3><a href="${blog_url}/admin/image">Upload a New Image</a></h3>
-
-<script type="text/javascript">
-    var els = document.getElementsByTagName("form");
-    for (var i=0; i < els.length; i++) {
-        if (els[i].className == "delete-form") {
-            els[i].addEventListener("submit", function(e) {
-                var response = confirm("Are you sure you want to permanently delete this image?\n\nAny references to it will be broken.");
-                if (!response) {
-                    if (e.stopPropagation) e.stopPropagation();
-                    else e.cancelBubble = true;
-
-                    if (e.preventDefault) e.preventDefault();
-                    else e.returnValue = false;
-
-                    return false;
-                }
-            }, false);
-        }
-    }
-</script>
-

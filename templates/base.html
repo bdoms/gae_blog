@@ -9,42 +9,10 @@
 %>
 <%inherit file="${determine_inherit(template, context)}"/>
 
-<script type="text/javascript">
-    var DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    var converted = [];
-
-    var convert_timestamp = function(el) {
-
-        for (var i=0; i < converted.length; i++) {
-            if (converted[i] == el) {
-                return;
-            }
-        }
-        converted.push(el);
-
-        var seconds = el.getElementsByTagName("input")[0].value;
-        ## convert from seconds to ms
-        var utc_ms = parseInt(seconds) * 1000;
-        var local = new Date(utc_ms);
-        var day_and_month = DAYS[local.getDay()] + ", " + MONTHS[local.getMonth()];
-        var date_string = day_and_month + " " + local.getDate().toString() + ", " + local.getFullYear().toString();
-
-        var hours = local.getHours();
-        var ampm = "AM";
-        if (hours > 11) {ampm = "PM";}
-        if (hours > 12) {hours = hours - 12;}
-        if (hours == 0) {hours = 12;}
-
-        var minutes = local.getMinutes().toString();
-        if (minutes.length < 2) {minutes = "0" + minutes;}
-
-        var time_string = hours.toString() + ":" + minutes + " " + ampm;
-
-        el.innerHTML = date_string + " at " + time_string;
-    };
-</script>
-
 ${next.body()}
 
+<script src="${blog_url}/static/blog.js"></script>
+
+% if user_is_admin:
+    <script src="${blog_url}/static/blog-admin.js"></script>
+% endif
