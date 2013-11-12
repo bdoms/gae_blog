@@ -4,3 +4,5 @@
 # exclude the index file
 index.yaml
 
+# exclude minimized files
+*.min.js
