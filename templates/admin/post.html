@@ -174,8 +174,9 @@
     <p><input type="submit" value="Save and Stop Working" /></p>
 </form>
 
-<script src="${blog_url}/static/nicEdit-0.9.min.js"></script>
+<script src="${static(blog_url + '/static/nicEdit-0.9.min.js')}"></script>
 <script>
     BLOG_URL = "${blog_url}";
+    BLOG_ICON_URL = "${static(blog_url + '/static/nicEditorIcons-0.9.gif')}";
     BLOG_IMAGE_PREVIEW_SIZE = ${blog.image_preview_size};
 </script>

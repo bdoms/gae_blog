@@ -185,6 +185,6 @@ if ("nicEditor" in window) {
     nicImageButton = blogImageButton;
 
     bkLib.onDomLoaded(function() {
-        var editor = new nicEditor({iconsPath: BLOG_URL + '/static/nicEditorIcons-0.9.gif', fullPanel: true}).panelInstance('post-body');
+        var editor = new nicEditor({iconsPath: BLOG_ICON_URL, fullPanel: true}).panelInstance('post-body');
     });
 }
