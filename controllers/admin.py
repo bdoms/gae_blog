@@ -512,12 +512,15 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
 
     def get(self):
 
-        upload_url = blobstore.create_upload_url(self.blog_url + '/admin/image')
-        page_title = "Admin - Upload an Image"
+        if self.request.get("json"):
+            upload_url = blobstore.create_upload_url(self.blog_url + '/admin/image')
+            self.renderJSON({'url': upload_url})
+        else:
+            page_title = "Admin - Upload an Image"
 
-        form_data, errors = self.errorsFromSession()
+            form_data, errors = self.errorsFromSession()
 
-        self.renderTemplate('admin/image.html', upload_url=upload_url, errors=errors, page_title=page_title, logout_url=self.logout_url)
+            self.renderTemplate('admin/image.html', errors=errors, page_title=page_title, logout_url=self.logout_url)
 
     def post(self):
         upload_files = self.get_uploads('data')  # 'data' is file upload field in the form

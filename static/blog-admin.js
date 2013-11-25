@@ -47,6 +47,26 @@ for (var i=0; i < forms.length; i++) {
     }
 }
 
+/* image page */
+var image_upload_form = document.getElementById("image-upload-form");
+if (image_upload_form) {
+    image_upload_form.addEventListener("submit", function(e) {
+        if (image_upload_form.action.indexOf(BLOG_URL + '/admin/image') != -1) {
+            var req = new XMLHttpRequest;
+            req.open("GET", BLOG_URL + '/admin/image?json=1', true);
+            req.onreadystatechange = function() {
+                if (req.readyState == 4 && req.status == 200) {
+                    var response = JSON.parse(req.responseText);
+                    image_upload_form.action = response.url;
+                    image_upload_form.submit();
+                }
+            };
+            req.send(null);
+            stopEvent(e);
+            return false;
+        }
+    }, false);
+}
 
 /* edit post page */
 var delete_form = document.getElementById("delete-form");

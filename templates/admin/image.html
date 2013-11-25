@@ -2,7 +2,7 @@
 
 <h3>Upload an Image</h3>
 
-<form action="${upload_url}" enctype="multipart/form-data" method="post">
+<form action="" enctype="multipart/form-data" method="post" id="image-upload-form">
     <p>
         <label for="data">File:</label>
         <input type="file" name="data" />
@@ -16,3 +16,6 @@
     <p><input type="submit" value="Upload" /></p>
 </form>
 
+<script>
+    BLOG_URL = "${blog_url}";
+</script>
