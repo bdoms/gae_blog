@@ -78,6 +78,8 @@ if (published_box) {
 // check to make sure this only runs if the editor code exists
 if ("nicEditor" in window) {
     var div_id = "editor-images";
+    var blog_images = [];
+    var last_page = 0;
 
     // clicking images makes them auto-fill the src field
     var selectImage = function(e) {
@@ -100,7 +102,7 @@ if ("nicEditor" in window) {
     // clicking on pagination fires an ajax request to re-populate images
     var imagePage = function(e) {
         var hash = this.href.split("#")[1];
-        var page = hash.split("-")[1];
+        var page = parseInt(hash.split("-")[1], 10);
         getImages(page);
 
         if (e.stopPropagation) e.stopPropagation();
@@ -112,44 +114,55 @@ if ("nicEditor" in window) {
         return false;
     };
 
+    var populateImages = function(page) {
+        var image_urls = blog_images[page];
+        var div = document.getElementById(div_id);
+        div.innerHTML = '';
+        for (var i=0; i < image_urls.length; i++) {
+            var image_url = image_urls[i];
+            var img = new bkElement('img');
+            img.setAttributes({src: image_url + "=s100", alt: "Image Preview"});
+            img.addEvent("click", selectImage, false);
+            img.appendTo(div);
+        }
+        if (last_page > 0) {
+            var p = new bkElement('p');
+            if (page > 0) {
+                var a = new bkElement('a');
+                a.setAttributes({href: '#page-' + (page - 1).toString()});
+                a.innerHTML = '&lt; Newer Images';
+                a.addEvent("click", imagePage, false);
+                a.appendTo(p);
+            }
+            if (page < last_page) {
+                var a = new bkElement('a');
+                a.setAttributes({href: '#page-' + (page + 1).toString()});
+                a.innerHTML = 'Older Images &gt;';
+                a.addEvent("click", imagePage, false);
+                a.appendTo(p);
+            }
+            p.appendTo(div);
+        }
+    };
+
     // function to get images one batch at a time via ajax
     var getImages = function(page) {
-        var req = new XMLHttpRequest;
-        req.open("GET", BLOG_URL + '/admin/images?json=1&page=' + page.toString(), true);
-        req.onreadystatechange = function() {
-            if (req.readyState == 4 && req.status == 200) {
-                var response = JSON.parse(req.responseText);
-                var div = document.getElementById(div_id);
-                div.innerHTML = '';
-                var image_urls = response.images;
-                for (var i=0; i < image_urls.length; i++) {
-                    var image_url = image_urls[i];
-                    var img = new bkElement('img');
-                    img.setAttributes({src: image_url + "=s100", alt: "Image Preview"});
-                    img.addEvent("click", selectImage, false);
-                    img.appendTo(div);
+        if (blog_images.length > page) {
+            populateImages(page);
+        }
+        else {
+            var req = new XMLHttpRequest;
+            req.open("GET", BLOG_URL + '/admin/images?json=1&page=' + page.toString(), true);
+            req.onreadystatechange = function() {
+                if (req.readyState == 4 && req.status == 200) {
+                    var response = JSON.parse(req.responseText);
+                    last_page = response.last_page;
+                    blog_images.push(response.images);
+                    populateImages(response.page);
                 }
-                if (response.last_page > 0) {
-                    var p = new bkElement('p');
-                    if (response.page > 0) {
-                        var a = new bkElement('a');
-                        a.setAttributes({href: '#page-' + (response.page - 1).toString()});
-                        a.innerHTML = '&lt; Newer Images';
-                        a.addEvent("click", imagePage, false);
-                        a.appendTo(p);
-                    }
-                    if (response.page < response.last_page) {
-                        var a = new bkElement('a');
-                        a.setAttributes({href: '#page-' + (response.page + 1).toString()});
-                        a.innerHTML = 'Older Images &gt;';
-                        a.addEvent("click", imagePage, false);
-                        a.appendTo(p);
-                    }
-                    p.appendTo(div);
-                }
-            }
-        };
-        req.send(null);
+            };
+            req.send(null);
+        }
     };
 
     // save a copy of the original function
