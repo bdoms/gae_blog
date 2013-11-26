@@ -1,4 +1,5 @@
 from google.appengine.api import mail
+from google.appengine.ext import deferred
 
 from base import BaseController, renderIfCachedNoErrors
 from verify import generateToken
@@ -84,7 +85,10 @@ class ContactController(BaseController):
 
             if blog.admin_email:
                 for author in authors:
-                    mail.send_mail(sender=blog.admin_email, reply_to=email, to=author.name + " <" + author.email + ">", subject=subject, body=body)
+                    deferred.defer(sendContactEmail, blog.admin_email, author.name + " <" + author.email + ">", subject, body, email, _queue=blog.mail_queue)
 
         return self.redirect(self.blog_url + '/contact/sent')
 
+
+def sendContactEmail(sender, to, subject, body, reply_to):
+    mail.send_mail(sender=sender, to=to, subject=subject, body=body, reply_to=reply_to)

@@ -4,6 +4,9 @@ runtime: python27
 api_version: 1
 threadsafe: true
 
+# This is required for sending emails.
+builtins:
+- deferred: on
 
 # If GAE Blog is a submodule then you must have webapp2 enabled in your own app.yaml lke this:
 libraries:

@@ -19,6 +19,7 @@ class Blog(db.Model):
     posts_per_page = db.IntegerProperty(default=10)
     image_preview_size = db.IntegerProperty(default=600)
     template = db.StringProperty()
+    mail_queue = db.StringProperty(default="mail")
     blocklist = db.ListProperty(str)
 
     @property

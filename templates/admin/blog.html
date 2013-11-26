@@ -130,6 +130,18 @@
         % endif
     </p>
     <p>
+        <label for="mail_queue">Mail Queue:</label>
+        % if "mail_queue" in form_data:
+            <input type="text" name="mail_queue" value="${form_data['mail_queue']}" />
+        % else:
+            <input type="text" name="mail_queue" value="${blog and blog.mail_queue or 'mail'}" />
+        % endif
+        <span class="help">(task queue to use for sending email)</span>
+        % if "mail_queue" in errors:
+            <span class="error">please enter a valid queue</span>
+        % endif
+    </p>
+    <p>
         <label for="blocklist">IP Address Blocklist:</label>
         <span class="help">(newline separated)</span>
     </p>

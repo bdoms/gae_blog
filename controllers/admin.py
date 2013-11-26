@@ -60,11 +60,13 @@ class BlogController(AdminController):
         admin_email = self.request.get("admin_email", "")
         posts_per_page = self.request.get("posts_per_page", None)
         image_preview_size = self.request.get("image_preview_size", None)
+        mail_queue = self.request.get("mail_queue", "")
 
         errors = {}
         form_data = {"title": title, "description": description, "url": url, "template": template, "blocklist": blocklist,
                      "enable_comments": enable_comments, "moderation_alert": moderation_alert, "contact": contact,
-                     "admin_email": admin_email, "posts_per_page": posts_per_page, "image_preview_size": image_preview_size}
+                     "admin_email": admin_email, "posts_per_page": posts_per_page, "image_preview_size": image_preview_size,
+                     "mail_queue": mail_queue}
 
         title = self.validate(UnicodeString(not_empty=True), title)
         if not title: errors["title"] = True
@@ -95,6 +97,10 @@ class BlogController(AdminController):
         if admin_email:
             admin_email = self.validate(Email(), admin_email)
             if not admin_email: errors["admin_email"] = True
+
+        if mail_queue:
+            mail_queue = self.validate(UnicodeString(), mail_queue)
+            if not mail_queue: errors["mail_queue"] = True
 
         if errors:
             self.errorsToSession(form_data, errors)
@@ -133,12 +139,13 @@ class BlogController(AdminController):
             blog.posts_per_page = posts_per_page
             blog.image_preview_size = image_preview_size
             blog.template = template
+            blog.mail_queue = mail_queue
             blog.blocklist = blocklist
             existed = True
         else:
             blog = model.Blog(key_name=url, title=title, description=description, enable_comments=enable_comments,
                               moderation_alert=moderation_alert, contact=contact, admin_email=admin_email, posts_per_page=posts_per_page,
-                              image_preview_size=image_preview_size, template=template, blocklist=blocklist)
+                              image_preview_size=image_preview_size, template=template, mail_queue=mail_queue, blocklist=blocklist)
             existed = False
 
         blog.put()
