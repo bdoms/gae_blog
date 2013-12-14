@@ -33,6 +33,7 @@ for url in BLOG_URLS:
                    (url + '/admin/comments', admin.CommentsController),
                    (url + '/admin/image', admin.ImageController),
                    (url + '/admin/images', admin.ImagesController),
+                   (url + '/admin/migrate', admin.MigrateController),
                    (url + '/(.*)', error.ErrorController)
                 ])
 

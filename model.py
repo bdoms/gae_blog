@@ -4,7 +4,6 @@ from time import mktime
 from datetime import datetime
 
 from google.appengine.ext import db, blobstore
-from google.appengine.api import images
 
 
 # standard model objects
@@ -141,14 +140,11 @@ class BlogImage(db.Model):
 
     blob = blobstore.BlobReferenceProperty(required=True)
     timestamp = db.DateTimeProperty(auto_now_add=True) # this information is also on the blob, but having it here makes it possible to order by
+    url = db.StringProperty(default="")
 
     @property
     def blog(self):
         return self.parent()
-
-    @property
-    def url(self):
-        return images.get_serving_url(self.blob.key())
 
 
 # misc functions

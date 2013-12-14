@@ -1,6 +1,24 @@
 /* JS that only runs within the blog admin interface */
 
 
+/* configuration page */
+var handleAdvancedLink = function(e) {
+    var advanced_form = document.getElementById("advanced-section");
+    if (advanced_form.style.display == "none") {
+        advanced_form.style.display = "block";
+    }
+    else {
+        advanced_form.style.display = "none";
+    }
+    stopEvent(e);
+    return false;
+};
+
+var advanced_link = document.getElementById("advanced-link");
+if (advanced_link) {
+    advanced_link.addEventListener("click", handleAdvancedLink, false);
+}
+
 /* view post page */
 var author_radio = document.getElementById("author-choice-author");
 if (author_radio) {

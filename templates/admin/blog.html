@@ -166,3 +166,12 @@ ${address}
     % endif
 </form>
 
+% if blog:
+    <p><a href="#" id="advanced-link">Advanced Functions</a></p>
+    <div id="advanced-section" style="display: none;">
+        <p>WARNING! Proceed with caution.</p>
+        <form action="${blog_url}/admin/migrate" method="post">
+            <input type="submit" value="Run Migrations" />
+        </form>
+    </div>
+% endif

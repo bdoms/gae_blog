@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from google.appengine.api import users, memcache
+from google.appengine.api import users, memcache, images
 from google.appengine.ext import blobstore
 from google.appengine.ext.webapp import blobstore_handlers
 
@@ -549,7 +549,28 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
             return self.redirect(self.blog_url + '/admin/image')
 
         image = model.BlogImage(parent=self.getBlog(), blob=blob_info)
+        image.url = images.get_serving_url(blob_info)
         image.put()
 
         self.redirect(self.blog_url + '/admin/images')
 
+
+class MigrateController(AdminController):
+    """ handles running any migrations """
+
+    def get(self):
+        return self.renderError(405)
+
+    def post(self):
+        blog = self.getBlog()
+
+        # migrate any images that don't have a url
+        new_images = []
+        for image in blog.images:
+            if not image.url:
+                image.url = images.get_serving_url(image.blob)
+                new_images.append(image)
+        if new_images:
+            model.db.put(new_images)
+
+        self.redirect(self.blog_url + '/admin')
