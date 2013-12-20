@@ -6,7 +6,7 @@ var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "A
 var converted = [];
 var convert_timestamp = function(el) {
     for (var i=0; i < converted.length; i++) {
-        if (converted[i] == el) {
+        if (converted[i] === el) {
             return;
         }
     }
@@ -23,7 +23,7 @@ var convert_timestamp = function(el) {
     var ampm = "AM";
     if (hours > 11) {ampm = "PM";}
     if (hours > 12) {hours -= 12;}
-    if (hours == 0) {hours = 12;}
+    if (hours === 0) {hours = 12;}
 
     var minutes = local.getMinutes().toString();
     if (minutes.length < 2) {minutes = "0" + minutes;}
@@ -41,12 +41,33 @@ var stopEvent = function(e) {
     else {e.returnValue = false;}
 };
 
+var toggle = function(el) {
+    if (el.style.display === "none") {
+        el.style.display = "block";
+    }
+    else {
+        el.style.display = "none";
+    }
+};
+
+var getRequest = function(url, callback) {
+    var req = new XMLHttpRequest;
+    req.open("GET", url, true);
+    req.onreadystatechange = function() {
+        if (req.readyState === 4 && req.status === 200) {
+            callback(JSON.parse(req.responseText));
+        }
+    };
+    req.send(null);
+    return req;
+};
 
 /* post page */
 var paragraphs = document.getElementsByTagName("p");
 for (var i=0; i < paragraphs.length; i++) {
-    if (paragraphs[i].className == "post-timestamp" || paragraphs[i].className == "comment-timestamp") {
-        convert_timestamp(paragraphs[i]);
+    var p = paragraphs[i];
+    if (p.className === "post-timestamp" || p.className === "comment-timestamp") {
+        convert_timestamp(p);
     }
 }
 
@@ -58,21 +79,17 @@ var handlePublicSubmit = function(e) {
     }
     else if (!form.getAttribute("data-locked")) {
         form.setAttribute("data-locked", true);
-        var req = new XMLHttpRequest;
-        req.open("GET", BLOG_URL + '/verify?url=' + form.action, true);
-        req.onreadystatechange = function() {
-            if (req.readyState == 4 && req.status == 200) {
-                var response = JSON.parse(req.responseText);
-                var input = document.createElement("input");
-                input.name = "token";
-                input.id = "submit-token";
-                input.type = "hidden";
-                input.value = response.token;
-                form.appendChild(input);
-                form.submit();
-            }
+        var url = BLOG_URL + '/verify?url=' + form.action;
+        var submitWithToken = function(response) {
+            var input = document.createElement("input");
+            input.name = "token";
+            input.id = "submit-token";
+            input.type = "hidden";
+            input.value = response.token;
+            form.appendChild(input);
+            form.submit();
         };
-        req.send(null);
+        getRequest(url, submitWithToken);
     }
     stopEvent(e);
     return false;
@@ -84,12 +101,7 @@ if (comment_form) {
 }
 
 var handleCommentLink = function(e) {
-    if (comment_form.style.display == "none") {
-        comment_form.style.display = "block";
-    }
-    else {
-        comment_form.style.display = "none";
-    }
+    toggle(comment_form);
     stopEvent(e);
     return false;
 };

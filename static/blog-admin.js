@@ -1,15 +1,20 @@
 /* JS that only runs within the blog admin interface */
 
+var buildDeleteForm = function(form, question) {
+    var handleDeleteForm = function(e) {
+        var response = confirm(question);
+        if (!response) {
+            stopEvent(e);
+            return false;
+        }
+    };
+    form.addEventListener("submit", handleDeleteForm, false);
+};
 
 /* configuration page */
 var handleAdvancedLink = function(e) {
     var advanced_form = document.getElementById("advanced-section");
-    if (advanced_form.style.display == "none") {
-        advanced_form.style.display = "block";
-    }
-    else {
-        advanced_form.style.display = "none";
-    }
+    toggle(advanced_form);
     stopEvent(e);
     return false;
 };
@@ -20,10 +25,10 @@ if (advanced_link) {
 }
 
 /* view post page */
+var author_info = document.getElementById("comment-author-info");
 var author_radio = document.getElementById("author-choice-author");
 if (author_radio) {
     author_radio.addEventListener("click", function(e) {
-        var author_info = document.getElementById("comment-author-info");
         author_info.style.display = "none";
         return false;
     }, false);
@@ -32,36 +37,16 @@ if (author_radio) {
 var custom_radio = document.getElementById("author-choice-custom");
 if (custom_radio) {
     custom_radio.addEventListener("click", function(e) {
-        var author_info = document.getElementById("comment-author-info");
         author_info.style.display = "block";
         return false;
     }, false);
 }
 
+/* images page */
 var forms = document.getElementsByTagName("form");
 for (var i=0; i < forms.length; i++) {
-    if (forms[i].className == "comment-delete") {
-        forms[i].addEventListener("submit", function(e) {
-            var response = confirm("Are you sure you want to permanently delete this comment?");
-            if (!response) {
-                stopEvent(e);
-                return false;
-            }
-        }, false);
-    }
-}
-
-
-/* images page */
-for (var i=0; i < forms.length; i++) {
-    if (forms[i].className == "delete-form") {
-        forms[i].addEventListener("submit", function(e) {
-            var response = confirm("Are you sure you want to permanently delete this image?\n\nAny references to it will be broken.");
-            if (!response) {
-                stopEvent(e);
-                return false;
-            }
-        }, false);
+    if (forms[i].className === "delete-form") {
+        buildDeleteForm(forms[i], "Are you sure you want to permanently delete this image?\n\nAny references to it will be broken.");
     }
 }
 
@@ -69,17 +54,13 @@ for (var i=0; i < forms.length; i++) {
 var image_upload_form = document.getElementById("image-upload-form");
 if (image_upload_form) {
     image_upload_form.addEventListener("submit", function(e) {
-        if (image_upload_form.action.indexOf(BLOG_URL + '/admin/image') != -1) {
-            var req = new XMLHttpRequest;
-            req.open("GET", BLOG_URL + '/admin/image?json=1', true);
-            req.onreadystatechange = function() {
-                if (req.readyState == 4 && req.status == 200) {
-                    var response = JSON.parse(req.responseText);
-                    image_upload_form.action = response.url;
-                    image_upload_form.submit();
-                }
+        if (image_upload_form.action.indexOf(BLOG_URL + '/admin/image') !== -1) {
+            var url = BLOG_URL + '/admin/image?json=1';
+            var submitImage = function(response) {
+                image_upload_form.action = response.url;
+                image_upload_form.submit();
             };
-            req.send(null);
+            getRequest(url, submitImage);
             stopEvent(e);
             return false;
         }
@@ -89,13 +70,7 @@ if (image_upload_form) {
 /* edit post page */
 var delete_form = document.getElementById("delete-form");
 if (delete_form) {
-    delete_form.addEventListener("submit", function(e) {
-        var response = confirm("Are you sure you want to permanently delete this post and all its comments?\n\nAny links to it will be broken.");
-        if (!response) {
-            stopEvent(e);
-            return false;
-        }
-    }, false);
+    buildDeleteForm(delete_form, "Are you sure you want to permanently delete this post and all its comments?\n\nAny links to it will be broken.");
 }
 
 // don't display the preview button if the post is published
@@ -127,7 +102,7 @@ if ("nicEditor" in window) {
         var active_class = "editor-image-selected";
         for (var i=0; i < others.length; i++) {
             var other = others[i];
-            if (other.className.indexOf(active_class) != -1) {
+            if (other.className.indexOf(active_class) !== -1) {
                 other.className = other.className.replace(active_class, "").trim();
             }
         }
@@ -143,12 +118,7 @@ if ("nicEditor" in window) {
         var page = parseInt(hash.split("-")[1], 10);
         getImages(page);
 
-        if (e.stopPropagation) e.stopPropagation();
-        else e.cancelBubble = true;
-
-        if (e.preventDefault) e.preventDefault();
-        else e.returnValue = false;
-
+        stopEvent(e);
         return false;
     };
 
@@ -189,17 +159,13 @@ if ("nicEditor" in window) {
             populateImages(page);
         }
         else {
-            var req = new XMLHttpRequest;
-            req.open("GET", BLOG_URL + '/admin/images?json=1&page=' + page.toString(), true);
-            req.onreadystatechange = function() {
-                if (req.readyState == 4 && req.status == 200) {
-                    var response = JSON.parse(req.responseText);
-                    last_page = response.last_page;
-                    blog_images.push(response.images);
-                    populateImages(response.page);
-                }
+            var url = BLOG_URL + '/admin/images?json=1&page=' + page.toString();
+            var loadImages = function(response) {
+                last_page = response.last_page;
+                blog_images.push(response.images);
+                populateImages(response.page);
             };
-            req.send(null);
+            getRequest(url, loadImages);
         }
     };
 
