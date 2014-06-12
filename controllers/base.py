@@ -49,7 +49,7 @@ from mako.lookup import TemplateLookup
 
 class BaseController(webapp2.RequestHandler):
 
-    template_lookup = TemplateLookup(directories=[TEMPLATES_PATH])
+    template_lookup = TemplateLookup(directories=[TEMPLATES_PATH], input_encoding='utf-8')
 
     def cacheAndRenderTemplate(self, filename, **kwargs):
         def renderHTML():
