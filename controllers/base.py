@@ -4,9 +4,12 @@
 import json
 import logging
 
-# app engine imports
+# app engine api imports
 from google.appengine.api import users, memcache
+
+# app engine included libraries imports
 import webapp2
+from webapp2_extras import sessions
 
 # local
 from gae_blog.config import TEMPLATES_PATH, BLOG_PATH
@@ -50,6 +53,21 @@ from mako.lookup import TemplateLookup
 class BaseController(webapp2.RequestHandler):
 
     template_lookup = TemplateLookup(directories=[TEMPLATES_PATH], input_encoding='utf-8')
+
+
+    def dispatch(self):
+        # get a session store for this request
+        self.session_store = sessions.get_store(request=self.request)
+
+        webapp2.RequestHandler.dispatch(self)
+
+        # save all sessions
+        self.session_store.save_sessions(self.response)
+
+    @webapp2.cached_property
+    def session(self):
+        # uses the default cookie key
+        return self.session_store.get_session()
 
     def cacheAndRenderTemplate(self, filename, **kwargs):
         def renderHTML():
@@ -113,26 +131,6 @@ class BaseController(webapp2.RequestHandler):
     def getBlog(self):
         return model.Blog.get_by_key_name(self.blog_slug)
 
-    def getSession(self):
-        """ returns dictionary-like object for storing data across requests """
-        value = {}
-        # look for a session id in the cookies
-        sid = self.request.cookies.get("sid")
-        if sid:
-            value = memcache.get(sid)
-            if value is None: value = {}
-        return value
-
-    def saveSession(self, session):
-        # look for a session id in the cookies
-        sid = self.request.cookies.get("sid")
-        # if it's not there, generate one and set it
-        if not sid:
-            sid = ''.join('%02x' % ord(x) for x in os.urandom(16))
-            self.response.headers.add_header('Set-Cookie', 'sid=' + sid + '; Path=/;')
-        # save the session to memcache under that id
-        memcache.set(sid, session)
-
     # helper functions for validating
     def validate(self, validator, value):
         try:
@@ -142,23 +140,12 @@ class BaseController(webapp2.RequestHandler):
         return value
 
     def errorsToSession(self, form_data, errors):
-        session = self.getSession()
-        session["form_data"] = form_data
-        session["errors"] = errors
-        self.saveSession(session)
+        self.session["form_data"] = form_data
+        self.session["errors"] = errors
 
     def errorsFromSession(self):
-        session = self.getSession()
-        form_data = {}
-        if "form_data" in session:
-            form_data = session["form_data"]
-            del session["form_data"]
-        errors = {}
-        if "errors" in session:
-            errors = session["errors"]
-            del session["errors"]
-        if form_data or errors:
-            self.saveSession(session)
+        form_data = self.session.pop("form_data", {})
+        errors = self.session.pop("errors", {})
         return form_data, errors
 
     @property
@@ -174,8 +161,7 @@ class BaseController(webapp2.RequestHandler):
 def renderIfCachedNoErrors(action):
     def decorate(*args,  **kwargs):
         controller = args[0]
-        session = controller.getSession()
-        if "errors" in session or controller.isUserAdmin():
+        if "errors" in controller.session or controller.isUserAdmin():
             return action(*args, **kwargs)
         else:
             return renderIfCached(action)(*args, **kwargs)
