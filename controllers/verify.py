@@ -26,9 +26,9 @@ class VerifyController(BaseController):
 def generateToken(url, again=False):
     salt = memcache.get(SALT_KEY)
     if not salt:
-        salt = os.urandom(64)
+        salt = os.urandom(64).encode('base64')
         memcache.set(SALT_KEY, salt)
     now = datetime.utcnow()
     if again:
         now -= timedelta(minutes=1)
-    return sha256(url + now.strftime("%Y%m%d%H%M")).hexdigest()
+    return sha256(url + salt + now.strftime("%Y%m%d%H%M")).hexdigest()
