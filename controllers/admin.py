@@ -14,16 +14,15 @@ class AdminController(BaseController):
     """ shows the index page for the admin section, and handles sitewide configuration """
 
     # override and add in a check to make sure the user accessing this page has admin privileges
-    def __getattribute__(self, name):
-        if name in ["get", "post"] and not self.isUserAdmin():
-            self.renderError(403)
-            def pass_through(*args, **kwargs): pass
-            return pass_through
-        return BaseController.__getattribute__(self, name)
+    def dispatch(self):
+        if not self.user_is_admin:
+            self.renderError(403)            
+        else:
+            super(AdminController, self).dispatch()
 
     def get(self):
 
-        blog = self.getBlog()
+        blog = self.blog
 
         if blog:
             other_blogs = [b for b in model.Blog.all() if b.slug != blog.slug]
@@ -47,7 +46,7 @@ class BlogController(AdminController):
 
     def post(self):
 
-        blog = self.getBlog()
+        blog = self.blog
 
         title = self.request.get("title", "")
         description = self.request.get("description", "")
@@ -161,8 +160,7 @@ class AuthorsController(AdminController):
     """ handles viewing all authors for this blog """
     def get(self):
 
-        blog = self.getBlog()
-        authors = blog.authors.order('name')
+        authors = self.blog.authors.order('name')
 
         self.renderTemplate('admin/authors.html', authors=authors, page_title="Admin - Authors", logout_url=self.logout_url)
 
@@ -174,7 +172,7 @@ class AuthorController(AdminController):
         author = None
         page_title = "Admin - Author"
         if author_slug:
-            author = model.BlogAuthor.get_by_key_name(author_slug, parent=self.getBlog())
+            author = model.BlogAuthor.get_by_key_name(author_slug, parent=self.blog)
             if not author:
                 return self.renderError(404)
             page_title += " - " + author.name
@@ -185,7 +183,7 @@ class AuthorController(AdminController):
 
     def post(self, author_slug):
 
-        blog = self.getBlog()
+        blog = self.blog
         author = None
         if author_slug:
             author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
@@ -254,7 +252,7 @@ class PostsController(AdminController):
     """ handles viewing all posts for this blog """
     def get(self):
 
-        blog = self.getBlog()
+        blog = self.blog
 
         page = 0
         last_page = 0
@@ -285,7 +283,7 @@ class PostsController(AdminController):
         post_slug = self.request.get("post")
         if post_slug:
             # this is a request to delete this post
-            post = model.BlogPost.get_by_key_name(post_slug, parent=self.getBlog())
+            post = model.BlogPost.get_by_key_name(post_slug, parent=self.blog)
             if post:
                 # delete all the post's comments first
                 if post.comments.count() > 0:
@@ -302,10 +300,9 @@ class PostController(AdminController):
     """ handles editing and publishing posts """
     def get(self, post_slug):
 
-        blog = self.getBlog()
         post = None
         if post_slug:
-            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            post = model.BlogPost.get_by_key_name(post_slug, parent=self.blog)
             if not post:
                 return self.renderError(404)
 
@@ -315,7 +312,7 @@ class PostController(AdminController):
 
     def post(self, post_slug):
 
-        blog = self.getBlog()
+        blog = self.blog
         post = None
         if post_slug:
             post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
@@ -406,10 +403,9 @@ class PreviewController(AdminController):
     """ handles showing an admin-only preview of a post """
     def get(self, post_slug):
 
-        blog = self.getBlog()
         post = None
         if post_slug:
-            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            post = model.BlogPost.get_by_key_name(post_slug, parent=self.blog)
             if post:
                 return self.renderTemplate('admin/preview.html', post=post, logout_url=self.logout_url)
 
@@ -420,7 +416,7 @@ class CommentsController(AdminController):
     """ handles moderating comments """
     def get(self):
 
-        comments = self.getBlog().comments.filter("approved =", False)
+        comments = self.blog.comments.filter("approved =", False)
 
         self.renderTemplate('admin/comments.html', comments=comments, page_title="Admin - Comments", logout_url=self.logout_url)
 
@@ -437,7 +433,7 @@ class CommentsController(AdminController):
                 block = self.request.get("block")
                 if block:
                     # also block the IP address
-                    blog = self.getBlog()
+                    blog = self.blog
                     if comment.ip_address and comment.ip_address not in blog.blocklist:
                         blog.blocklist.append(comment.ip_address)
                         blog.put()
@@ -453,7 +449,7 @@ class CommentsController(AdminController):
             # approve all the comments with the submitted email address here
             email = self.request.get("email")
 
-            comments = self.getBlog().comments.filter("email =", email)
+            comments = self.blog.comments.filter("email =", email)
 
             for comment in comments:
                 comment.approved = True
@@ -466,7 +462,7 @@ class ImagesController(AdminController):
     """ handles managing images """
     def get(self):
 
-        blog = self.getBlog()
+        blog = self.blog
 
         page = 0
         last_page = 0
@@ -548,7 +544,7 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
             self.errorsToSession({}, errors)
             return self.redirect(self.blog_url + '/admin/image')
 
-        image = model.BlogImage(parent=self.getBlog(), blob=blob_info)
+        image = model.BlogImage(parent=self.blog, blob=blob_info)
         image.url = images.get_serving_url(blob_info)
         image.put()
 
@@ -562,11 +558,10 @@ class MigrateController(AdminController):
         return self.renderError(405)
 
     def post(self):
-        blog = self.getBlog()
 
         # migrate any images that don't have a url
         new_images = []
-        for image in blog.images:
+        for image in self.blog.images:
             if not image.url:
                 image.url = images.get_serving_url(image.blob)
                 new_images.append(image)

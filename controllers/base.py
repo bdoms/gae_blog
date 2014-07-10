@@ -72,7 +72,7 @@ class BaseController(webapp2.RequestHandler):
     def cacheAndRenderTemplate(self, filename, **kwargs):
         def renderHTML():
             return self.compileTemplate(filename, **kwargs)
-        if "errors" in kwargs or self.isUserAdmin():
+        if "errors" in kwargs or self.user_is_admin:
             html = renderHTML()
         else:
             html = cacheHTML(self, renderHTML, **kwargs)
@@ -82,12 +82,11 @@ class BaseController(webapp2.RequestHandler):
         template = self.template_lookup.get_template(filename)
         # add some standard variables
         kwargs["blog_url"] = self.blog_url
-        blog = self.getBlog()
-        kwargs["blog"] = blog
-        user = self.getUser()
+        kwargs["blog"] = self.blog
+        user = self.user
         kwargs["user"] = user
         if user:
-            kwargs["user_is_admin"] = self.isUserAdmin()
+            kwargs["user_is_admin"] = self.user_is_admin
         kwargs["static"] = static
         return template.render_unicode(**kwargs)
 
@@ -122,13 +121,16 @@ class BaseController(webapp2.RequestHandler):
 
         self.renderError(status_int)
 
-    def getUser(self):
+    @webapp2.cached_property
+    def user(self):
         return users.get_current_user()
 
-    def isUserAdmin(self):
+    @webapp2.cached_property
+    def user_is_admin(self):
         return users.is_current_user_admin()
 
-    def getBlog(self):
+    @webapp2.cached_property
+    def blog(self):
         return model.Blog.get_by_key_name(self.blog_slug)
 
     # helper functions for validating
@@ -148,11 +150,11 @@ class BaseController(webapp2.RequestHandler):
         errors = self.session.pop("errors", {})
         return form_data, errors
 
-    @property
+    @webapp2.cached_property
     def blog_slug(self):
         return self.request.path.split('/')[1] # we add the slash for easy URL making
 
-    @property
+    @webapp2.cached_property
     def blog_url(self):
         return '/' + self.blog_slug
 
@@ -161,7 +163,7 @@ class BaseController(webapp2.RequestHandler):
 def renderIfCachedNoErrors(action):
     def decorate(*args,  **kwargs):
         controller = args[0]
-        if "errors" in controller.session or controller.isUserAdmin():
+        if "errors" in controller.session or controller.user_is_admin:
             return action(*args, **kwargs)
         else:
             return renderIfCached(action)(*args, **kwargs)

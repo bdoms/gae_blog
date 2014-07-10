@@ -7,7 +7,7 @@ class IndexController(BaseController):
     @renderIfCached
     def get(self):
 
-        blog = self.getBlog()
+        blog = self.blog
 
         page = 0
         last_page = 0
@@ -31,4 +31,3 @@ class IndexController(BaseController):
             posts = published_posts.fetch(posts_per_page, page * posts_per_page)
 
         self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts)
-

@@ -7,6 +7,7 @@ from verify import generateToken
 from gae_blog.formencode.validators import UnicodeString, Email, URL
 from gae_blog import model
 
+
 class PostController(BaseController):
     """ shows an individual post and saves comments to it """
 
@@ -14,8 +15,7 @@ class PostController(BaseController):
     def get(self, post_slug):
 
         if post_slug:
-            blog = self.getBlog()
-            post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+            post = model.BlogPost.get_by_key_name(post_slug, parent=self.blog)
             if post and post.published:
                 # only display a post if it's actually published
                 form_data, errors = self.errorsFromSession()
@@ -26,7 +26,7 @@ class PostController(BaseController):
     def post(self, post_slug):
 
         ip_address = self.request.remote_addr
-        blog = self.getBlog()
+        blog = self.blog
         if blog and blog.enable_comments and ip_address not in blog.blocklist:
             # only allow comment posting if comments are enabled
             if post_slug:
@@ -75,7 +75,7 @@ class PostController(BaseController):
 
                     if author_choice == "author":
                         # validate that if they want to comment as an author that it's valid and they're approved
-                        if not self.isUserAdmin():
+                        if not self.user_is_admin:
                             return self.renderError(403)
                         author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
                         if not author:

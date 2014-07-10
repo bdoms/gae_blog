@@ -7,13 +7,14 @@ from verify import generateToken
 from gae_blog.formencode.validators import UnicodeString, Email
 from gae_blog import model
 
+
 class ContactController(BaseController):
     """ handles request for the contact page of the site """
 
     @renderIfCachedNoErrors
     def get(self, sent=False):
 
-        blog = self.getBlog()
+        blog = self.blog
 
         if not blog or not blog.contact:
             return self.renderError(403)
@@ -26,7 +27,7 @@ class ContactController(BaseController):
 
     def post(self, sent=False):
 
-        blog = self.getBlog()
+        blog = self.blog
         if blog and blog.contact:
             try:
                 author_slug = self.request.get("author")

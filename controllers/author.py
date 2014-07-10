@@ -9,7 +9,7 @@ class AuthorController(BaseController):
     def get(self, author_slug):
 
         if author_slug:
-            blog = self.getBlog()
+            blog = self.blog
             author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
 
             if author:
