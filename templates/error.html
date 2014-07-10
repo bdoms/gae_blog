@@ -1,4 +1,7 @@
 <%inherit file="base.html"/>
 
-<h2>${error_message}</h2>
+<h2>${page_title}</h2>
 
+% if stacktrace:
+    <pre>${stacktrace}</pre>
+% endif

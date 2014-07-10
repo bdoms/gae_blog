@@ -93,10 +93,10 @@ class BaseController(webapp2.RequestHandler):
     def renderTemplate(self, filename, **kwargs):
         self.response.out.write(self.compileTemplate(filename, **kwargs))
 
-    def renderError(self, status_int):
+    def renderError(self, status_int, stacktrace=None):
         self.response.set_status(status_int)
-        error_message = "Error " + str(status_int) + ": " + self.response.http_status_message(status_int)
-        self.renderTemplate("error.html", error_message=error_message)
+        page_title = "Error " + str(status_int) + ": " + self.response.http_status_message(status_int)
+        self.renderTemplate("error.html", stacktrace=stacktrace, page_title=page_title)
 
     def renderJSON(self, data):
         self.response.headers['Content-Type'] = "application/json"
@@ -108,9 +108,10 @@ class BaseController(webapp2.RequestHandler):
         logging.exception(exception)
 
         # if this is development, then print out a stack trace
-        if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
-            super(BaseController, self).handle_exception(exception, True)
-            return
+        stacktrace = None
+        if os.environ.get('SERVER_SOFTWARE', '').startswith('Development') or self.user_is_admin:
+            import traceback
+            stacktrace = traceback.format_exc()
 
         # if the exception is a HTTPException, use its error code
         # otherwise use a generic 500 error code
@@ -119,7 +120,7 @@ class BaseController(webapp2.RequestHandler):
         else:
             status_int = 500
 
-        self.renderError(status_int)
+        self.renderError(status_int, stacktrace=stacktrace)
 
     @webapp2.cached_property
     def user(self):
