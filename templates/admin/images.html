@@ -1,8 +1,10 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
 
 <h3>Images</h3>
 
-% if images:
+{% if images %}
     <table>
         <thead>
             <tr>
@@ -14,43 +16,45 @@
             </tr>
         </thead>
         <tbody>
-            % for image in images:
+            {% for image in images %}
                 <tr>
-                    <td><a href="${image.url}">
-                        <img src="${image.url}=s100" alt="${image.blob.filename} Preview" />
+                    <td><a href="{{image.url}}">
+                        <img src="{{image.url}}=s100" alt="{{image.blob.filename}} Preview" />
                     </a></td>
-                    <td>${image.blob.filename}</td>
-                    <td>${image.blob.creation.strftime("%Y-%m-%d %H:%M:%S")}</td>
-                    <td>${image.blob.size}</td>
+                    <td>{{image.blob.filename}}</td>
+                    <td>{{image.blob.creation.strftime("%Y-%m-%d %H:%M:%S")}}</td>
+                    <td>{{image.blob.size}}</td>
                     <td>
                         <form action="" method="post" class="delete-form">
-                            <input type="hidden" name="image" value="${image.key()}"/>
+                            <input type="hidden" name="image" value="{{image.key()}}"/>
                             <input type="submit" value="Delete"/>
                         </form>
                     </td>
                 </tr>
-            % endfor
+            {% endfor %}
         </tbody>
     </table>
-    % if page or last_page > page:
+    {% if page or last_page > page %}
         <p class="post-nav">
-            % if last_page > page:
-                <a href="${blog_url}/admin/images?page=${page + 1}">&lt; Older Images</a>
-                % if page:
+            {% if last_page > page %}
+                <a href="{{blog_url}}/admin/images?page={{page + 1}}">&lt; Older Images</a>
+                {% if page %}
                     |
-                % endif
-            % endif
-            % if page:
-                % if page - 1 == 0:
-                    <a href="${blog_url}/admin/images">Newer Images &gt;</a>
-                % else:
-                    <a href="${blog_url}/admin/images?page=${page - 1}">Newer Images &gt;</a>
-                % endif
-            % endif
+                {% endif %}
+            {% endif %}
+            {% if page %}
+                {% if page - 1 == 0 %}
+                    <a href="{{blog_url}}/admin/images">Newer Images &gt;</a>
+                {% else %}
+                    <a href="{{blog_url}}/admin/images?page={{page - 1}}">Newer Images &gt;</a>
+                {% endif %}
+            {% endif %}
         </p>
-    % endif
-% else:
+    {% endif %}
+{% else %}
     <p>No images stored in the database yet.</p>
-% endif
+{% endif %}
 
-<h3><a href="${blog_url}/admin/image">Upload a New Image</a></h3>
+<h3><a href="{{blog_url}}/admin/image">Upload a New Image</a></h3>
+
+{% endblock %}

@@ -1,6 +1,3 @@
-[submodule "mako"]
-	path = mako
-	url = git@github.com:bdoms/mako.git
 [submodule "formencode"]
 	path = formencode
 	url = git@github.com:bdoms/formencode.git

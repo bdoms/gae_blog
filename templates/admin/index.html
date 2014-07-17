@@ -1,23 +1,26 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
 
 <h3>Actions</h3>
 <ul>
-    <li><a href="${blog_url}/admin/post/">Write a New Post</a></li>
-    <li><a href="${blog_url}/admin/posts">View or Edit Existing Posts</a></li>
-    <li><a href="${blog_url}/admin/images">Upload or View Images</a></li>
-    <li><a href="${blog_url}/admin/comments">Moderate Comments</a></li>
-    <li><a href="${blog_url}/admin/authors">Manage Authors</a></li>
-    <li><a href="${blog_url}/admin/blog">Change Configuration</a></li>
+    <li><a href="{{blog_url}}/admin/post/">Write a New Post</a></li>
+    <li><a href="{{blog_url}}/admin/posts">View or Edit Existing Posts</a></li>
+    <li><a href="{{blog_url}}/admin/images">Upload or View Images</a></li>
+    <li><a href="{{blog_url}}/admin/comments">Moderate Comments</a></li>
+    <li><a href="{{blog_url}}/admin/authors">Manage Authors</a></li>
+    <li><a href="{{blog_url}}/admin/blog">Change Configuration</a></li>
 </ul>
 
-% if other_blogs:
+{% if other_blogs %}
     <h3>Other Blogs</h3>
     <ul>
-        % for other_blog in other_blogs:
+        {% for other_blog in other_blogs %}
             <li>
-                <a href="/${other_blog.slug}/admin">Switch to Admin for ${other_blog.title}</a>
+                <a href="/{{other_blog.slug}}/admin">Switch to Admin for {{other_blog.title}}</a>
             </li>
-        % endfor
+        {% endfor %}
     </ul>
-% endif
+{% endif %}
 
+{% endblock %}

@@ -3,16 +3,18 @@
 # standard library
 import json
 import logging
+import os
 
 # app engine api imports
 from google.appengine.api import users, memcache
 
 # app engine included libraries imports
+import jinja2
 import webapp2
 from webapp2_extras import sessions
 
 # local
-from gae_blog.config import TEMPLATES_PATH, BLOG_PATH
+from gae_blog.config import TEMPLATES_PATH
 from gae_blog import model
 
 # see if caching is available
@@ -33,27 +35,10 @@ except ImportError:
     def static(url):
         return url
 
-# we have to force the use of the local Mako folder rather than the system one
-# this is a problem with how Mako does imports (assumes an installed package)
-# also, this would never happen on production as Google blocks these things
-import os
-if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
-    import sys
-    paths_to_remove = []
-    for path in sys.path:
-        if 'mako' in path.lower() or 'dist-packages' in path:
-            paths_to_remove.append(path)
-    for path in paths_to_remove:
-        sys.path.remove(path)
-    sys.path.append(BLOG_PATH)
-
-from mako.lookup import TemplateLookup
-
 
 class BaseController(webapp2.RequestHandler):
 
-    template_lookup = TemplateLookup(directories=[TEMPLATES_PATH], input_encoding='utf-8')
-
+    jinja_env = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(TEMPLATES_PATH))
 
     def dispatch(self):
         # get a session store for this request
@@ -79,16 +64,19 @@ class BaseController(webapp2.RequestHandler):
         return self.response.out.write(html)
 
     def compileTemplate(self, filename, **kwargs):
-        template = self.template_lookup.get_template(filename)
+        template = self.jinja_env.get_template(filename)
         # add some standard variables
         kwargs["blog_url"] = self.blog_url
         kwargs["blog"] = self.blog
-        user = self.user
-        kwargs["user"] = user
-        if user:
+        if self.blog and self.blog.template:
+            kwargs["blog_base"] = '../../' + self.blog.template
+        else:
+            kwargs["blog_base"] = 'default_base.html'
+        kwargs["user"] = self.user
+        if self.user:
             kwargs["user_is_admin"] = self.user_is_admin
         kwargs["static"] = static
-        return template.render_unicode(**kwargs)
+        return template.render(kwargs)
 
     def renderTemplate(self, filename, **kwargs):
         self.response.out.write(self.compileTemplate(filename, **kwargs))

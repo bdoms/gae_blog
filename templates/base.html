@@ -1,18 +1,13 @@
-<%!
-      def determine_inherit(template, context):
-            blog = context['blog']
-            if blog and blog.template:
-                  template = '../../' + blog.template
-            else:
-                  template = 'default_base.html'
-            return template
-%>
-<%inherit file="${determine_inherit(template, context)}"/>
+{% extends blog_base %}
 
-${next.body()}
+{% block content %}
 
-<script src="${static(blog_url + '/static/blog.js')}"></script>
+{% block blog_content %}{% endblock %}
 
-% if user_is_admin:
-    <script src="${static(blog_url + '/static/blog-admin.js')}"></script>
-% endif
+<script src="{{static(blog_url + '/static/blog.js')}}"></script>
+
+{% if user_is_admin %}
+    <script src="{{static(blog_url + '/static/blog-admin.js')}}"></script>
+{% endif %}
+
+{% endblock %}

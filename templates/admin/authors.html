@@ -1,7 +1,9 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
 
 <h3>Authors</h3>
-% if authors.count():
+{% if authors.count() %}
     <table>
         <thead>
             <tr>
@@ -13,24 +15,25 @@
             </tr>
         </thead>
         <tbody>
-            % for author in authors:
+            {% for author in authors %}
                 <tr>
-                    <td><a href="${blog_url}/admin/author/${author.slug}">${author.name}</a></td>
-                    % if author.url:
-                        <td><a href="author.url" target="_blank">${author.url}</a></td>
-                    % else:
-                        <td><a href="${blog_url}/author/${author.slug}">${blog_url}/author/${author.slug}</a></td>
-                    % endif
-                    <td>${author.email or ''}</td>
-                    <td>${author.comments.count()}</td>
-                    <td>${author.posts.count()}</td>
+                    <td><a href="{{blog_url}}/admin/author/{{author.slug}}">{{author.name}}</a></td>
+                    {% if author.url %}
+                        <td><a href="author.url" target="_blank">{{author.url}}</a></td>
+                    {% else %}
+                        <td><a href="{{blog_url}}/author/{{author.slug}}">{{blog_url}}/author/{{author.slug}}</a></td>
+                    {% endif %}
+                    <td>{{author.email or ''}}</td>
+                    <td>{{author.comments.count()}}</td>
+                    <td>{{author.posts.count()}}</td>
                 </tr>
-            % endfor
+            {% endfor %}
         </tbody>
     </table>
-% else:
+{% else %}
     <p>No authors for this blog yet.</p>
-% endif
+{% endif %}
 
-<h3><a href="${blog_url}/admin/author/">Add a New Author</a></h3>
+<h3><a href="{{blog_url}}/admin/author/">Add a New Author</a></h3>
 
+{% endblock %}

@@ -8,11 +8,12 @@ threadsafe: true
 builtins:
 - deferred: on
 
-# If GAE Blog is a submodule then you must have webapp2 enabled in your own app.yaml lke this:
+# If GAE Blog is a submodule then these must be enabled in your own app.yaml lke this:
 libraries:
 - name: webapp2
   version: latest
-
+- name: jinja2
+  version: latest
 
 handlers:
 - url: /blog/static

@@ -1,4 +1,6 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
 
 <h3>Upload an Image</h3>
 
@@ -6,16 +8,18 @@
     <p>
         <label for="data">File:</label>
         <input type="file" name="data" />
-        % if "file" in errors:
+        {% if "file" in errors %}
             <span class="error">no file selected</span>
-        % endif
-        % if "type" in errors:
+        {% endif %}
+        {% if "type" in errors %}
             <span class="error">invalid file type</span>
-        % endif
+        {% endif %}
     </p>
     <p><input type="submit" value="Upload" /></p>
 </form>
 
 <script>
-    BLOG_URL = "${blog_url}";
+    BLOG_URL = "{{blog_url}}";
 </script>
+
+{% endblock %}

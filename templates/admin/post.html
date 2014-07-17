@@ -1,109 +1,114 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
 
 <h3>
     Post
-    % if post and post.published:
-        (<a href="${blog_url}/post/${post.slug}">View</a>)
-    % endif
+    {% if post and post.published %}
+        (<a href="{{blog_url}}/post/{{post.slug}}">View</a>)
+    {% endif %}
 </h3>
 
-% if post:
-    <form id="delete-form" action="${blog_url}/admin/posts" method="post">
-        <input type="hidden" name="post" value="${post.slug}"/>
+{% if post %}
+    <form id="delete-form" action="{{blog_url}}/admin/posts" method="post">
+        <input type="hidden" name="post" value="{{post.slug}}"/>
         <p><input type="submit" value="Delete This Post"/></p>
     </form>
-% endif
+{% endif %}
 
 <form action="" method="post">
     <p>
         <label for="title">Title:</label>
-        % if "title" in form_data:
-            <input type="text" name="title" value="${form_data['title']}" />
-        % else:
-            <input type="text" name="title" value="${post and post.title.replace('"', '&quot;') or ''}" />
-        % endif
-        % if "title" in errors:
+        {% if "title" in form_data %}
+            <input type="text" name="title" value="{{form_data['title']}}" />
+        {% else %}
+            <input type="text" name="title" value="{{post and post.title.replace('"', '&quot;') or ''}}" />
+        {% endif %}
+        {% if "title" in errors %}
             <span class="error">please enter a valid title</span>
-        % endif
+        {% endif %}
     </p>
 
     <p>
         <label for="slug-choice">Slug:</label>
-        % if post and post.published:
-            <span class="help">(CAREFUL: changing the slug will break external links to published posts; changing the title and selecting automatic will also do this)</span>
-        % endif
+        {% if post and post.published %}
+            <span class="help">
+                (CAREFUL: changing the slug will break external links to published posts;
+                changing the title and selecting automatic will also do this)
+            </span>
+        {% endif %}
     </p>
     <ul>
         <li>
-            % if "slug-choice" in form_data:
-                <input type="radio" id="slug-auto" name="slug-choice" value="auto" ${form_data['slug-choice'] == 'auto' and 'checked="checked"' or ''} />
-            % else:
-                % if post and post.published:
+            {% if "slug-choice" in form_data %}
+                <input type="radio" id="slug-auto" name="slug-choice" value="auto" {{form_data['slug-choice'] == 'auto' and 'checked="checked"' or ''}} />
+            {% else %}
+                {% if post and post.published %}
                     <input type="radio" id="slug-auto" name="slug-choice" value="auto" />
-                % else:
+                {% else %}
                     <input type="radio" id="slug-auto" name="slug-choice" value="auto" checked="checked" />
-                % endif
-            % endif
+                {% endif %}
+            {% endif %}
             <label for="slug-auto">Automatic</label>
         </li>
         <li>
-            % if "slug-choice" in form_data:
-                <input type="radio" id="slug-custom" name="slug-choice" value="custom" ${form_data['slug-choice'] == 'custom' and 'checked="checked"' or ''} />
-            % else:
-                % if post and post.published:
+            {% if "slug-choice" in form_data %}
+                <input type="radio" id="slug-custom" name="slug-choice" value="custom" {{form_data['slug-choice'] == 'custom' and 'checked="checked"' or ''}} />
+            {% else %}
+                {% if post and post.published %}
                     <input type="radio" id="slug-custom" name="slug-choice" value="custom" checked="checked" />
-                % else:
+                {% else %}
                     <input type="radio" id="slug-custom" name="slug-choice" value="custom" />
-                % endif
-            % endif
+                {% endif %}
+            {% endif %}
             <label for="slug-custom">Custom:</label>
-            % if "slug" in form_data:
-                <input type="text" name="slug" value="${form_data['slug']}" />
-            % else:
-                <input type="text" name="slug" value="${post and post.slug or ''}" />
-            % endif
+            {% if "slug" in form_data %}
+                <input type="text" name="slug" value="{{form_data['slug']}}" />
+            {% else %}
+                <input type="text" name="slug" value="{{post and post.slug or ''}}" />
+            {% endif %}
             <span class="help">(ex: my-post-slug)</span>
-            % if "slug" in errors:
+            {% if "slug" in errors %}
                 <span class="error">please enter a valid slug</span>
-            % endif
-            % if "slug_exists" in errors:
+            {% endif %}
+            {% if "slug_exists" in errors %}
                 <span class="error">the slug you entered is already being used by another post on this blog</span>
-            % endif
+            {% endif %}
         </li>
     </ul>
 
     <p>
         <label for="author">Author:</label>
         <select name="author">
-            % for author in blog.authors:
-                % if "author" in form_data:
-                    <option value="${author.slug}" ${form_data['author'] == author.slug and 'selected="selected"' or ''}>${author.name}</option>
-                % else:
-                    <option value="${author.slug}" ${(post and post.author.slug == author.slug) and 'selected="selected"' or ''}>${author.name}</option>
-                % endif
-            % endfor
+            {% for author in blog.authors %}
+                {% if "author" in form_data %}
+                    <option value="{{author.slug}}" {{form_data['author'] == author.slug and 'selected="selected"' or ''}}>{{author.name}}</option>
+                {% else %}
+                    <option value="{{author.slug}}" {{(post and post.author.slug == author.slug) and 'selected="selected"' or ''}}>{{author.name}}</option>
+                {% endif %}
+            {% endfor %}
         </select>
-        % if "author" in errors:
+        {% if "author" in errors %}
             <span class="error">please select a valid author</span>
-        % endif
+        {% endif %}
     </p>
 
     <p>
         <label for="post-body">Body:</label>
         <span class="help">(uses HTML)</span>
-        % if "body" in errors:
+        {% if "body" in errors %}
             <span class="error">please enter a valid body</span>
-        % endif
+        {% endif %}
     </p>
-    % if "body" in form_data:
-        <textarea name="body" id="post-body">${form_data['body']}</textarea>
-    % else:
-        % if post:
-            <textarea name="body" id="post-body">${post.body}</textarea>
-        % else:
+    {% if "body" in form_data %}
+        <textarea name="body" id="post-body">{{form_data['body']}}</textarea>
+    {% else %}
+        {% if post %}
+            <textarea name="body" id="post-body">{{post.body}}</textarea>
+        {% else %}
             <textarea name="body" id="post-body"></textarea>
-        % endif
-    % endif
+        {% endif %}
+    {% endif %}
 
     <p>
         <label for="timestamp-choice">Timestamp:</label>
@@ -111,62 +116,62 @@
     </p>
     <ul>
         <li>
-            % if "timestamp-choice" in form_data:
-                <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" ${form_data['timestamp-choice'] == 'now' and 'checked="checked"' or ''} />
-            % else:
-                % if post:
+            {% if "timestamp-choice" in form_data %}
+                <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" {{form_data['timestamp-choice'] == 'now' and 'checked="checked"' or ''}} />
+            {% else %}
+                {% if post %}
                     <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" />
-                % else:
+                {% else %}
                     <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" checked="checked" />
-                % endif
-            % endif
+                {% endif %}
+            {% endif %}
             <label for="timestamp-now">Now</label>
         </li>
         <li>
-            % if "timestamp-choice" in form_data:
-                <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" ${form_data['timestamp-choice'] == 'custom' and 'checked="checked"' or ''} />
-            % else:
-                % if post:
+            {% if "timestamp-choice" in form_data %}
+                <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" {{form_data['timestamp-choice'] == 'custom' and 'checked="checked"' or ''}} />
+            {% else %}
+                {% if post %}
                     <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" checked="checked" />
-                % else:
+                {% else %}
                     <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" />
-                % endif
-            % endif
+                {% endif %}
+            {% endif %}
             <label for="timestamp-custom">Custom:</label>
-            % if "timestamp" in form_data:
-                <input type="text" name="timestamp" value="${form_data['timestamp']}" />
-            % else:
-                <input type="text" name="timestamp" value="${post and post.timestamp.strftime('%Y-%m-%d %H:%M:%S') or ''}" />
-            % endif
+            {% if "timestamp" in form_data %}
+                <input type="text" name="timestamp" value="{{form_data['timestamp']}}" />
+            {% else %}
+                <input type="text" name="timestamp" value="{{post and post.timestamp.strftime('%Y-%m-%d %H:%M:%S') or ''}}" />
+            {% endif %}
             <span class="help">(ex: 1970-01-21 13:35:16)</span>
-            % if "timestamp" in errors:
+            {% if "timestamp" in errors %}
                 <span class="error">please enter a valid timestamp</span>
-            % endif
+            {% endif %}
         </li>
     </ul>
 
     <p>
         <label for="published-box">Published:</label>
-        % if "published" in form_data:
-            <input type="checkbox" name="published" id="published-box" ${form_data['published'] and 'checked="checked"' or ''}/>
-        % else:
-            % if post and post.published:
+        {% if "published" in form_data %}
+            <input type="checkbox" name="published" id="published-box" {{form_data['published'] and 'checked="checked"' or ''}}/>
+        {% else %}
+            {% if post and post.published %}
                 <input type="checkbox" name="published" id="published-box" checked="checked" />
-            % else:
+            {% else %}
                 <input type="checkbox" name="published" id="published-box" />
-            % endif
-        % endif
+            {% endif %}
+        {% endif %}
     </p>
 
-    % if "published" in form_data:
-        <p id="preview-button" ${form_data['published'] and 'style="display: none;"' or ''}>
-    % else:
-        % if post and post.published:
+    {% if "published" in form_data %}
+        <p id="preview-button" {{form_data['published'] and 'style="display: none;"' or ''}}>
+    {% else %}
+        {% if post and post.published %}
             <p id="preview-button" style="display: none;">
-        % else:
+        {% else %}
             <p id="preview-button">
-        % endif
-    % endif
+        {% endif %}
+    {% endif %}
         <input type="submit" value="Save and Preview" name="preview" />
         <span class="help">(you can only preview unpublished posts)</span>
     </p>
@@ -174,9 +179,11 @@
     <p><input type="submit" value="Save and Stop Working" /></p>
 </form>
 
-<script src="${static(blog_url + '/static/nicEdit-0.9.min.js')}"></script>
+<script src="{{static(blog_url + '/static/nicEdit-0.9.min.js')}}"></script>
 <script>
-    BLOG_URL = "${blog_url}";
-    BLOG_ICON_URL = "${static(blog_url + '/static/nicEditorIcons-0.9.gif')}";
-    BLOG_IMAGE_PREVIEW_SIZE = ${blog.image_preview_size};
+    BLOG_URL = "{{blog_url}}";
+    BLOG_ICON_URL = "{{static(blog_url + '/static/nicEditorIcons-0.9.gif')}}";
+    BLOG_IMAGE_PREVIEW_SIZE = {{blog.image_preview_size}};
 </script>
+
+{% endblock %}

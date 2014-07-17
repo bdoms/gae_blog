@@ -1,177 +1,181 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
 
-% if blog:
+{% block admin_content %}
+
+{% if blog %}
     <h3>Configuration</h3>
-% else:
+{% else %}
     <h3>Blog Setup</h3>
-% endif
+{% endif %}
 
 <form action="" method="post">
     <p>
         <label for="title">Blog Title:</label>
-        % if "title" in form_data:
-            <input type="text" name="title" value="${form_data['title']}" />
-        % else:
-            <input type="text" name="title" value="${blog and blog.title or ''}" />
-        % endif
-        % if "title" in errors:
+        {% if "title" in form_data %}
+            <input type="text" name="title" value="{{form_data['title']}}" />
+        {% else %}
+            <input type="text" name="title" value="{{blog and blog.title or ''}}" />
+        {% endif %}
+        {% if "title" in errors %}
             <span class="error">please enter a valid title</span>
-        % endif
+        {% endif %}
     </p>
     <p>
         <label for="description">Blog Description:</label>
-        % if "description" in form_data:
-            <input type="text" name="description" value="${form_data['description']}" />
-        % else:
-            <input type="text" name="description" value="${blog and blog.description or ''}" />
-        % endif
+        {% if "description" in form_data %}
+            <input type="text" name="description" value="{{form_data['description']}}" />
+        {% else %}
+            <input type="text" name="description" value="{{blog and blog.description or ''}}" />
+        {% endif %}
         <span class="help">(optional, used by RSS and default meta tags)</span>
-        % if "description" in errors:
+        {% if "description" in errors %}
             <span class="error">please enter a valid description</span>
-        % endif
+        {% endif %}
     </p>
     <p>
         <label for="enable_comments">Enable Comments:</label>
-        % if "enable_comments" in form_data:
-            <input type="checkbox" name="enable_comments" id="enable_comments" ${form_data['enable_comments'] and 'checked="checked"' or ''}/>
-        % else:
-            % if blog and blog.enable_comments:
+        {% if "enable_comments" in form_data %}
+            <input type="checkbox" name="enable_comments" id="enable_comments" {{form_data['enable_comments'] and 'checked="checked"' or ''}}/>
+        {% else %}
+            {% if blog and blog.enable_comments %}
                 <input type="checkbox" name="enable_comments" id="enable_comments" checked="checked" />
-            % else:
+            {% else %}
                 <input type="checkbox" name="enable_comments" id="enable_comments" />
-            % endif
-        % endif
+            {% endif %}
+        {% endif %}
     </p>
     <p>
         <label for="moderation_alert-box">Enable Email Alerts for Comments Needing Moderation:</label>
-        % if "moderation_alert" in form_data:
-            <input type="checkbox" name="moderation_alert" id="moderation_alert-box" ${form_data['moderation_alert'] and 'checked="checked"' or ''}/>
-        % else:
-            % if blog and blog.moderation_alert:
+        {% if "moderation_alert" in form_data %}
+            <input type="checkbox" name="moderation_alert" id="moderation_alert-box" {{form_data['moderation_alert'] and 'checked="checked"' or ''}}/>
+        {% else %}
+            {% if blog and blog.moderation_alert %}
                 <input type="checkbox" name="moderation_alert" id="moderation_alert-box" checked="checked" />
-            % else:
+            {% else %}
                 <input type="checkbox" name="moderation_alert" id="moderation_alert-box" />
-            % endif
-        % endif
+            {% endif %}
+        {% endif %}
     </p>
     <p>
         <label for="contact-box">Enable Contact Page:</label>
-        % if "contact" in form_data:
-            <input type="checkbox" name="contact" id="contact-box" ${form_data['contact'] and 'checked="checked"' or ''}/>
-        % else:
-            % if blog and blog.contact:
+        {% if "contact" in form_data %}
+            <input type="checkbox" name="contact" id="contact-box" {{form_data['contact'] and 'checked="checked"' or ''}}/>
+        {% else %}
+            {% if blog and blog.contact %}
                 <input type="checkbox" name="contact" id="contact-box" checked="checked" />
-            % else:
+            {% else %}
                 <input type="checkbox" name="contact" id="contact-box" />
-            % endif
-        % endif
+            {% endif %}
+        {% endif %}
     </p>
     <p>
         <label for="admin_email">Admin Email:</label>
-        % if "admin_email" in form_data:
-            <input type="text" name="admin_email" value="${form_data['admin_email']}" />
-        % else:
-            <input type="text" name="admin_email" value="${blog and blog.admin_email or ''}" />
-        % endif
+        {% if "admin_email" in form_data %}
+            <input type="text" name="admin_email" value="{{form_data['admin_email']}}" />
+        {% else %}
+            <input type="text" name="admin_email" value="{{blog and blog.admin_email or ''}}" />
+        {% endif %}
         <span class="help">(required for email alerts or the contact page to work correctly, must match the email address of a GAE admin)</span>
-        % if "admin_email" in errors:
+        {% if "admin_email" in errors %}
             <span class="error">please enter a valid email</span>
-        % endif
+        {% endif %}
     </p>
     <p>
         <label for="posts_per_page">Posts Per Page:</label>
-        % if "posts_per_page" in form_data:
-            <input type="text" name="posts_per_page" value="${form_data['posts_per_page']}" />
-        % else:
-            <input type="text" name="posts_per_page" value="${blog and blog.posts_per_page or 10}" />
-        % endif
+        {% if "posts_per_page" in form_data %}
+            <input type="text" name="posts_per_page" value="{{form_data['posts_per_page']}}" />
+        {% else %}
+            <input type="text" name="posts_per_page" value="{{blog and blog.posts_per_page or 10}}" />
+        {% endif %}
         <span class="help">(control how many posts are shown at once on index pages)</span>
-        % if "posts_per_page" in errors:
+        {% if "posts_per_page" in errors %}
             <span class="error">please enter a valid integer value</span>
-        % endif
+        {% endif %}
     </p>
     <p>
         <label for="image_preview_size">Image Preview Size:</label>
-        % if "image_preview_size" in form_data:
-            <input type="text" name="image_preview_size" value="${form_data['image_preview_size']}" />
-        % else:
-            <input type="text" name="image_preview_size" value="${blog and blog.image_preview_size or 600}" />
-        % endif
+        {% if "image_preview_size" in form_data %}
+            <input type="text" name="image_preview_size" value="{{form_data['image_preview_size']}}" />
+        {% else %}
+            <input type="text" name="image_preview_size" value="{{blog and blog.image_preview_size or 600}}" />
+        {% endif %}
         <span class="help">(the maximum number of pixels wide or high for previews, applies to the larger dimension)</span>
-        % if "image_preview_size" in errors:
+        {% if "image_preview_size" in errors %}
             <span class="error">please enter a valid integer value</span>
-        % endif
+        {% endif %}
     </p>
     <p>
         <label for="url">Blog URL:</label>
-        % if "url" in form_data:
-            /<input type="text" name="url" value="${form_data['url']}" />
-        % else:
-            /<input type="text" name="url" value="${blog and blog.slug or blog_url[1:]}" />
-        % endif
+        {% if "url" in form_data %}
+            /<input type="text" name="url" value="{{form_data['url']}}" />
+        {% else %}
+            /<input type="text" name="url" value="{{blog and blog.slug or blog_url[1:]}}" />
+        {% endif %}
         <span class="help">(WARNING: changing this may break things, see readme for instructions)</span>
-        % if "url" in errors:
+        {% if "url" in errors %}
             <span class="error">please enter a valid URL</span>
-        % endif
-        % if "url_exists" in errors:
+        {% endif %}
+        {% if "url_exists" in errors %}
             <span class="error">the URL you entered is already in use by another blog within this app</span>
-        % endif
+        {% endif %}
     </p>
     <p>
         <label for="template">Base Template:</label>
-        % if "template" in form_data:
-            <input type="text" name="template" value="${form_data['template']}" />
-        % else:
-            <input type="text" name="template" value="${blog and blog.template or ''}" />
-        % endif
+        {% if "template" in form_data %}
+            <input type="text" name="template" value="{{form_data['template']}}" />
+        {% else %}
+            <input type="text" name="template" value="{{blog and blog.template or ''}}" />
+        {% endif %}
         <span class="help">(relative path from your parent project)</span>
-        % if "template" in errors:
+        {% if "template" in errors %}
             <span class="error">please enter a valid template path</span>
-        % endif
+        {% endif %}
     </p>
     <p>
         <label for="mail_queue">Mail Queue:</label>
-        % if "mail_queue" in form_data:
-            <input type="text" name="mail_queue" value="${form_data['mail_queue']}" />
-        % else:
-            <input type="text" name="mail_queue" value="${blog and blog.mail_queue or 'mail'}" />
-        % endif
+        {% if "mail_queue" in form_data %}
+            <input type="text" name="mail_queue" value="{{form_data['mail_queue']}}" />
+        {% else %}
+            <input type="text" name="mail_queue" value="{{blog and blog.mail_queue or 'mail'}}" />
+        {% endif %}
         <span class="help">(task queue to use for sending email)</span>
-        % if "mail_queue" in errors:
+        {% if "mail_queue" in errors %}
             <span class="error">please enter a valid queue</span>
-        % endif
+        {% endif %}
     </p>
     <p>
         <label for="blocklist">IP Address Blocklist:</label>
         <span class="help">(newline separated)</span>
     </p>
-    % if "blocklist" in form_data:
-        <textarea name="blocklist">${form_data['blocklist']}</textarea>
-    % else:
-        % if blog and blog.blocklist:
+    {% if "blocklist" in form_data %}
+        <textarea name="blocklist">{{form_data['blocklist']}}</textarea>
+    {% else %}
+        {% if blog and blog.blocklist %}
 <textarea name="blocklist">
-% for address in blog.blocklist:
-${address}
-% endfor
+{% for address in blog.blocklist %}
+{{address}}
+{% endfor %}
 </textarea>
-        % else:
+        {% else %}
             <textarea name="blocklist"></textarea>
-        % endif
-    % endif
+        {% endif %}
+    {% endif %}
 
-    % if blog:
+    {% if blog %}
         <p><input type="submit" value="Save Changes" /></p>
-    % else:
+    {% else %}
         <p><input type="submit" value="Create New Blog" /></p>
-    % endif
+    {% endif %}
 </form>
 
-% if blog:
+{% if blog %}
     <p><a href="#" id="advanced-link">Advanced Functions</a></p>
     <div id="advanced-section" style="display: none;">
         <p>WARNING! Proceed with caution.</p>
-        <form action="${blog_url}/admin/migrate" method="post">
+        <form action="{{blog_url}}/admin/migrate" method="post">
             <input type="submit" value="Run Migrations" />
         </form>
     </div>
-% endif
+{% endif %}
+
+{% endblock %}

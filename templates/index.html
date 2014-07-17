@@ -1,49 +1,52 @@
-<%inherit file="base.html"/>
+{% extends "base.html" %}
 
-<%namespace file="post.html" import="renderPost"/>
+{% from 'macros.html' import renderPost with context %}
 
-% if author:
-    <h3>Posts By ${author.name}</h3>
-% endif
+{% block blog_content %}
 
-% if blog:
+{% if author %}
+    <h3>Posts By {{author.name}}</h3>
+{% endif %}
 
-    % if posts:
+{% if blog %}
+
+    {% if posts %}
         <div class="post-list">
-            % for post in posts:
+            {% for post in posts %}
                 <div class="post-list-post">
-                    ${renderPost(post, include_comments=False)}
+                    {{renderPost(post, include_comments=False)}}
                 </div>
-            % endfor
+            {% endfor %}
         </div>
-        % if page or last_page > page:
+        {% if page or last_page > page %}
             <p class="post-nav">
-                % if last_page > page:
-                    <a href="${blog_url}?page=${page + 1}">&lt; Older Posts</a>
-                    % if page:
+                {% if last_page > page %}
+                    <a href="{{blog_url}}?page={{page + 1}}">&lt; Older Posts</a>
+                    {% if page %}
                         |
-                    % endif
-                % endif
-                % if page:
-                    % if page - 1 == 0:
-                        <a href="${blog_url}">Newer Posts &gt;</a>
-                    % else:
-                        <a href="${blog_url}?page=${page - 1}">Newer Posts &gt;</a>
-                    % endif
-                % endif
+                    {% endif %}
+                {% endif %}
+                {% if page %}
+                    {% if page - 1 == 0 %}
+                        <a href="{{blog_url}}">Newer Posts &gt;</a>
+                    {% else %}
+                        <a href="{{blog_url}}?page={{page - 1}}">Newer Posts &gt;</a>
+                    {% endif %}
+                {% endif %}
             </p>
-        % endif
-    % else:
+        {% endif %}
+    {% else %}
         <p>
             No posts yet.
-            Want to <a href="${blog_url}/admin/post/">go write one</a>?
+            Want to <a href="{{blog_url}}/admin/post/">go write one</a>?
         </p>
-    % endif
+    {% endif %}
 
-% else:
+{% else %}
     <p>
         There's nothing here yet.
-        You should <a href="${blog_url}/admin">setup your blog</a>.
+        You should <a href="{{blog_url}}/admin">setup your blog</a>.
     </p>
-% endif
+{% endif %}
 
+{% endblock %}

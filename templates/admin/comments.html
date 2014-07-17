@@ -1,8 +1,10 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
 
 <h3>Comments</h3>
 
-% if comments.count():
+{% if comments.count() %}
 <table>
     <thead>
         <tr>
@@ -17,35 +19,36 @@
         </tr>
     </thead>
     <tbody>
-        % for comment in comments:
+        {% for comment in comments %}
             <tr>
-                <td><a href="${blog_url}/admin/post/${comment.post.slug}">${comment.post.title}</a></td>
-                <td>${comment.name}</td>
-                <td>${comment.url}</td>
-                <td>${comment.email}</td>
-                <td>${comment.body}</td>
-                <td>${comment.timestamp.strftime("%Y-%m-%d %H:%M:%S")}</td>
-                <td>${comment.ip_address}</td>
+                <td><a href="{{blog_url}}/admin/post/{{comment.post.slug}}">{{comment.post.title}}</a></td>
+                <td>{{comment.name}}</td>
+                <td>{{comment.url}}</td>
+                <td>{{comment.email}}</td>
+                <td>{{comment.body}}</td>
+                <td>{{comment.timestamp.strftime("%Y-%m-%d %H:%M:%S")}}</td>
+                <td>{{comment.ip_address}}</td>
                 <td>
                     <form action="" method="post">
-                        <input type="hidden" name="email" value="${comment.email}" />
+                        <input type="hidden" name="email" value="{{comment.email}}" />
                         <input type="submit" value="Approve" />
                     </form>
                     <form action="" method="post">
-                        <input type="hidden" name="comment" value="${comment.key()}" />
+                        <input type="hidden" name="comment" value="{{comment.key()}}" />
                         <input type="hidden" name="block" value="1" />
                         <input type="submit" value="Block IP and Delete" />
                     </form>
                     <form action="" method="post">
-                        <input type="hidden" name="comment" value="${comment.key()}" />
+                        <input type="hidden" name="comment" value="{{comment.key()}}" />
                         <input type="submit" value="Just Delete" />
                     </form>
                 </td>
             </tr>
-        % endfor
+        {% endfor %}
     </tbody>
 </table>
-% else:
+{% else %}
 <p>No comments to moderate.</p>
-% endif
+{% endif %}
 
+{% endblock %}

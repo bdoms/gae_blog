@@ -1,6 +1,9 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
 
-<%namespace file="../post.html" import="renderPost"/>
+{% from 'macros.html' import renderPost with context %}
 
-${renderPost(post, include_comments=False)}
+{% block admin_content %}
 
+{{renderPost(post, include_comments=False)}}
+
+{% endblock %}

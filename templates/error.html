@@ -1,7 +1,11 @@
-<%inherit file="base.html"/>
+{% extends "base.html" %}
 
-<h2>${page_title}</h2>
+{% block blog_content %}
 
-% if stacktrace:
-    <pre>${stacktrace}</pre>
-% endif
+<h2>{{page_title}}</h2>
+
+{% if stacktrace %}
+    <pre>{{stacktrace}}</pre>
+{% endif %}
+
+{% endblock %}

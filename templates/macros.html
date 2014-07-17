@@ -1,0 +1,191 @@
+
+{%- macro renderPost(post, include_comments=True) -%}
+
+<div class="post">
+    <h3 class="post-title">
+        {% if post.published %}
+            <a href="{{blog_url}}/post/{{post.slug}}">{{post.title}}</a>
+        {% else %}
+            {{post.title}}
+        {% endif %}
+    </h3>
+
+    {% if user_is_admin %}
+        <h4 class="post-preview">
+            {% if post.published %}
+                (<a href="{{blog_url}}/admin/post/{{post.slug}}">Edit</a>)
+            {% else %}
+                (Preview Mode - <a href="{{blog_url}}/admin/post/{{post.slug}}">Continue Editing</a>)
+            {% endif %}
+        </h4>
+    {% endif %}
+
+    <p class="post-author">
+        By
+        {% if post.author.url %}
+            <a href="{{post.author.url}}" target="_blank">{{post.author.name}}</a>
+        {% else %}
+            <a href="{{blog_url}}/author/{{post.author.slug}}">{{post.author.name}}</a>
+        {% endif %}
+    </p>
+
+    <p class="post-timestamp">
+        {{post.timestamp.strftime("%c")}}
+        <input type="hidden" value="{{post.secondsSinceEpoch}}"/>
+    </p>
+
+    <div class="post-body">
+        {{post.body|safe}}
+    </div>
+</div>
+
+{% if blog.enable_comments %}
+    {% if include_comments %}
+        {% if post.approved_comments.count() %}
+            <h4 id="comments">Comments</h4>
+            <div class="comments">
+                {% for comment in post.approved_comments %}
+                    {% if comment.author %}
+                        {% if comment.author.key() == post.author.key() %}
+                            <div class="comment post-author-comment">
+                        {% else %}
+                            <div class="comment blog-author-comment">
+                        {% endif %}
+                    {% else %}
+                        <div class="comment">
+                    {% endif %}
+                        <p class="comment-name">
+                            {% if comment.author %}
+                                {% if comment.author.url %}
+                                    <a target="_blank" href="{{comment.author.url}}">{{comment.author.name}}</a>
+                                {% else %}
+                                    <a href="{{blog_url}}/author/{{comment.author.slug}}">{{comment.author.name}}</a>
+                                {% endif %}
+
+                                {% if comment.author.key() == post.author.key() %}
+                                    (post author)
+                                {% else %}
+                                    (blog author)
+                                {% endif %}
+                            {% else %}
+                                {% if comment.name %}
+                                    {% if comment.url %}
+                                        <a target="_blank" href="{{comment.url}}">{{comment.name}}</a>
+                                    {% else %}
+                                        {{comment.name}}
+                                    {% endif %}
+                                {% else %}
+                                    Anonymous
+                                {% endif %}
+                            {% endif %}
+                            says
+                        </p>
+                        <p class="comment-timestamp">
+                            {{comment.timestamp.strftime("%c")}}
+                            <input type="hidden" value="{{comment.secondsSinceEpoch}}"/>
+                        </p>
+                        <p class="comment-body">{{comment.body}}</p>
+                        {% if user_is_admin %}
+                            <form class="comment-delete" action="{{blog_url}}/admin/comments" method="post">
+                                <input type="hidden" name="post" value="{{post.slug}}"/>
+                                <input type="hidden" name="comment" value="{{comment.key()}}"/>
+                                <p><input type="submit" value="Delete" /></p>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <h4 id="comment-link-header"><a id="comment-link" href="#comment-link">Leave a Comment</a></h4>
+
+        <form id="comment-form" action="" method="post" {{not errors and 'style="display: none;"'|safe or ''}}>
+            {% if user_is_admin %}
+                <ul>
+                    <li>
+                        {% if form_data.get('author-choice') != 'custom' %}
+                            <input id="author-choice-author" type="radio" name="author-choice" value="author" checked="checked" />
+                        {% else %}
+                            <input id="author-choice-author" type="radio" name="author-choice" value="author" />
+                        {% endif %}
+                        <label for="author-choice-author">Leave comment as author:</label>
+                        <select name="author">
+                            {% for author in blog.authors %}
+                                {% if form_data.get('author') == author.slug %}
+                                    <option value="{{author.slug}}" selected="selected">{{author.name}}</option>
+                                {% else %}
+                                    <option value="{{author.slug}}">{{author.name}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <span class="help">(bypasses moderation)</span>
+                        {% if "author" in errors %}
+                            <span class="error">please select a valid author</span>
+                        {% endif %}
+                    </li>
+                    <li>
+                        {% if form_data.get('author-choice') == 'custom' %}
+                            <input id="author-choice-custom" type="radio" name="author-choice" value="custom" checked="checked" />
+                        {% else %}
+                            <input id="author-choice-custom" type="radio" name="author-choice" value="custom" />
+                        {% endif %}
+                        <label for="author-choice-custom">Enter custom information</label>
+                    </li>
+                </ul>
+
+                {% if form_data.get('author-choice') != 'custom' %}
+                    <div id="comment-author-info" style="display: none;">
+                {% else %}
+                    <div id="comment-author-info">
+                {% endif %}
+            {% else %}
+                <div id="comment-author-info">
+            {% endif %}
+                <p>
+                    <label for="name">Name:</label>
+                    <input type="text" name="name" value="{{form_data.get('name', '')}}"/>
+                    <span class="help">(optional, appears with comment)</span>
+                    {% if "name" in errors %}
+                        <span class="error">please enter a valid name</span>
+                    {% endif %}
+                </p>
+                <p>
+                    <label for="url">URL:</label>
+                    <input type="url" name="url" value="{{form_data.get('url', '')}}"/>
+                    <span class="help">(optional, your name links to this address if included)</span>
+                    {% if "url" in errors %}
+                        <span class="error">please enter a valid URL</span>
+                    {% endif %}
+                </p>
+                <p>
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" value="{{form_data.get('email', '')}}"/>
+                    <span class="help">(required for verification, first comment is moderated)</span>
+                    {% if "email" in errors %}
+                        <span class="error">please enter a valid email</span>
+                    {% endif %}
+                </p>
+                <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
+                    <label for="required">Required:</label>
+                    <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
+                    <span class="help">(required for verification)</span>
+                </p>
+            </div>
+            <p>
+                <label for="body">Comment:</label>
+                <span class="help">(HTML is stripped, URL's become links)</span>
+                {% if "body" in errors %}
+                    <span class="error">please enter a valid comment</span>
+                {% endif %}
+            </p>
+            <textarea name="body">{{form_data.get('body', '')}}</textarea>
+            <p><input type="submit" value="Make Comment" /></p>
+        </form>
+    {% else %}
+        {% if post.published %}
+            <p class="all-comments"><a href="{{blog_url}}/post/{{post.slug}}#comments">See All Comments ({{post.approved_comments.count()}})</a></p>
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+{%- endmacro -%}

@@ -1,62 +1,65 @@
-<%inherit file="base.html"/>
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
 
 <h3>Posts</h3>
 
-% if posts:
+{% if posts %}
     <table>
         <thead>
             <tr>
                 <th>Title (Click to Edit)</th>
                 <th>Author</th>
                 <th>Published (Click to View)</th>
-                % if blog.enable_comments:
+                {% if blog.enable_comments %}
                     <th># of Comments</th>
-                % endif
+                {% endif %}
                 <th>Timestamp (UTC)</th>
             </tr>
         </thead>
         <tbody>
-            % for post in posts:
+            {% for post in posts %}
                 <tr>
-                    <td><a href="${blog_url}/admin/post/${post.slug}">${post.title}</a></td>
-                    % if post.author.url:
-                        <td><a href="${post.author.url}" target="_blank">${post.author.name}</a></td>
-                    % else:
-                        <td><a href="${blog_url}/author/${post.author.slug}">${post.author.name}</a></td>
-                    % endif
-                    % if post.published:
-                        <td><a href="${blog_url}/post/${post.slug}">${post.published}</a></td>
-                    % else:
-                        <td>${post.published}</td>
-                    % endif
-                    % if blog.enable_comments:
-                        <td>${post.approved_comments.count()}</td>
-                    % endif
-                    <td>${post.timestamp.strftime("%Y-%m-%d %H:%M:%S")}</td>
+                    <td><a href="{{blog_url}}/admin/post/{{post.slug}}">{{post.title}}</a></td>
+                    {% if post.author.url %}
+                        <td><a href="{{post.author.url}}" target="_blank">{{post.author.name}}</a></td>
+                    {% else %}
+                        <td><a href="{{blog_url}}/author/${post.author.slug}}">{{post.author.name}}</a></td>
+                    {% endif %}
+                    {% if post.published %}
+                        <td><a href="{{blog_url}}/post/{{post.slug}}">{{post.published}}</a></td>
+                    {% else %}
+                        <td>{{post.published}}</td>
+                    {% endif %}
+                    {% if blog.enable_comments %}
+                        <td>{{post.approved_comments.count()}}</td>
+                    {% endif %}
+                    <td>{{post.timestamp.strftime("%Y-%m-%d %H:%M:%S")}}</td>
                 </tr>
-            % endfor
+            {% endfor %}
         </tbody>
     </table>
-    % if page or last_page > page:
+    {% if page or last_page > page %}
         <p class="post-nav">
-            % if last_page > page:
-                <a href="${blog_url}/admin/posts?page=${page + 1}">&lt; Older Posts</a>
-                % if page:
+            {% if last_page > page %}
+                <a href="{{blog_url}}/admin/posts?page={{page + 1}}">&lt; Older Posts</a>
+                {% if page %}
                     |
-                % endif
-            % endif
-            % if page:
-                % if page - 1 == 0:
-                    <a href="${blog_url}/admin/posts">Newer Posts &gt;</a>
-                % else:
-                    <a href="${blog_url}/admin/posts?page=${page - 1}">Newer Posts &gt;</a>
-                % endif
-            % endif
+                {% endif %}
+            {% endif %}
+            {% if page %}
+                {% if page - 1 == 0 %}
+                    <a href="{{blog_url}}/admin/posts">Newer Posts &gt;</a>
+                {% else %}
+                    <a href="{{blog_url}}/admin/posts?page={{page - 1}}">Newer Posts &gt;</a>
+                {% endif %}
+            {% endif %}
         </p>
-    % endif
-% else:
+    {% endif %}
+{% else %}
     <p>No posts yet.</p>
-% endif
+{% endif %}
 
-<h3><a href="${blog_url}/admin/post/">Write a New Post</a></h3>
+<h3><a href="{{blog_url}}/admin/post/">Write a New Post</a></h3>
 
+{% endblock %}

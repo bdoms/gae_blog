@@ -3,33 +3,32 @@
     <head>
         <meta charset="utf-8">
         <title>
-            ${blog and blog.title or 'Blog'}
-            % if post:
-                - ${post.title}
-            % elif page_title:
-                - ${page_title}
-            % endif
+            {% if post %}
+                {{post.title}} |
+            {% elif page_title %}
+                {{page_title}} |
+            {% endif %}
+            {{blog and blog.title or 'Blog'}}
         </title>
-        <meta name="description" content="${blog_description and blog_description.replace('"', '&quot;') or ''}" />
+        <meta name="description" content="{{blog_description and blog_description.replace('"', '&quot;') or ''}}" />
         <style>
             #post-body {width: 720px; height: 100px;}
             .editor-image-selected {border: 1px solid #666;}
         </style>
     </head>
     <body>
-
         <div id="blog" class="container">
 
-            <div id="header">
-                <h1><a href="${blog_url}">${blog and blog.title or 'Blog'}</a></h1>
-                <p><a href="${blog_url}/feed">Subscribe</a></p>
-                % if blog and blog.contact:
-                    <p><a href="${blog_url}/contact/">Contact</a></p>
-                % endif
-            </div>
+            <header>
+                <h1><a href="{{blog_url}}">{{blog and blog.title or 'Blog'}}</a></h1>
+                <p><a href="{{blog_url}}/feed">Subscribe</a></p>
+                {% if blog and blog.contact %}
+                    <p><a href="{{blog_url}}/contact/">Contact</a></p>
+                {% endif %}
+            </header>
 
             <div id="content">
-                ${next.body()}
+                {% block content %}{% endblock %}
             </div>
         </div>
     </body>

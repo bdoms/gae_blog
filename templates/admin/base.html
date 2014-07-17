@@ -1,8 +1,9 @@
-<%inherit file="../base.html"/>
+{% extends '/base.html' %}
 
-<h2><a href="${blog_url}/admin">Admin</a></h2>
+{% block blog_content %}
+<h2><a href="{{blog_url}}/admin">Admin</a></h2>
 
-<p><a href="${logout_url}">Sign Out</a></p>
+<p><a href="{{logout_url}}">Sign Out</a></p>
 
-${next.body()}
-
+{% block admin_content %}{% endblock %}
+{% endblock %}
