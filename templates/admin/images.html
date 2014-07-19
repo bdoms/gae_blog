@@ -19,14 +19,14 @@
             {% for image in images %}
                 <tr>
                     <td><a href="{{image.url}}">
-                        <img src="{{image.url}}=s100" alt="{{image.blob.filename}} Preview" />
+                        <img src="{{image.url}}=s100" alt="{{blob_infos[loop.index - 1].filename}} Preview" />
                     </a></td>
-                    <td>{{image.blob.filename}}</td>
-                    <td>{{image.blob.creation.strftime("%Y-%m-%d %H:%M:%S")}}</td>
-                    <td>{{image.blob.size}}</td>
+                    <td>{{blob_infos[loop.index - 1].filename}}</td>
+                    <td>{{blob_infos[loop.index - 1].creation.strftime("%Y-%m-%d %H:%M:%S")}}</td>
+                    <td>{{blob_infos[loop.index - 1].size}}</td>
                     <td>
                         <form action="" method="post" class="delete-form">
-                            <input type="hidden" name="image" value="{{image.key()}}"/>
+                            <input type="hidden" name="image" value="{{image.key.id()}}"/>
                             <input type="submit" value="Delete"/>
                         </form>
                     </td>

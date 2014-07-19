@@ -120,7 +120,7 @@ class BaseController(webapp2.RequestHandler):
 
     @webapp2.cached_property
     def blog(self):
-        return model.Blog.get_by_key_name(self.blog_slug)
+        return model.Blog.get_by_id(self.blog_slug)
 
     # helper functions for validating
     def validate(self, validator, value):

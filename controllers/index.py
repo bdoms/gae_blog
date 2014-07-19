@@ -28,6 +28,6 @@ class IndexController(BaseController):
             if last_page < 0:
                 last_page = 0
 
-            posts = published_posts.fetch(posts_per_page, page * posts_per_page)
+            posts = published_posts.fetch(posts_per_page, offset=page * posts_per_page)
 
         self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts)

@@ -15,7 +15,7 @@ class PostController(BaseController):
     def get(self, post_slug):
 
         if post_slug:
-            post = model.BlogPost.get_by_key_name(post_slug, parent=self.blog)
+            post = model.BlogPost.get_by_id(post_slug, parent=self.blog.key)
             if post and post.published:
                 # only display a post if it's actually published
                 form_data, errors = self.errorsFromSession()
@@ -30,7 +30,7 @@ class PostController(BaseController):
         if blog and blog.enable_comments and ip_address not in blog.blocklist:
             # only allow comment posting if comments are enabled
             if post_slug:
-                post = model.BlogPost.get_by_key_name(post_slug, parent=blog)
+                post = model.BlogPost.get_by_id(post_slug, parent=blog.key)
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
 
@@ -77,7 +77,7 @@ class PostController(BaseController):
                         # validate that if they want to comment as an author that it's valid and they're approved
                         if not self.user_is_admin:
                             return self.renderError(403)
-                        author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+                        author = model.BlogAuthor.get_by_id(author_slug, parent=blog.key)
                         if not author:
                             errors["author"] = True
 
@@ -85,7 +85,7 @@ class PostController(BaseController):
                             self.errorsToSession(form_data, errors)
                             return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
-                        comment = model.BlogComment(body=body, approved=True, author=author.key(), parent=post)
+                        comment = model.BlogComment(body=body, approved=True, author=author.key, parent=post.key)
                         memcache.delete(self.request.path + self.request.query_string)
                     else:
                         # validate that the email address is valid
@@ -109,9 +109,9 @@ class PostController(BaseController):
                             return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
                         # look for a previously approved comment from this email address on this blog
-                        approved = blog.comments.filter("email =", email).filter("approved =", True)
+                        approved = blog.comments.filter(model.BlogComment.email == email).filter(model.BlogComment.approved == True)
 
-                        comment = model.BlogComment(email=email, body=body, ip_address=ip_address, parent=post)
+                        comment = model.BlogComment(email=email, body=body, ip_address=ip_address, parent=post.key)
                         if name:
                             comment.name = name
                         if url:
@@ -123,7 +123,7 @@ class PostController(BaseController):
                         elif blog.moderation_alert and blog.admin_email:
                             # send out an email to the author of the post if they have an email address
                             # informing them of the comment needing moderation
-                            author = post.author
+                            author = post.author.get()
                             if author.email:
                                 if blog.title:
                                     subject = blog.title + " - Comment Awaiting Moderation"

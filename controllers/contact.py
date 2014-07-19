@@ -73,7 +73,7 @@ class ContactController(BaseController):
                 if not authors:
                     errors["author_slug"] = True
             elif author_slug:
-                author = model.BlogAuthor.get_by_key_name(author_slug, parent=blog)
+                author = model.BlogAuthor.get_by_id(author_slug, parent=blog.key)
                 if not author or not author.email:
                     errors["author_slug"] = True
                 authors = [author]

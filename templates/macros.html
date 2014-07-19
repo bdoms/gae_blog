@@ -22,10 +22,11 @@
 
     <p class="post-author">
         By
-        {% if post.author.url %}
-            <a href="{{post.author.url}}" target="_blank">{{post.author.name}}</a>
+        {% set post_author = post.author.get() %}
+        {% if post_author.url %}
+            <a href="{{post_author.url}}" target="_blank">{{post_author.name}}</a>
         {% else %}
-            <a href="{{blog_url}}/author/{{post.author.slug}}">{{post.author.name}}</a>
+            <a href="{{blog_url}}/author/{{post_author.slug}}">{{post_author.name}}</a>
         {% endif %}
     </p>
 
@@ -46,7 +47,7 @@
             <div class="comments">
                 {% for comment in post.approved_comments %}
                     {% if comment.author %}
-                        {% if comment.author.key() == post.author.key() %}
+                        {% if comment.author == post.author %}
                             <div class="comment post-author-comment">
                         {% else %}
                             <div class="comment blog-author-comment">
@@ -56,13 +57,14 @@
                     {% endif %}
                         <p class="comment-name">
                             {% if comment.author %}
-                                {% if comment.author.url %}
-                                    <a target="_blank" href="{{comment.author.url}}">{{comment.author.name}}</a>
+                                {% set comment_author = comment.author.get() %}
+                                {% if comment_author.url %}
+                                    <a target="_blank" href="{{comment_author.url}}">{{comment_author.name}}</a>
                                 {% else %}
-                                    <a href="{{blog_url}}/author/{{comment.author.slug}}">{{comment.author.name}}</a>
+                                    <a href="{{blog_url}}/author/{{comment_author.slug}}">{{comment_author.name}}</a>
                                 {% endif %}
 
-                                {% if comment.author.key() == post.author.key() %}
+                                {% if comment.author == post.author %}
                                     (post author)
                                 {% else %}
                                     (blog author)
@@ -88,7 +90,7 @@
                         {% if user_is_admin %}
                             <form class="comment-delete" action="{{blog_url}}/admin/comments" method="post">
                                 <input type="hidden" name="post" value="{{post.slug}}"/>
-                                <input type="hidden" name="comment" value="{{comment.key()}}"/>
+                                <input type="hidden" name="comment" value="{{comment.key.string_id()}}"/>
                                 <p><input type="submit" value="Delete" /></p>
                             </form>
                         {% endif %}

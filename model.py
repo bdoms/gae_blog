@@ -3,43 +3,43 @@ import re
 from time import mktime
 from datetime import datetime
 
-from google.appengine.ext import db, blobstore
+from google.appengine.ext import ndb
 
 
 # standard model objects
-class Blog(db.Model):
+class Blog(ndb.Model):
 
-    title = db.StringProperty()
-    description = db.StringProperty()
-    enable_comments = db.BooleanProperty(default=False)
-    moderation_alert = db.BooleanProperty(default=False)
-    contact = db.BooleanProperty(default=False)
-    admin_email = db.StringProperty()
-    posts_per_page = db.IntegerProperty(default=10)
-    image_preview_size = db.IntegerProperty(default=600)
-    template = db.StringProperty()
-    mail_queue = db.StringProperty(default="mail")
-    blocklist = db.ListProperty(str)
+    title = ndb.StringProperty()
+    description = ndb.StringProperty()
+    enable_comments = ndb.BooleanProperty(default=False)
+    moderation_alert = ndb.BooleanProperty(default=False)
+    contact = ndb.BooleanProperty(default=False)
+    admin_email = ndb.StringProperty()
+    posts_per_page = ndb.IntegerProperty(default=10)
+    image_preview_size = ndb.IntegerProperty(default=600)
+    template = ndb.StringProperty()
+    mail_queue = ndb.StringProperty(default="mail")
+    blocklist = ndb.StringProperty(repeated=True)
 
     @property
     def slug(self):
-        return self.key().name()
+        return self.key.string_id()
 
     @property
     def posts(self):
-        return BlogPost.all().ancestor(self)
+        return BlogPost.query(ancestor=self.key)
 
     @property
     def authors(self):
-        return BlogAuthor.all().ancestor(self)
+        return BlogAuthor.query(ancestor=self.key)
 
     @property
     def comments(self):
-        return BlogComment.all().ancestor(self)
+        return BlogComment.query(ancestor=self.key)
 
     @property
     def images(self):
-        return BlogImage.all().ancestor(self)
+        return BlogImage.query(ancestor=self.key)
 
     @property
     def children(self):
@@ -48,51 +48,59 @@ class Blog(db.Model):
 
     @property
     def published_posts(self):
-        return self.posts.filter('published =', True).filter('timestamp <', datetime.utcnow()).order('-timestamp')
+        return self.posts.filter(BlogPost.published == True).filter(BlogPost.timestamp < datetime.utcnow()).order(-BlogPost.timestamp)
 
 
-class BlogAuthor(db.Model):
+class BlogAuthor(ndb.Model):
 
-    name = db.StringProperty(required=True)
-    url = db.StringProperty()
-    email = db.StringProperty()
-
-    @property
-    def slug(self):
-        return self.key().name()
-
-    @property
-    def blog(self):
-        return self.parent()
-
-    @property
-    def published_posts(self):
-        return self.posts.filter('published =', True).filter('timestamp <', datetime.utcnow()).order('-timestamp')
-
-
-class BlogPost(db.Model):
-
-    title = db.StringProperty(required=True) # max of 500 chars
-    body = db.TextProperty() # returns type db.Text (a subclass of unicode)
-    published = db.BooleanProperty(default=False)
-    timestamp = db.DateTimeProperty(auto_now_add=True)
-    author = db.ReferenceProperty(BlogAuthor, required=True, collection_name="posts")
+    name = ndb.StringProperty(required=True)
+    url = ndb.StringProperty()
+    email = ndb.StringProperty()
 
     @property
     def slug(self):
-        return self.key().name()
+        return self.key.string_id()
 
     @property
     def blog(self):
-        return self.parent()
+        return self.key.parent().get()
 
     @property
     def comments(self):
-        return BlogComment.all().ancestor(self)
+        return BlogComment.query(BlogComment.author == self.key)
+
+    @property
+    def posts(self):
+        return BlogPost.query(BlogPost.author == self.key)
+
+    @property
+    def published_posts(self):
+        return self.posts.filter(BlogPost.published == True).filter(BlogPost.timestamp < datetime.utcnow()).order(-BlogPost.timestamp)
+
+
+class BlogPost(ndb.Model):
+
+    title = ndb.StringProperty(required=True) # max of 500 chars
+    body = ndb.TextProperty() # returns type db.Text (a subclass of unicode)
+    published = ndb.BooleanProperty(default=False)
+    timestamp = ndb.DateTimeProperty(auto_now_add=True)
+    author = ndb.KeyProperty(kind=BlogAuthor, required=True)
+
+    @property
+    def slug(self):
+        return self.key.string_id()
+
+    @property
+    def blog(self):
+        return self.key.parent().get()
+
+    @property
+    def comments(self):
+        return BlogComment.query(ancestor=self.key)
 
     @property
     def approved_comments(self):
-        return self.comments.filter('approved =', True).order('timestamp')
+        return self.comments.filter(BlogComment.approved == True).order(BlogComment.timestamp)
 
     @property
     def children(self):
@@ -112,45 +120,41 @@ class BlogPost(db.Model):
             return " ".join(words[:length]) + "..."
 
 
-class BlogComment(db.Model):
+class BlogComment(ndb.Model):
 
-    name = db.StringProperty()
-    url = db.StringProperty()
-    email = db.StringProperty()
-    body = db.TextProperty(required=True)
-    approved = db.BooleanProperty(default=False)
-    timestamp = db.DateTimeProperty(auto_now_add=True)
-    ip_address = db.StringProperty(default='')
-    author = db.ReferenceProperty(BlogAuthor, collection_name="comments")
-
-    def __init__(self, *args, **kwargs):
-        assert "email" in kwargs or "author" in kwargs, "A BlogComment needs either an email address or attached author for verification."
-        return super(BlogComment, self).__init__(*args, **kwargs)
+    name = ndb.StringProperty()
+    url = ndb.StringProperty()
+    email = ndb.StringProperty()
+    body = ndb.TextProperty(required=True)
+    approved = ndb.BooleanProperty(default=False)
+    timestamp = ndb.DateTimeProperty(auto_now_add=True)
+    ip_address = ndb.StringProperty(default='')
+    author = ndb.KeyProperty(kind=BlogAuthor)
 
     @property
     def post(self):
-        return self.parent()
+        return self.key.parent().get()
 
     @property
     def secondsSinceEpoch(self):
         return mktime(self.timestamp.timetuple())
 
 
-class BlogImage(db.Model):
+class BlogImage(ndb.Model):
 
-    blob = blobstore.BlobReferenceProperty(required=True)
-    timestamp = db.DateTimeProperty(auto_now_add=True) # this information is also on the blob, but having it here makes it possible to order by
-    url = db.StringProperty(default="")
+    blob = ndb.BlobKeyProperty(required=True)
+    timestamp = ndb.DateTimeProperty(auto_now_add=True) # this information is also on the blob, but having it here makes it possible to order by
+    url = ndb.StringProperty(default="")
 
     @property
     def blog(self):
-        return self.parent()
+        return self.key.parent().get()
 
 
 # misc functions
 def refresh(model_instance):
     # refeshes an instance in case things were updated since the last reference to this object (used in testing)
-    return db.get(model_instance.key())
+    return db.get(model_instance.key)
 
 def stripHTML(string):
     # remove style or script tags first, and that includes anything inside them
@@ -172,43 +176,31 @@ def linkURLs(string):
     return URL_RE.sub(r'<a href="\1" target="_blank">\1</a>', string)
 
 
-# model helper functions
-def toDict(model_object):
-    """ convert a model object to a dictionary """
-    d = {}
-    for prop in model_object.properties():
-        # we must avoid de-referencing the values for the reference properties in case this is run in a transaction
-        if type(getattr(model_object.__class__, prop)) == db.ReferenceProperty:
-            d[prop] = getattr(model_object.__class__, prop).get_value_for_datastore(model_object)
-        else:
-            d[prop] = getattr(model_object, prop)
-    return d
-
-def makeNew(model_object, key_name=None, parent=None, use_transaction=True):
+def makeNew(model_object, id=None, parent=None, use_transaction=True):
     """ if a key name or parent changes then the key does - since it's immutable per object we must recreate it entirely """
-    def transaction(model_object, key_name=key_name, parent=None):
+    def newTransaction():
         # get old info
-        d = toDict(model_object)
+        d = model_object.to_dict()
         # list forces execution, which we need since we're about to delete this
         children = hasattr(model_object, "children") and list(model_object.children) or []
         # delete current (must come first so that the key name can be made the same if necessary)
-        model_object.delete()
+        model_object.key.delete()
         # make new
-        new_object = model_object.__class__(key_name=key_name, parent=parent, **d)
+        new_object = model_object.__class__(id=id, parent=parent, **d)
         new_object.put()
 
         # replace the parent on all the children
         # NOTE that nested transactions aren't supported, so these must use_transaction=False
         for child in children:
             child_name = hasattr(child, "slug") and child.slug or None
-            new_child = makeNew(child, key_name=child_name, parent=new_object, use_transaction=False)
+            new_child = makeNew(child, id=child_name, parent=new_object, use_transaction=False)
 
         return new_object
 
     if use_transaction:
-        new_object = db.run_in_transaction(transaction, model_object, key_name=key_name, parent=parent)
+        new_object = ndb.transaction(newTransaction)
     else:
-        new_object = transaction(model_object, key_name=key_name, parent=parent)
+        new_object = newTransaction()
 
     return new_object
 
@@ -216,14 +208,14 @@ def makePostSlug(title, blog, post=None):
     """ creates a slug for use in a url """
     slug = title.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
-    existing = BlogPost.get_by_key_name(slug, parent=blog)
-    if (not post and existing) or ((post and existing) and post.key() != existing.key()):
+    existing = BlogPost.get_by_id(slug, parent=blog.key)
+    if (not post and existing) or ((post and existing) and post.key != existing.key):
         # only work on finding a new slug if this isn't the same post that already uses it
         i = 0
         while existing:
             i += 1
             new_slug = slug + "-" + str(i)
-            existing = BlogPost.get_by_key_name(new_slug, parent=blog)
+            existing = BlogPost.get_by_id(new_slug, parent=blog.key)
             if not existing:
                 slug = new_slug
     return slug
@@ -232,14 +224,14 @@ def makeAuthorSlug(name, blog, author=None):
     """ creates a slug for use in a url """
     slug = name.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
-    existing = BlogAuthor.get_by_key_name(slug, parent=blog)
-    if (not author and existing) or ((author and existing) and author.key() != existing.key()):
+    existing = BlogAuthor.get_by_id(slug, parent=blog.key)
+    if (not author and existing) or ((author and existing) and author.key != existing.key):
         # only work on finding a new slug if this isn't the same post that already uses it
         i = 0
         while existing:
             i += 1
             new_slug = slug + "-" + str(i)
-            existing = BlogAuthor.get_by_key_name(new_slug, parent=blog)
+            existing = BlogAuthor.get_by_id(new_slug, parent=blog.key)
             if not existing:
                 slug = new_slug
     return slug
@@ -257,4 +249,3 @@ def checkImageName(name):
         return None
 
     return name
-
