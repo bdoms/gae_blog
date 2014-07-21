@@ -337,7 +337,7 @@ class PostController(AdminController):
 
         if slug_choice == "custom":
             slug = self.validate(UnicodeString(not_empty=True), slug)
-            if slug:
+            if slug and "/" not in slug:
                 # check to make sure that there isn't already another post with this slug
                 existing = model.BlogPost.get_by_id(slug, parent=blog.key)
                 if existing and (not post or existing.key != post.key):

@@ -12,12 +12,14 @@ class ContactController(BaseController):
     """ handles request for the contact page of the site """
 
     @renderIfCachedNoErrors
-    def get(self, sent=False):
+    def get(self):
 
         blog = self.blog
 
         if not blog or not blog.contact:
             return self.renderError(403)
+
+        sent = self.session.pop("blog_contact_sent", False)
 
         authors = [author for author in blog.authors if author.email]
 
@@ -41,14 +43,16 @@ class ContactController(BaseController):
 
             if honeypot:
                 # act perfectly normal so the bot thinks the request worked
-                return self.redirect(self.blog_url + '/contact/sent')
+                self.session["blog_contact_sent"] = True
+                return self.redirect(self.blog_url + '/contact')
 
             challenge = generateToken(self.request.url)
             if token != challenge:
                 challenge = generateToken(self.request.url, again=True)
                 if token != challenge:
                     # act perfectly normal so the bot thinks the request worked
-                    return self.redirect(self.blog_url + '/contact/sent')
+                    self.session["blog_contact_sent"] = True
+                    return self.redirect(self.blog_url + '/contact')
 
             errors = {}
             form_data = {"author": author_slug, "email": email, "subject": subject, "body": body}
@@ -82,13 +86,14 @@ class ContactController(BaseController):
 
             if errors:
                 self.errorsToSession(form_data, errors)
-                return self.redirect(self.blog_url + '/contact/')
+                return self.redirect(self.blog_url + '/contact')
 
             if blog.admin_email:
                 for author in authors:
                     deferred.defer(sendContactEmail, blog.admin_email, author.name + " <" + author.email + ">", subject, body, email, _queue=blog.mail_queue)
 
-        return self.redirect(self.blog_url + '/contact/sent')
+        self.session["blog_contact_sent"] = True
+        return self.redirect(self.blog_url + '/contact')
 
 
 def sendContactEmail(sender, to, subject, body, reply_to):
