@@ -36,9 +36,29 @@ except ImportError:
         return url
 
 
+class RelativeEnvironment(jinja2.Environment):
+    """ enable relative template paths """
+
+    def join_path(self, template, parent):
+        return os.path.join(os.path.dirname(parent), template)
+
+
+class RelativeLoader(jinja2.BaseLoader):
+    """ enable relative template paths """
+
+    def get_source(self, environment, template):
+        path = os.path.realpath(os.path.join(TEMPLATES_PATH, template))
+        if not os.path.exists(path):
+            raise jinja2.TemplateNotFound(template)
+        mtime = os.path.getmtime(path)
+        with file(path) as f:
+            source = f.read().decode('utf-8')
+        return source, path, lambda: mtime == os.path.getmtime(path)
+
+
 class BaseController(webapp2.RequestHandler):
 
-    jinja_env = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(TEMPLATES_PATH))
+    jinja_env = RelativeEnvironment(autoescape=True, loader=RelativeLoader())
 
     def dispatch(self):
         # get a session store for this request
