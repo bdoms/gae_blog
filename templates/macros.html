@@ -90,7 +90,7 @@
                         {% if user_is_admin %}
                             <form class="comment-delete" action="{{blog_url}}/admin/comments" method="post">
                                 <input type="hidden" name="post" value="{{post.slug}}"/>
-                                <input type="hidden" name="comment" value="{{comment.key.string_id()}}"/>
+                                <input type="hidden" name="comment" value="{{comment.key.urlsafe()}}"/>
                                 <p><input type="submit" value="Delete" /></p>
                             </form>
                         {% endif %}
