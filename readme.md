@@ -1,11 +1,9 @@
-Copyright &copy; 2010, [Brendan Doms](http://www.bdoms.com/)
+Copyright &copy; 2010-2014, [Brendan Doms](http://www.bdoms.com/)
 Licensed under the [MIT license](http://www.opensource.org/licenses/MIT)
 
 
 GAE Blog is a project to provide a bare-bones blogging solution for Google App
 Engine that makes no assumptions, and is easy to integrate with existing apps.
-
-It uses and includes a copy of [Mako](http://www.makotemplates.org/)
 
 
 ## Setup for Integrating with Your Project
@@ -37,6 +35,12 @@ Finally, you need to merge the libraries and handlers from the example GAE Blog
 `app.yaml` into your project's top level `app.yaml`. After doing that, starting
 the development server and going to `/blog` will be handled by `gae_blog`.
 
+Before deploying to production, be sure to replace the `secret_key` in the
+`blog.py` script with randomized output for security. It's recommended that you
+copy this file into your own project so that you can modify it and commit the
+changes. Note that this script is also the place where you need to define your
+URL routes.
+
 Go to `/blog/admin` to configure your blog, post to it, and moderate comments.
 
 
@@ -60,8 +64,8 @@ and modify these things:
 ## Using a Custom Base Template
 
 You can obviously modify the included base template as much as you want, but in
-order to avoid redundancy, if you already have a Mako one that you'd like to
-use all you have to do is modify the "Base Template" configuration option on
+order to avoid redundancy, if you have one that you'd like to use, then
+all you have to do is modify the "Base Template" configuration option on
 the blog admin page (at `/blog/admin`) with a path relative to your project (i.e.
 the parent directory of the `gae_blog` folder). For example, if your directory
 structure looks like this:
@@ -74,4 +78,3 @@ structure looks like this:
 You would enter "your_templates/your_base_template.html" as the relative path.
 However, if you leave that option blank, then the `default_base.html` file will
 be used instead.
-
