@@ -15,8 +15,8 @@ class VerifyController(BaseController):
 
         # send along a token so we can verify this request
         referer = self.request.headers.get("referer")
-        if not referer.startswith("http://" + self.request.headers.get("host")):
-            self.renderError(400)
+        if not referer or not referer.startswith(self.request.host_url):
+            return self.renderError(400)
 
         url = self.request.get("url")
 
