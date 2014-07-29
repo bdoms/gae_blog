@@ -95,7 +95,8 @@ class BlogController(AdminController):
             existed = False
 
         blog.put()
-        memcache.flush_all()
+        
+        memcache.delete_multi(getCacheKeys(blog))
 
         if existed:
             self.redirect('/' + blog.slug + '/admin')
@@ -171,7 +172,8 @@ class AuthorController(AdminController):
             author = model.BlogAuthor(id=slug, parent=blog.key, **valid_data)
 
         author.put()
-        memcache.flush_all()
+        
+        memcache.delete_multi(getCacheKeys(blog))
 
         if blog.authors.count() > 1:
             self.redirect(self.blog_url + '/admin/authors')
@@ -222,7 +224,7 @@ class PostsController(AdminController):
                     model.db.delete(list(post.comments))
                 # then the post itself
                 post.delete()
-                memcache.flush_all()
+                memcache.delete_multi(getCacheKeys(blog))
             else:
                 return self.renderError(404)
 
@@ -308,7 +310,7 @@ class PostController(AdminController):
 
         # send them back to the admin list of posts if it's not published or to the actual post if it is
         if post.published:
-            memcache.flush_all()
+            memcache.delete_multi(getCacheKeys(blog))
             self.redirect(self.blog_url + '/post/' + post.slug)
         else:
             if self.request.get("preview"):
@@ -339,7 +341,7 @@ class CommentsController(AdminController):
         self.renderTemplate('admin/comments.html', comments=comments, page_title="Admin - Comments", logout_url=self.logout_url)
 
     def post(self):
-        memcache.flush_all()
+        
         comment_key = self.request.get("comment")
         if comment_key:
             # delete this individual comment
@@ -369,6 +371,8 @@ class CommentsController(AdminController):
             for comment in comments:
                 comment.approved = True
                 comment.put()
+                post_path = self.blog_url + '/post/' + comment.post.slug
+                memcache.delete(post_path)
 
         self.redirect(self.blog_url + '/admin/comments')
 
@@ -484,3 +488,31 @@ class MigrateController(AdminController):
             model.db.put(new_images)
 
         self.redirect(self.blog_url + '/admin')
+
+
+def getCacheKeys(blog):
+    """ lists keys for anything with the blog or its descendents that might be cached """
+    url = '/' + blog.slug
+    keys = [url, url + '/contact', url + '/feed']
+    for post in blog.published_posts:
+        keys.append(url + '/post/' + post.slug)
+
+    blog_pages = (blog.published_posts.count() - 1) / blog.posts_per_page
+    if blog_pages < 0:
+        blog_pages = 0
+
+    for page in range(blog_pages):
+        keys.append(url + 'page=' + str(page + 1))
+
+    for author in blog.authors:
+        author_url = (url + '/author/' + author.slug)
+        keys.append(author_url)
+
+        author_pages = (author.published_posts.count() - 1) / blog.posts_per_page
+        if author_pages < 0:
+            author_pages = 0
+
+        for page in range(author_pages):
+            keys.append(author_url + 'page=' + str(page + 1))
+
+    return keys

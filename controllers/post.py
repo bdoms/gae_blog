@@ -67,7 +67,7 @@ class PostController(FormController):
                             return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
                         comment = model.BlogComment(body=body, approved=True, author=author.key, parent=post.key)
-                        memcache.delete(self.request.path + self.request.query_string)
+                        memcache.delete(self.request.path)
                     elif errors:
                         return self.redisplay(form_data, errors, self.blog_url + '/post/' + post_slug + '#comments')
                     else:
@@ -84,7 +84,7 @@ class PostController(FormController):
 
                         if approved.count():
                             comment.approved = True
-                            memcache.delete(self.request.path + self.request.query_string)
+                            memcache.delete(self.request.path)
                         elif blog.moderation_alert and blog.admin_email:
                             # send out an email to the author of the post if they have an email address
                             # informing them of the comment needing moderation
