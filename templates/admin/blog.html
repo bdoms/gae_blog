@@ -69,6 +69,18 @@
         {% endif %}
     </p>
     <p>
+        <label for="author-pages">Enable Author Pages:</label>
+        {% if "author_pages" in form_data %}
+            <input type="checkbox" name="author_pages" id="author-pages" {{form_data['author_pages'] and 'checked="checked"' or ''}}/>
+        {% else %}
+            {% if blog and blog.author_pages %}
+                <input type="checkbox" name="author_pages" id="author-pages" checked="checked" />
+            {% else %}
+                <input type="checkbox" name="author_pages" id="author-pages" />
+            {% endif %}
+        {% endif %}
+    </p>
+    <p>
         <label for="admin_email">Admin Email:</label>
         {% if "admin_email" in form_data %}
             <input type="text" name="admin_email" value="{{form_data['admin_email']}}" />

@@ -14,6 +14,7 @@ class Blog(ndb.Model):
     enable_comments = ndb.BooleanProperty(default=False)
     moderation_alert = ndb.BooleanProperty(default=False)
     contact = ndb.BooleanProperty(default=False)
+    author_pages = ndb.BooleanProperty(default=False)
     admin_email = ndb.StringProperty()
     posts_per_page = ndb.IntegerProperty(default=10)
     image_preview_size = ndb.IntegerProperty(default=600)

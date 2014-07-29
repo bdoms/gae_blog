@@ -50,7 +50,7 @@ class BlogController(AdminController):
     FIELDS = {"title": validateRequiredString, "description": validateString, "url": validateRequiredString,
         "template": validateString, "posts_per_page": validateInt, "image_preview_size": validateInt,
         "mail_queue": validateRequiredString, "blocklist": validateText, "enable_comments": validateBool,
-        "admin_email": validateEmail, "moderation_alert": validateBool, "contact": validateBool}
+        "author_pages": validateBool, "admin_email": validateEmail, "moderation_alert": validateBool, "contact": validateBool}
 
     def get(self):
 

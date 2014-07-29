@@ -10,8 +10,12 @@ class AuthorController(IndexController):
     @renderIfCached
     def get(self, author_slug):
 
+        blog = self.blog
+        if not blog or not blog.author_pages:
+            return self.renderError(403)
+
         if author_slug:
-            blog = self.blog
+            
             author = model.BlogAuthor.get_by_id(author_slug, parent=blog.key)
 
             if author:
