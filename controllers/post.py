@@ -3,7 +3,7 @@ from google.appengine.ext import deferred
 
 from base import FormController, renderIfCachedNoErrors
 
-from lib.gae_validators import validateString, validateRequiredText, validateEmail, validateUrl
+from gae_blog.lib.gae_validators import validateString, validateRequiredText, validateEmail, validateUrl
 from gae_blog import model
 
 

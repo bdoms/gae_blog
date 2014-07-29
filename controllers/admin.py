@@ -6,7 +6,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 
 from base import FormController
 
-from lib.gae_validators import (validateString, validateRequiredString, validateText, validateEmail,
+from gae_blog.lib.gae_validators import (validateString, validateRequiredString, validateText, validateEmail,
     validateUrl, validateInt, validateBool, validateDate)
 from gae_blog import model
 
