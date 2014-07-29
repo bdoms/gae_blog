@@ -204,34 +204,18 @@ def makeNew(model_object, id=None, parent=None, use_transaction=True):
 
     return new_object
 
-def makePostSlug(title, blog, post=None):
-    """ creates a slug for use in a url """
-    slug = title.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
-    slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
-    existing = BlogPost.get_by_id(slug, parent=blog.key)
-    if (not post and existing) or ((post and existing) and post.key != existing.key):
-        # only work on finding a new slug if this isn't the same post that already uses it
-        i = 0
-        while existing:
-            i += 1
-            new_slug = slug + "-" + str(i)
-            existing = BlogPost.get_by_id(new_slug, parent=blog.key)
-            if not existing:
-                slug = new_slug
-    return slug
-
-def makeAuthorSlug(name, blog, author=None):
+def makeSlug(name, blog, model_class, entity=None):
     """ creates a slug for use in a url """
     slug = name.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
-    existing = BlogAuthor.get_by_id(slug, parent=blog.key)
-    if (not author and existing) or ((author and existing) and author.key != existing.key):
+    existing = model_class.get_by_id(slug, parent=blog.key)
+    if (not entity and existing) or ((entity and existing) and entity.key != existing.key):
         # only work on finding a new slug if this isn't the same post that already uses it
         i = 0
         while existing:
             i += 1
             new_slug = slug + "-" + str(i)
-            existing = BlogAuthor.get_by_id(new_slug, parent=blog.key)
+            existing = model_class.get_by_id(new_slug, parent=blog.key)
             if not existing:
                 slug = new_slug
     return slug

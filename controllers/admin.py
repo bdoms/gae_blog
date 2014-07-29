@@ -147,7 +147,7 @@ class AuthorController(AdminController):
             return self.redisplay(form_data, errors, self.blog_url + '/admin/author/' + author_slug)
 
         name = valid_data["name"]
-        slug = model.makeAuthorSlug(name, blog, author)
+        slug = model.makeSlug(name, blog, model.BlogAuthor, author)
         if author:
             # if the name is different, remake the entity since the key name needs to change
             if name != author.name:
@@ -291,7 +291,7 @@ class PostController(AdminController):
             return self.redisplay(form_data, errors, self.blog_url + '/admin/post/' + post_slug)
 
         if slug_choice == "auto":
-            slug = model.makePostSlug(valid_data["title"], blog, post)
+            slug = model.makeSlug(valid_data["title"], blog, model.BlogPost, post)
 
         # don't want to attach these temporary choices to the model
         del valid_data["slug"]
