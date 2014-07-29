@@ -4,7 +4,10 @@
 
 {% block blog_content %}
 
+{% set paginate_url = blog_url %}
+
 {% if author %}
+    {% set paginate_url = author_url %}
     <h3>Posts By {{author.name}}</h3>
 {% endif %}
 
@@ -18,19 +21,19 @@
                 </div>
             {% endfor %}
         </div>
-        {% if page or last_page > page %}
+        {% if page > 0 %}
             <p class="post-nav">
-                {% if last_page > page %}
-                    <a href="{{blog_url}}?page={{page + 1}}">&lt; Older Posts</a>
-                    {% if page %}
+                {% if page > 1 %}
+                    <a href="{{paginate_url}}?page={{page - 1}}">&lt; Older Posts</a>
+                    {% if last_page > page %}
                         |
                     {% endif %}
                 {% endif %}
-                {% if page %}
-                    {% if page - 1 == 0 %}
-                        <a href="{{blog_url}}">Newer Posts &gt;</a>
+                {% if last_page > page %}
+                    {% if page + 1 == last_page %}
+                        <a href="{{paginate_url}}">Newer Posts &gt;</a>
                     {% else %}
-                        <a href="{{blog_url}}?page={{page - 1}}">Newer Posts &gt;</a>
+                        <a href="{{paginate_url}}?page={{page + 1}}">Newer Posts &gt;</a>
                     {% endif %}
                 {% endif %}
             </p>
