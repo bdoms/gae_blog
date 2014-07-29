@@ -1,15 +1,16 @@
 from google.appengine.api import mail
 from google.appengine.ext import deferred
 
-from base import BaseController, renderIfCachedNoErrors
-from verify import generateToken
+from base import FormController, renderIfCachedNoErrors
 
-from gae_blog.formencode.validators import UnicodeString, Email
+from lib.gae_validators import validateString, validateRequiredString, validateRequiredText, validateRequiredEmail
 from gae_blog import model
 
 
-class ContactController(BaseController):
+class ContactController(FormController):
     """ handles request for the contact page of the site """
+
+    FIELDS = {"author": validateRequiredString, "email": validateRequiredEmail, "subject": validateString, "body": validateRequiredText}
 
     @renderIfCachedNoErrors
     def get(self):
@@ -31,66 +32,39 @@ class ContactController(BaseController):
 
         blog = self.blog
         if blog and blog.contact:
-            try:
-                author_slug = self.request.get("author")
-                email = self.request.get("email")
-                subject = self.request.get("subject", "")
-                body = self.request.get("body")
-                honeypot = self.request.get("required")
-                token = self.request.get("token")
-            except UnicodeDecodeError:
-                return self.renderError(400)
-
-            if honeypot:
-                # act perfectly normal so the bot thinks the request worked
+            
+            bot = self.botProtection('/contact')
+            if bot:
                 self.session["blog_contact_sent"] = True
-                return self.redirect(self.blog_url + '/contact')
-
-            challenge = generateToken(self.request.url)
-            if token != challenge:
-                challenge = generateToken(self.request.url, again=True)
-                if token != challenge:
-                    # act perfectly normal so the bot thinks the request worked
-                    self.session["blog_contact_sent"] = True
-                    return self.redirect(self.blog_url + '/contact')
-
-            errors = {}
-            form_data = {"author": author_slug, "email": email, "subject": subject, "body": body}
+                return
 
             # validation and handling
-            email = self.validate(Email(), email)
-            if not email: errors["email"] = True
+            form_data, errors, valid_data = self.validate()
 
-            subject = self.validate(UnicodeString(), subject)
-            if subject is None or "\n" in subject or "\r" in subject:
-                errors["subject"] = True
-            if blog.title:
-                subject = blog.title + " - Contact Form Message: " + subject
-            else:
-                subject = "Blog - Contact Form Message: " + subject
+            if "author" not in errors:
+                authors = []
+                if valid_data["author"] == "all":
+                    authors = [author for author in blog.authors if author.email]
+                else:
+                    author = model.BlogAuthor.get_by_id(valid_data["author"], parent=blog.key)
+                    if author and author.email:
+                        authors = [author]
 
-            body = self.validate(UnicodeString(not_empty=True), body)
-            if not body: errors["body"] = True
-
-            if author_slug == "all":
-                authors = [author for author in blog.authors if author.email]
                 if not authors:
-                    errors["author_slug"] = True
-            elif author_slug:
-                author = model.BlogAuthor.get_by_id(author_slug, parent=blog.key)
-                if not author or not author.email:
-                    errors["author_slug"] = True
-                authors = [author]
-            else:
-                errors["author_slug"] = True
+                    errors["author"] = True
 
             if errors:
-                self.errorsToSession(form_data, errors)
-                return self.redirect(self.blog_url + '/contact')
+                return self.redisplay(form_data, errors, self.blog_url + '/contact')
+
+            if blog.title:
+                subject = blog.title + " - Contact Form Message: " + valid_data["subject"]
+            else:
+                subject = "Blog - Contact Form Message: " + valid_data["subject"]
 
             if blog.admin_email:
                 for author in authors:
-                    deferred.defer(sendContactEmail, blog.admin_email, author.name + " <" + author.email + ">", subject, body, email, _queue=blog.mail_queue)
+                    deferred.defer(sendContactEmail, blog.admin_email, author.name + " <" + author.email + ">", subject,
+                        valid_data["body"], valid_data["email"], _queue=blog.mail_queue)
 
         self.session["blog_contact_sent"] = True
         return self.redirect(self.blog_url + '/contact')

@@ -4,6 +4,8 @@
 import json
 import logging
 import os
+from datetime import datetime, timedelta
+from hashlib import sha512
 
 # app engine api imports
 from google.appengine.api import users, memcache
@@ -142,23 +144,6 @@ class BaseController(webapp2.RequestHandler):
     def blog(self):
         return model.Blog.get_by_id(self.blog_slug)
 
-    # helper functions for validating
-    def validate(self, validator, value):
-        try:
-            value = validator.to_python(value)
-        except:
-            value = None
-        return value
-
-    def errorsToSession(self, form_data, errors):
-        self.session["form_data"] = form_data
-        self.session["errors"] = errors
-
-    def errorsFromSession(self):
-        form_data = self.session.pop("form_data", {})
-        errors = self.session.pop("errors", {})
-        return form_data, errors
-
     @webapp2.cached_property
     def blog_slug(self):
         return self.request.path.split('/')[1] # we add the slash for easy URL making
@@ -166,6 +151,77 @@ class BaseController(webapp2.RequestHandler):
     @webapp2.cached_property
     def blog_url(self):
         return '/' + self.blog_slug
+
+    def errorsFromSession(self):
+        form_data = self.session.pop("form_data", {})
+        errors = self.session.pop("errors", {})
+        return form_data, errors
+
+
+class FormController(BaseController):
+
+    # a mapping of field names to their validator functions
+    FIELDS = {}
+    SALT_KEY = "GAE_BLOG_VERIFY_SALT"
+
+    def validate(self):
+        form_data = {} # all the original request data, for potentially re-displaying
+        errors = {} # only fields with errors
+        valid_data = {} # only valid fields
+
+        for name, validator in self.FIELDS.items():
+            try:
+                form_data[name] = self.request.get(name)
+            except UnicodeDecodeError:
+                return self.renderError(400)
+            
+            valid, data = validator(form_data[name])
+            if valid:
+                valid_data[name] = data
+            else:
+                errors[name] = True
+
+        return form_data, errors, valid_data
+
+    def redisplay(self, form_data, errors, url):
+        self.session["form_data"] = form_data
+        self.session["errors"] = errors
+        self.redirect(url)
+
+    def botProtection(self, url):
+        bot = False
+
+        try:
+            honeypot = self.request.get("required")
+            token = self.request.get("token")
+        except UnicodeDecodeError:
+            bot = True
+            self.renderError(400)
+
+        if honeypot:
+            # act perfectly normal so the bot thinks the request worked
+            bot = True
+            self.redirect(self.blog_url + url)
+
+        challenge = self.generateToken(self.request.url)
+        if token != challenge:
+            challenge = self.generateToken(self.request.url, again=True)
+            if token != challenge:
+                # act perfectly normal so the bot thinks the request worked
+                bot = True
+                self.redirect(self.blog_url + url)
+
+        return bot
+
+    def generateToken(self, url, again=False):
+        salt = memcache.get(self.SALT_KEY)
+        if not salt:
+            salt = os.urandom(64).encode('base64')
+            memcache.set(self.SALT_KEY, salt)
+        now = datetime.utcnow()
+        if again:
+            now -= timedelta(minutes=1)
+        return sha512(url + salt + now.strftime("%Y%m%d%H%M")).hexdigest()
 
 
 # decorators

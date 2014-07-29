@@ -4,19 +4,27 @@ from google.appengine.api import users, memcache, images
 from google.appengine.ext import blobstore, ndb
 from google.appengine.ext.webapp import blobstore_handlers
 
-from base import BaseController
+from base import FormController
 
-from gae_blog.formencode.validators import Email, Int, URL, UnicodeString
+from lib.gae_validators import (validateString, validateRequiredString, validateText, validateEmail,
+    validateUrl, validateInt, validateBool, validateDate)
 from gae_blog import model
 
 
-class AdminController(BaseController):
+def validateDT(source):
+    if not source:
+        return True, None
+    else:
+        return validateDate(source, date_format="%Y-%m-%d %H:%M:%S", keep_time=True, future_only=False)
+
+
+class AdminController(FormController):
     """ shows the index page for the admin section, and handles sitewide configuration """
 
     # override and add in a check to make sure the user accessing this page has admin privileges
     def dispatch(self):
         if not self.user_is_admin:
-            self.renderError(403)            
+            self.renderError(403)
         else:
             super(AdminController, self).dispatch()
 
@@ -38,6 +46,12 @@ class AdminController(BaseController):
 
 class BlogController(AdminController):
     """ handles blog configuration and creation """
+
+    FIELDS = {"title": validateRequiredString, "description": validateString, "url": validateRequiredString,
+        "template": validateString, "posts_per_page": validateInt, "image_preview_size": validateInt,
+        "mail_queue": validateRequiredString, "blocklist": validateText, "enable_comments": validateBool,
+        "admin_email": validateEmail, "moderation_alert": validateBool, "contact": validateBool}
+
     def get(self):
 
         form_data, errors = self.errorsFromSession()
@@ -48,103 +62,36 @@ class BlogController(AdminController):
 
         blog = self.blog
 
-        title = self.request.get("title", "")
-        description = self.request.get("description", "")
-        url = self.request.get("url", "")
-        template = self.request.get("template", "")
-        blocklist = self.request.get("blocklist", "")
-        enable_comments = self.request.get("enable_comments", None)
-        moderation_alert = self.request.get("moderation_alert", None)
-        contact = self.request.get("contact", None)
-        admin_email = self.request.get("admin_email", "")
-        posts_per_page = self.request.get("posts_per_page", None)
-        image_preview_size = self.request.get("image_preview_size", None)
-        mail_queue = self.request.get("mail_queue", "")
+        form_data, errors, valid_data = self.validate()
 
-        errors = {}
-        form_data = {"title": title, "description": description, "url": url, "template": template, "blocklist": blocklist,
-                     "enable_comments": enable_comments, "moderation_alert": moderation_alert, "contact": contact,
-                     "admin_email": admin_email, "posts_per_page": posts_per_page, "image_preview_size": image_preview_size,
-                     "mail_queue": mail_queue}
-
-        title = self.validate(UnicodeString(not_empty=True), title)
-        if not title: errors["title"] = True
-
-        if description:
-            description = self.validate(UnicodeString(), description)
-            if not description: errors["description"] = True
-
-        url = self.validate(UnicodeString(not_empty=True), url)
-        if url:
-            if not blog or url != blog.slug:
+        if "url" not in errors:
+            if not blog or valid_data["url"] != blog.slug:
                 # check to make sure that there isn't already another blog at this URL
-                existing = model.Blog.get_by_id(url)
-                if existing: errors["url_exists"] = True
-        else:
-            errors["url"] = True
-
-        if template:
-            template = self.validate(UnicodeString(), template)
-            if not template: errors["template"] = True
-
-        posts_per_page = self.validate(Int(), posts_per_page)
-        if not posts_per_page: errors["posts_per_page"] = True
-
-        image_preview_size = self.validate(Int(), image_preview_size)
-        if not image_preview_size: errors["image_preview_size"] = True
-
-        if admin_email:
-            admin_email = self.validate(Email(), admin_email)
-            if not admin_email: errors["admin_email"] = True
-
-        if mail_queue:
-            mail_queue = self.validate(UnicodeString(), mail_queue)
-            if not mail_queue: errors["mail_queue"] = True
+                existing = model.Blog.get_by_id(valid_data["url"])
+                if existing:
+                    errors["url_exists"] = True
 
         if errors:
-            self.errorsToSession(form_data, errors)
-            return self.redirect(self.blog_url + '/admin/blog')
+            return self.redisplay(form_data, errors, self.blog_url + '/admin/blog')
 
-        if blocklist:
-            blocklist = blocklist.split("\n")
+        if valid_data["blocklist"]:
+            blocklist = valid_data["blocklist"].split("\r\n")
+            valid_data["blocklist"] = [ip for ip in blocklist if ip] # remove empty lines
         else:
-            blocklist = []
+            valid_data["blocklist"] = []
 
-        if enable_comments:
-            enable_comments = True
-        else:
-            enable_comments = False
-
-        if moderation_alert:
-            moderation_alert = True
-        else:
-            moderation_alert = False
-
-        if contact:
-            contact = True
-        else:
-            contact = False
+        url = valid_data["url"]
+        del valid_data["url"]
 
         if blog:
             # if the URL is different, remake the entities since the key name needs to change
             if url != blog.slug:
-                blog = model.makeNew(blog, id=url, use_transaction=False) # each blog is its own entity group, so can't run in a transaction
-            blog.title = title
-            blog.description = description
-            blog.enable_comments = enable_comments
-            blog.moderation_alert = moderation_alert
-            blog.contact = contact
-            blog.admin_email = admin_email
-            blog.posts_per_page = posts_per_page
-            blog.image_preview_size = image_preview_size
-            blog.template = template
-            blog.mail_queue = mail_queue
-            blog.blocklist = blocklist
+                # each blog is its own entity group, so can't run in a transaction
+                blog = model.makeNew(blog, id=url, use_transaction=False)
+            blog.populate(**valid_data)
             existed = True
         else:
-            blog = model.Blog(id=url, title=title, description=description, enable_comments=enable_comments,
-                              moderation_alert=moderation_alert, contact=contact, admin_email=admin_email, posts_per_page=posts_per_page,
-                              image_preview_size=image_preview_size, template=template, mail_queue=mail_queue, blocklist=blocklist)
+            blog = model.Blog(id=url, **valid_data)
             existed = False
 
         blog.put()
@@ -167,6 +114,9 @@ class AuthorsController(AdminController):
 
 class AuthorController(AdminController):
     """ handles creating and changing authors """
+
+    FIELDS = {"name": validateRequiredString, "url": validateUrl, "email": validateEmail}
+
     def get(self, author_slug):
 
         author = None
@@ -190,28 +140,12 @@ class AuthorController(AdminController):
             if not author:
                 return self.renderError(404)
 
-        name = self.request.get("name")
-        url = self.request.get("url")
-        email = self.request.get("email")
-
-        errors = {}
-        form_data = {"name": name, "url": url, "email": email}
-
-        name = self.validate(UnicodeString(not_empty=True), name)
-        if not name: errors["name"] = True
-
-        if url:
-            url = self.validate(URL(add_http=True), url)
-            if not url: errors["url"] = True
-
-        if email:
-            email = self.validate(Email(), email)
-            if not email: errors["email"] = True
+        form_data, errors, valid_data = self.validate()
 
         if errors:
-            self.errorsToSession(form_data, errors)
-            return self.redirect(self.blog_url + '/admin/author/' + author_slug)
+            return self.redisplay(form_data, errors, self.blog_url + '/admin/author/' + author_slug)
 
+        name = valid_data["name"]
         slug = model.makeAuthorSlug(name, blog, author)
         if author:
             # if the name is different, remake the entity since the key name needs to change
@@ -232,11 +166,9 @@ class AuthorController(AdminController):
                         model.db.put(new_objects)
                     return author
                 author = model.db.run_in_transaction(author_transaction, author, slug, blog, [posts, comments])
-            author.name = name
-            author.url = url
-            author.email = email
+            author.populate(**valid_data)
         else:
-            author = model.BlogAuthor(id=slug, name=name, url=url, email=email, parent=blog.key)
+            author = model.BlogAuthor(id=slug, parent=blog.key, **valid_data)
 
         author.put()
         memcache.flush_all()
@@ -296,8 +228,15 @@ class PostsController(AdminController):
 
         self.redirect(self.blog_url + '/admin/posts')
 
+
 class PostController(AdminController):
     """ handles editing and publishing posts """
+
+    FIELDS = {"title": validateRequiredString, "slug_choice": validateRequiredString, "slug": validateString,
+        "author": validateRequiredString, "body": validateText, "timestamp_choice": validateRequiredString,
+        "timestamp": validateDT, "published": validateBool}
+
+
     def get(self, post_slug):
 
         post = None
@@ -319,72 +258,51 @@ class PostController(AdminController):
             if not post:
                 return self.renderError(404)
 
-        title = self.request.get("title")
-        slug_choice = self.request.get("slug-choice")
-        slug = self.request.get("slug")
-        author_slug = self.request.get("author")
-        body = self.request.get("body")
-        timestamp_choice = self.request.get("timestamp-choice")
-        timestamp = self.request.get("timestamp")
-        published = self.request.get("published", None)
+        form_data, errors, valid_data = self.validate()
 
-        errors = {}
-        form_data = {"title": title, "slug-choice": slug_choice, "slug": slug, "author": author_slug, "body": body,
-                     "timestamp-choice": timestamp_choice, "timestamp": timestamp, "published": published}
+        if "slug_choice" not in errors and "slug" not in errors:
+            slug_choice = valid_data["slug_choice"]
+            if slug_choice == "custom":
+                slug = valid_data["slug"]
+                if slug and "/" not in slug:
+                    # check to make sure that there isn't already another post with this slug
+                    existing = model.BlogPost.get_by_id(slug, parent=blog.key)
+                    if existing and (not post or existing.key != post.key):
+                        errors["slug_exists"] = True
+                else:
+                    errors["slug"] = True
 
-        title = self.validate(UnicodeString(not_empty=True), title)
-        if not title: errors["title"] = True
-
-        if slug_choice == "custom":
-            slug = self.validate(UnicodeString(not_empty=True), slug)
-            if slug and "/" not in slug:
-                # check to make sure that there isn't already another post with this slug
-                existing = model.BlogPost.get_by_id(slug, parent=blog.key)
-                if existing and (not post or existing.key != post.key):
-                    errors["slug_exists"] = True
+        if "author" not in errors:
+            author = model.BlogAuthor.get_by_id(valid_data["author"], parent=blog.key)
+            if author:
+                valid_data["author"] = author.key
             else:
-                errors["slug"] = True
+                errors["author"] = True
 
-        author = model.BlogAuthor.get_by_id(author_slug, parent=blog.key)
-        if not author: errors["author"] = True
-
-        if body:
-            body = self.validate(UnicodeString(), body)
-            if not body: errors["body"] = True
-
-        if timestamp_choice == "now":
-            timestamp = datetime.utcnow()
-        else:
-            # try to parse it
-            try:
-                timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-            except:
+        if "timestamp_choice" not in errors:
+            if valid_data["timestamp_choice"] == "now":
+                valid_data["timestamp"] = datetime.utcnow()
+            elif not valid_data.get("timestamp"):
                 errors["timestamp"] = True
 
         if errors:
-            self.errorsToSession(form_data, errors)
-            return self.redirect(self.blog_url + '/admin/post/' + post_slug)
-
-        if published:
-            published = True
-        else:
-            published = False
+            return self.redisplay(form_data, errors, self.blog_url + '/admin/post/' + post_slug)
 
         if slug_choice == "auto":
-            slug = model.makePostSlug(title, blog, post)
+            slug = model.makePostSlug(valid_data["title"], blog, post)
+
+        # don't want to attach these temporary choices to the model
+        del valid_data["slug"]
+        del valid_data["slug_choice"]
+        del valid_data["timestamp_choice"]
 
         if post:
             # if the slug is different, remake the entities since the key name needs to change
             if slug != post.slug:
                 post = model.makeNew(post, id=slug, parent=blog.key)
-            post.title = title
-            post.body = body
-            post.timestamp = timestamp
-            post.published = published
-            post.author = author.key
+            post.populate(**valid_data)
         else:
-            post = model.BlogPost(id=slug, title=title, body=body, timestamp=timestamp,
-                                  published=published, author=author.key, parent=blog.key)
+            post = model.BlogPost(id=slug, parent=blog.key, **valid_data)
 
         post.put()
 
@@ -539,8 +457,7 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
             errors["file"] = True
 
         if errors:
-            self.errorsToSession({}, errors)
-            return self.redirect(self.blog_url + '/admin/image')
+            return self.redirect({}, errors, self.blog_url + '/admin/image')
 
         image = model.BlogImage(parent=self.blog.key, blob=blob_info.key())
         image.url = images.get_serving_url(blob_info)

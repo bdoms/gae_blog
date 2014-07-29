@@ -40,25 +40,25 @@
     </p>
     <ul>
         <li>
-            {% if "slug-choice" in form_data %}
-                <input type="radio" id="slug-auto" name="slug-choice" value="auto" {{form_data['slug-choice'] == 'auto' and 'checked="checked"' or ''}} />
+            {% if "slug_choice" in form_data %}
+                <input type="radio" id="slug-auto" name="slug_choice" value="auto" {{form_data['slug_choice'] == 'auto' and 'checked="checked"' or ''}} />
             {% else %}
                 {% if post and post.published %}
-                    <input type="radio" id="slug-auto" name="slug-choice" value="auto" />
+                    <input type="radio" id="slug-auto" name="slug_choice" value="auto" />
                 {% else %}
-                    <input type="radio" id="slug-auto" name="slug-choice" value="auto" checked="checked" />
+                    <input type="radio" id="slug-auto" name="slug_choice" value="auto" checked="checked" />
                 {% endif %}
             {% endif %}
             <label for="slug-auto">Automatic</label>
         </li>
         <li>
-            {% if "slug-choice" in form_data %}
-                <input type="radio" id="slug-custom" name="slug-choice" value="custom" {{form_data['slug-choice'] == 'custom' and 'checked="checked"' or ''}} />
+            {% if "slug_choice" in form_data %}
+                <input type="radio" id="slug-custom" name="slug_choice" value="custom" {{form_data['slug_choice'] == 'custom' and 'checked="checked"' or ''}} />
             {% else %}
                 {% if post and post.published %}
-                    <input type="radio" id="slug-custom" name="slug-choice" value="custom" checked="checked" />
+                    <input type="radio" id="slug-custom" name="slug_choice" value="custom" checked="checked" />
                 {% else %}
-                    <input type="radio" id="slug-custom" name="slug-choice" value="custom" />
+                    <input type="radio" id="slug-custom" name="slug_choice" value="custom" />
                 {% endif %}
             {% endif %}
             <label for="slug-custom">Custom:</label>
@@ -116,25 +116,25 @@
     </p>
     <ul>
         <li>
-            {% if "timestamp-choice" in form_data %}
-                <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" {{form_data['timestamp-choice'] == 'now' and 'checked="checked"' or ''}} />
+            {% if "timestamp_choice" in form_data %}
+                <input type="radio" id="timestamp-now" name="timestamp_choice" value="now" {{form_data['timestamp_choice'] == 'now' and 'checked="checked"' or ''}} />
             {% else %}
                 {% if post %}
-                    <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" />
+                    <input type="radio" id="timestamp-now" name="timestamp_choice" value="now" />
                 {% else %}
-                    <input type="radio" id="timestamp-now" name="timestamp-choice" value="now" checked="checked" />
+                    <input type="radio" id="timestamp-now" name="timestamp_choice" value="now" checked="checked" />
                 {% endif %}
             {% endif %}
             <label for="timestamp-now">Now</label>
         </li>
         <li>
-            {% if "timestamp-choice" in form_data %}
-                <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" {{form_data['timestamp-choice'] == 'custom' and 'checked="checked"' or ''}} />
+            {% if "timestamp_choice" in form_data %}
+                <input type="radio" id="timestamp-custom" name="timestamp_choice" value="custom" {{form_data['timestamp_choice'] == 'custom' and 'checked="checked"' or ''}} />
             {% else %}
                 {% if post %}
-                    <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" checked="checked" />
+                    <input type="radio" id="timestamp-custom" name="timestamp_choice" value="custom" checked="checked" />
                 {% else %}
-                    <input type="radio" id="timestamp-custom" name="timestamp-choice" value="custom" />
+                    <input type="radio" id="timestamp-custom" name="timestamp_choice" value="custom" />
                 {% endif %}
             {% endif %}
             <label for="timestamp-custom">Custom:</label>

@@ -151,11 +151,7 @@
         <textarea name="blocklist">{{form_data['blocklist']}}</textarea>
     {% else %}
         {% if blog and blog.blocklist %}
-<textarea name="blocklist">
-{% for address in blog.blocklist %}
-{{address}}
-{% endfor %}
-</textarea>
+            <textarea name="blocklist">{% for address in blog.blocklist %}{{address}}&#13;&#10;{% endfor %}</textarea>
         {% else %}
             <textarea name="blocklist"></textarea>
         {% endif %}

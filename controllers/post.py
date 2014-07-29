@@ -1,15 +1,17 @@
 from google.appengine.api import mail, memcache
 from google.appengine.ext import deferred
 
-from base import BaseController, renderIfCachedNoErrors
-from verify import generateToken
+from base import FormController, renderIfCachedNoErrors
 
-from gae_blog.formencode.validators import UnicodeString, Email, URL
+from lib.gae_validators import validateString, validateRequiredText, validateEmail, validateUrl
 from gae_blog import model
 
 
-class PostController(BaseController):
+class PostController(FormController):
     """ shows an individual post and saves comments to it """
+
+    FIELDS = {"author_choice": validateString, "author": validateString, "email": validateEmail,
+              "name": validateString, "url": validateUrl, "body": validateRequiredText}
 
     @renderIfCachedNoErrors
     def get(self, post_slug):
@@ -34,50 +36,29 @@ class PostController(BaseController):
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
 
-                    try:
-                        author_choice = self.request.get("author-choice")
-                        author_slug = self.request.get("author")
-                        name = self.request.get("name")
-                        url = self.request.get("url")
-                        email = self.request.get("email")
-                        body = self.request.get("body", "")
-                        honeypot = self.request.get("required")
-                        token = self.request.get("token")
-                    except UnicodeDecodeError:
-                        return self.renderError(400)
+                    bot = self.botProtection('/post/' + post_slug + '#comments')
+                    if bot: return
 
-                    if honeypot:
-                        # act perfectly normal so the bot thinks the request worked
-                        return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
+                    form_data, errors, valid_data = self.validate()
 
-                    challenge = generateToken(self.request.url)
-                    if token != challenge:
-                        challenge = generateToken(self.request.url, again=True)
-                        if token != challenge:
-                            # act perfectly normal so the bot thinks the request worked
-                            return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
+                    if "body" not in errors:
+                        # strip out all HTML to be on the safe side
+                        body = model.stripHTML(valid_data["body"])
 
-                    errors = {}
-                    form_data = {"author-choice": author_choice, "author": author_slug, "name": name, "url": url, "email": email, "body": body}
+                        if body:
+                            # turn URL's into links
+                            body = model.linkURLs(body)
+                            # finally, replace linebreaks with HTML linebreaks
+                            body = body.replace("\r\n", "<br/>")
+                        else:
+                            errors["body"] = True
 
-                    # strip out all HTML to be on the safe side
-                    body = model.stripHTML(body)
-
-                    # validate
-                    body = self.validate(UnicodeString(not_empty=True), body)
-                    if body:
-                        # turn URL's into links
-                        body = model.linkURLs(body)
-                        # finally, replace linebreaks with HTML linebreaks
-                        body = body.replace("\r\n", "<br/>")
-                    else:
-                        errors["body"] = True
-
-                    if author_choice == "author":
+                    if valid_data["author_choice"] == "author":
                         # validate that if they want to comment as an author that it's valid and they're approved
                         if not self.user_is_admin:
                             return self.renderError(403)
-                        author = model.BlogAuthor.get_by_id(author_slug, parent=blog.key)
+
+                        author = model.BlogAuthor.get_by_id(valid_data["author"], parent=blog.key)
                         if not author:
                             errors["author"] = True
 
@@ -87,35 +68,19 @@ class PostController(BaseController):
 
                         comment = model.BlogComment(body=body, approved=True, author=author.key, parent=post.key)
                         memcache.delete(self.request.path + self.request.query_string)
+                    elif errors:
+                        return self.redisplay(form_data, errors, self.blog_url + '/post/' + post_slug + '#comments')
                     else:
-                        # validate that the email address is valid
-                        email = self.validate(Email(), email)
-                        if not email: errors["email"] = True
-
-                        # validate that the name, if present, is valid
-                        if name:
-                            name = model.stripHTML(name)
-                            name = self.validate(UnicodeString(max=500), name)
-                            if not name or "\n" in name or "\r" in name:
-                                errors["name"] = True
-
-                        # validate that the url, if present, is valid
-                        if url:
-                            url = self.validate(URL(add_http=True), url)
-                            if not url: errors["url"] = True
-
-                        if errors:
-                            self.errorsToSession(form_data, errors)
-                            return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
-
                         # look for a previously approved comment from this email address on this blog
+                        email = valid_data["email"]
                         approved = blog.comments.filter(model.BlogComment.email == email).filter(model.BlogComment.approved == True)
 
                         comment = model.BlogComment(email=email, body=body, ip_address=ip_address, parent=post.key)
-                        if name:
-                            comment.name = name
-                        if url:
-                            comment.url = url
+
+                        if valid_data["name"]:
+                            comment.name = valid_data["name"]
+                        if valid_data["url"]:
+                            comment.url = valid_data["url"]
 
                         if approved.count():
                             comment.approved = True
@@ -129,7 +94,7 @@ class PostController(BaseController):
                                     subject = blog.title + " - Comment Awaiting Moderation"
                                 else:
                                     subject = "Blog - Comment Awaiting Moderation"
-                                comments_url = "http://" + self.request.headers.get('host', '') + self.blog_url + "/admin/comments"
+                                comments_url = self.request.host_url + self.blog_url + "/admin/comments"
                                 body = "A comment on your post \"" + post.title + "\" is waiting to be approved or denied at " + comments_url
                                 deferred.defer(sendModerateEmail, blog.admin_email, author.name + " <" + author.email + ">", subject, body, _queue=blog.mail_queue)
 

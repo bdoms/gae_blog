@@ -86,7 +86,7 @@
                             {{comment.timestamp.strftime("%c")}}
                             <input type="hidden" value="{{comment.secondsSinceEpoch}}"/>
                         </p>
-                        <p class="comment-body">{{comment.body}}</p>
+                        <p class="comment-body">{{comment.body|safe}}</p>
                         {% if user_is_admin %}
                             <form class="comment-delete" action="{{blog_url}}/admin/comments" method="post">
                                 <input type="hidden" name="post" value="{{post.slug}}"/>
@@ -105,10 +105,10 @@
             {% if user_is_admin %}
                 <ul>
                     <li>
-                        {% if form_data.get('author-choice') != 'custom' %}
-                            <input id="author-choice-author" type="radio" name="author-choice" value="author" checked="checked" />
+                        {% if form_data.get('author_choice') != 'custom' %}
+                            <input id="author-choice-author" type="radio" name="author_choice" value="author" checked="checked" />
                         {% else %}
-                            <input id="author-choice-author" type="radio" name="author-choice" value="author" />
+                            <input id="author-choice-author" type="radio" name="author_choice" value="author" />
                         {% endif %}
                         <label for="author-choice-author">Leave comment as author:</label>
                         <select name="author">
@@ -126,10 +126,10 @@
                         {% endif %}
                     </li>
                     <li>
-                        {% if form_data.get('author-choice') == 'custom' %}
-                            <input id="author-choice-custom" type="radio" name="author-choice" value="custom" checked="checked" />
+                        {% if form_data.get('author_choice') == 'custom' %}
+                            <input id="author-choice-custom" type="radio" name="author_choice" value="custom" checked="checked" />
                         {% else %}
-                            <input id="author-choice-custom" type="radio" name="author-choice" value="custom" />
+                            <input id="author-choice-custom" type="radio" name="author_choice" value="custom" />
                         {% endif %}
                         <label for="author-choice-custom">Enter custom information</label>
                     </li>

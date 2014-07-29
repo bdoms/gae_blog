@@ -1,14 +1,7 @@
-import os
-from datetime import datetime, timedelta
-from hashlib import sha256
+from base import FormController
 
-from google.appengine.api import memcache
 
-from base import BaseController
-
-SALT_KEY = "GAE_BLOG_VERIFY_SALT"
-
-class VerifyController(BaseController):
+class VerifyController(FormController):
     """ creates a token to help verify a form submission """
 
     def get(self):
@@ -20,15 +13,4 @@ class VerifyController(BaseController):
 
         url = self.request.get("url")
 
-        self.renderJSON({'token': generateToken(url)})
-
-
-def generateToken(url, again=False):
-    salt = memcache.get(SALT_KEY)
-    if not salt:
-        salt = os.urandom(64).encode('base64')
-        memcache.set(SALT_KEY, salt)
-    now = datetime.utcnow()
-    if again:
-        now -= timedelta(minutes=1)
-    return sha256(url + salt + now.strftime("%Y%m%d%H%M")).hexdigest()
+        self.renderJSON({'token': self.generateToken(url)})
