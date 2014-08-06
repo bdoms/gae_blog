@@ -1,6 +1,3 @@
-from google.appengine.api import mail, memcache
-from google.appengine.ext import deferred
-
 from base import FormController, renderIfCachedNoErrors
 
 from gae_blog.lib.gae_validators import validateString, validateRequiredText, validateEmail, validateUrl
@@ -96,14 +93,10 @@ class PostController(FormController):
                                     subject = "Blog - Comment Awaiting Moderation"
                                 comments_url = self.request.host_url + self.blog_url + "/admin/comments"
                                 body = "A comment on your post \"" + post.title + "\" is waiting to be approved or denied at " + comments_url
-                                deferred.defer(sendModerateEmail, blog.admin_email, author.name + " <" + author.email + ">", subject, body, _queue=blog.mail_queue)
+                                self.deferEmail(author.name + " <" + author.email + ">", subject, body)
 
                     comment.put()
 
                     return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
         return self.renderError(404)
-
-
-def sendModerateEmail(sender, to, subject, body):
-    mail.send_mail(sender=sender, to=to, subject=subject, body=body)

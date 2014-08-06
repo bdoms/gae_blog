@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 from hashlib import sha512
 
 # app engine api imports
-from google.appengine.api import users, memcache
+from google.appengine.api import mail, memcache, users
+from google.appengine.ext import deferred
 
 # app engine included libraries imports
 import jinja2
@@ -156,6 +157,16 @@ class BaseController(webapp2.RequestHandler):
         form_data = self.session.pop("form_data", {})
         errors = self.session.pop("errors", {})
         return form_data, errors
+
+    @classmethod
+    def sendEmail(cls, sender, to, subject, body, reply_to=None):
+        if reply_to:
+            mail.send_mail(sender=sender, to=to, subject=subject, body=body, reply_to=reply_to)
+        else:
+            mail.send_mail(sender=sender, to=to, subject=subject, body=body)
+
+    def deferEmail(self, to, subject, body, reply_to=None, **kwargs):
+        deferred.defer(self.sendEmail, self.blog.admin_email, to, subject, body, reply_to=reply_to, _queue=self.blog.mail_queue)
 
 
 class FormController(BaseController):

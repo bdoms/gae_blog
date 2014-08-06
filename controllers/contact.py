@@ -1,6 +1,3 @@
-from google.appengine.api import mail
-from google.appengine.ext import deferred
-
 from base import FormController, renderIfCachedNoErrors
 
 from gae_blog.lib.gae_validators import validateString, validateRequiredString, validateRequiredText, validateRequiredEmail
@@ -31,7 +28,7 @@ class ContactController(FormController):
     def post(self, sent=False):
 
         blog = self.blog
-        if blog and blog.contact:
+        if blog and blog.contact and blog.admin_email:
             
             bot = self.botProtection('/contact')
             if bot:
@@ -61,14 +58,8 @@ class ContactController(FormController):
             else:
                 subject = "Blog - Contact Form Message: " + valid_data["subject"]
 
-            if blog.admin_email:
-                for author in authors:
-                    deferred.defer(sendContactEmail, blog.admin_email, author.name + " <" + author.email + ">", subject,
-                        valid_data["body"], valid_data["email"], _queue=blog.mail_queue)
+            for author in authors:
+                self.deferEmail(author.name + " <" + author.email + ">", subject, valid_data["body"], valid_data["email"])
 
         self.session["blog_contact_sent"] = True
         return self.redirect(self.blog_url + '/contact')
-
-
-def sendContactEmail(sender, to, subject, body, reply_to):
-    mail.send_mail(sender=sender, to=to, subject=subject, body=body, reply_to=reply_to)
