@@ -153,10 +153,6 @@ class BlogImage(ndb.Model):
 
 
 # misc functions
-def refresh(model_instance):
-    # refeshes an instance in case things were updated since the last reference to this object (used in testing)
-    return db.get(model_instance.key)
-
 def stripHTML(string):
     # remove style or script tags first, and that includes anything inside them
     some_html = re.sub(r'(<style>.*</style>)*(<script>.*</script>)*', '', string)
@@ -194,7 +190,7 @@ def makeNew(model_object, id=None, parent=None, use_transaction=True):
         # NOTE that nested transactions aren't supported, so these must use_transaction=False
         for child in children:
             child_name = hasattr(child, "slug") and child.slug or None
-            new_child = makeNew(child, id=child_name, parent=new_object, use_transaction=False)
+            new_child = makeNew(child, id=child_name, parent=new_object.key, use_transaction=False)
 
         return new_object
 
