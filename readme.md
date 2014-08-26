@@ -1,4 +1,4 @@
-Copyright &copy; 2010-2014, [Brendan Doms](http://www.bdoms.com/)
+Copyright &copy; 2010-2014, [Brendan Doms](http://www.bdoms.com/)  
 Licensed under the [MIT license](http://www.opensource.org/licenses/MIT)
 
 
@@ -78,3 +78,12 @@ structure looks like this:
 You would enter "your_templates/your_base_template.html" as the relative path.
 However, if you leave that option blank, then the `default_base.html` file will
 be used instead.
+
+## Running Tests
+
+Make sure that the path to the App Engine SDK is in the `PYTHONPATH`
+environment variable. Then, running tests is simple:
+
+```bash
+python tests
+```
