@@ -1,3 +1,5 @@
+from google.appengine.api import memcache
+
 from base import FormController, renderIfCachedNoErrors
 
 from gae_blog.lib.gae_validators import validateString, validateRequiredText, validateEmail, validateUrl
@@ -13,7 +15,7 @@ class PostController(FormController):
     @renderIfCachedNoErrors
     def get(self, post_slug):
 
-        if post_slug:
+        if post_slug and self.blog:
             post = model.BlogPost.get_by_id(post_slug, parent=self.blog.key)
             if post and post.published:
                 # only display a post if it's actually published

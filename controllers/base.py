@@ -200,39 +200,39 @@ class FormController(BaseController):
         self.redirect(url)
 
     def botProtection(self, url):
-        bot = False
-
+        # returns if the request is suspected of being a bot or not
         try:
             honeypot = self.request.get("required")
             token = self.request.get("token")
         except UnicodeDecodeError:
-            bot = True
             self.renderError(400)
+            return True
 
         if honeypot:
             # act perfectly normal so the bot thinks the request worked
-            bot = True
             self.redirect(self.blog_url + url)
+            return True
 
-        challenge = self.generateToken(self.request.url)
+        now = datetime.utcnow()
+        challenge = self.generateToken(self.request.url, timestamp=now)
         if token != challenge:
-            challenge = self.generateToken(self.request.url, again=True)
+            now -= timedelta(minutes=1)
+            challenge = self.generateToken(self.request.url, timestamp=now)
             if token != challenge:
                 # act perfectly normal so the bot thinks the request worked
-                bot = True
                 self.redirect(self.blog_url + url)
+                return True
 
-        return bot
+        return False
 
-    def generateToken(self, url, again=False):
+    def generateToken(self, url, timestamp=None):
         salt = memcache.get(self.SALT_KEY)
         if not salt:
             salt = os.urandom(64).encode('base64')
             memcache.set(self.SALT_KEY, salt)
-        now = datetime.utcnow()
-        if again:
-            now -= timedelta(minutes=1)
-        return sha512(url + salt + now.strftime("%Y%m%d%H%M")).hexdigest()
+        if not timestamp:
+            timestamp = datetime.utcnow()
+        return sha512(url + salt + timestamp.strftime("%Y%m%d%H%M")).hexdigest()
 
 
 # decorators

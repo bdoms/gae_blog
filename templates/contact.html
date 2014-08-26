@@ -6,7 +6,7 @@
 {% if sent %}
     <p>Message sent successfully. Thanks!</p>
 {% else %}
-    {% if blog.authors %}
+    {% if blog.authors.count() %}
         {% if authors %}
             <form action="" method="post" id="contact-form">
                 <p class="contact-author">

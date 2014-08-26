@@ -223,8 +223,8 @@ class PostsController(AdminController):
                 if post.comments.count() > 0:
                     model.db.delete(list(post.comments))
                 # then the post itself
-                post.delete()
-                memcache.delete_multi(getCacheKeys(blog))
+                post.key.delete()
+                memcache.delete_multi(getCacheKeys(self.blog))
             else:
                 return self.renderError(404)
 
@@ -321,19 +321,22 @@ class PostController(AdminController):
 
 class PreviewController(AdminController):
     """ handles showing an admin-only preview of a post """
+
     def get(self, post_slug):
 
         post = None
         if post_slug:
             post = model.BlogPost.get_by_id(post_slug, parent=self.blog.key)
-            if post:
-                return self.renderTemplate('admin/preview.html', post=post, logout_url=self.logout_url)
-
-        self.renderError(404)
+        
+        if post:
+            self.renderTemplate('admin/preview.html', post=post, logout_url=self.logout_url)
+        else:
+            self.renderError(404)
 
 
 class CommentsController(AdminController):
     """ handles moderating comments """
+
     def get(self):
 
         comments = self.blog.comments.filter(model.BlogComment.approved == False)
@@ -345,7 +348,12 @@ class CommentsController(AdminController):
         comment_key = self.request.get("comment")
         if comment_key:
             # delete this individual comment
-            comment = ndb.Key(urlsafe=comment_key).get()
+            comment = None
+            try:
+                comment = ndb.Key(urlsafe=comment_key).get()
+            except:
+                pass
+            
             if comment:
                 block = self.request.get("block")
                 if block:
@@ -379,6 +387,7 @@ class CommentsController(AdminController):
 
 class ImagesController(AdminController):
     """ handles managing images """
+
     def get(self):
 
         blog = self.blog
@@ -418,7 +427,12 @@ class ImagesController(AdminController):
 
         image_id = self.request.get("image")
         if image_id:
-            image = model.BlogImage.get_by_id(int(image_id), parent=self.blog.key)
+            image = None
+            try:
+                image = model.BlogImage.get_by_id(int(image_id), parent=self.blog.key)
+            except:
+                pass
+
             if image:
                 # delete children first
                 blobstore.delete(image.blob)
@@ -461,7 +475,7 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
             errors["file"] = True
 
         if errors:
-            return self.redirect({}, errors, self.blog_url + '/admin/image')
+            return self.redisplay({}, errors, self.blog_url + '/admin/image')
 
         image = model.BlogImage(parent=self.blog.key, blob=blob_info.key())
         image.url = images.get_serving_url(blob_info)

@@ -35,7 +35,7 @@
     <p>
         <label for="enable_comments">Enable Comments:</label>
         {% if "enable_comments" in form_data %}
-            <input type="checkbox" name="enable_comments" id="enable_comments" {{form_data['enable_comments'] and 'checked="checked"' or ''}}/>
+            <input type="checkbox" name="enable_comments" id="enable_comments" {{(form_data['enable_comments'] and 'checked="checked"' or '') | safe}}/>
         {% else %}
             {% if blog and blog.enable_comments %}
                 <input type="checkbox" name="enable_comments" id="enable_comments" checked="checked" />
@@ -47,7 +47,7 @@
     <p>
         <label for="moderation_alert-box">Enable Email Alerts for Comments Needing Moderation:</label>
         {% if "moderation_alert" in form_data %}
-            <input type="checkbox" name="moderation_alert" id="moderation_alert-box" {{form_data['moderation_alert'] and 'checked="checked"' or ''}}/>
+            <input type="checkbox" name="moderation_alert" id="moderation_alert-box" {{(form_data['moderation_alert'] and 'checked="checked"' or '') | safe}}/>
         {% else %}
             {% if blog and blog.moderation_alert %}
                 <input type="checkbox" name="moderation_alert" id="moderation_alert-box" checked="checked" />
@@ -59,7 +59,7 @@
     <p>
         <label for="contact-box">Enable Contact Page:</label>
         {% if "contact" in form_data %}
-            <input type="checkbox" name="contact" id="contact-box" {{form_data['contact'] and 'checked="checked"' or ''}}/>
+            <input type="checkbox" name="contact" id="contact-box" {{(form_data['contact'] and 'checked="checked"' or '') | safe}}/>
         {% else %}
             {% if blog and blog.contact %}
                 <input type="checkbox" name="contact" id="contact-box" checked="checked" />
@@ -71,7 +71,7 @@
     <p>
         <label for="author-pages">Enable Author Pages:</label>
         {% if "author_pages" in form_data %}
-            <input type="checkbox" name="author_pages" id="author-pages" {{form_data['author_pages'] and 'checked="checked"' or ''}}/>
+            <input type="checkbox" name="author_pages" id="author-pages" {{(form_data['author_pages'] and 'checked="checked"' or '') | safe}}/>
         {% else %}
             {% if blog and blog.author_pages %}
                 <input type="checkbox" name="author_pages" id="author-pages" checked="checked" />
