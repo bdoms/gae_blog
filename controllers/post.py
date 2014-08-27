@@ -2,7 +2,7 @@ from google.appengine.api import memcache
 
 from base import FormController, renderIfCachedNoErrors
 
-from gae_blog.lib.gae_validators import validateString, validateRequiredText, validateEmail, validateUrl
+from gae_blog.lib.gae_validators import validateBool, validateString, validateRequiredText, validateEmail, validateUrl
 from gae_blog import model
 
 
@@ -10,7 +10,8 @@ class PostController(FormController):
     """ shows an individual post and saves comments to it """
 
     FIELDS = {"author_choice": validateString, "author": validateString, "email": validateEmail,
-              "name": validateString, "url": validateUrl, "body": validateRequiredText}
+              "name": validateString, "url": validateUrl, "body": validateRequiredText,
+              "trackback": validateBool, "blog_name": validateString}
 
     @renderIfCachedNoErrors
     def get(self, post_slug):
@@ -80,6 +81,10 @@ class PostController(FormController):
                             comment.name = valid_data["name"]
                         if valid_data["url"]:
                             comment.url = valid_data["url"]
+                        if valid_data["trackback"]:
+                            comment.trackback = True
+                        if valid_data["blog_name"]:
+                            comment.blog_name = valid_data["blog_name"]
 
                         if approved.count():
                             comment.approved = True

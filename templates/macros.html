@@ -60,7 +60,7 @@
                             <div class="comment blog-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                         {% endif %}
                     {% else %}
-                        <div class="comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
+                        <div class="comment {{comment.trackback and 'trackback' or ''}}" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                     {% endif %}
                         <p class="comment-name">
                             {% if comment.author %}
@@ -76,18 +76,31 @@
                                 {% else %}
                                     (blog author)
                                 {% endif %}
+                                says
                             {% else %}
-                                {% if comment.name %}
-                                    {% if comment.url %}
+                                {% if comment.trackback %}
+                                    Trackback from 
+                                    {% if comment.name %}
                                         <a target="_blank" href="{{comment.url}}">{{comment.name}}</a>
                                     {% else %}
-                                        {{comment.name}}
+                                        <a target="_blank" href="{{comment.url}}">{{comment.url}}</a>
+                                    {% endif %}
+                                    {% if comment.blog_name %}
+                                        on {{comment.blog_name}}
                                     {% endif %}
                                 {% else %}
-                                    Anonymous
+                                    {% if comment.name %}
+                                        {% if comment.url %}
+                                            <a target="_blank" href="{{comment.url}}">{{comment.name}}</a>
+                                        {% else %}
+                                            {{comment.name}}
+                                        {% endif %}
+                                    {% else %}
+                                        Anonymous
+                                    {% endif %}
+                                    says
                                 {% endif %}
                             {% endif %}
-                            says
                         </p>
                         <p class="comment-timestamp">
                             <time datetime="{{comment.timestamp.isoformat()}}" itemprop="commentTime">
@@ -95,7 +108,10 @@
                             </time>
                             <input type="hidden" value="{{comment.secondsSinceEpoch}}"/>
                         </p>
-                        <p class="comment-body" itemprop="commentText">{{comment.body|safe}}</p>
+                        {# body is required for normal comments, but may not exist for trackbacks #}
+                        {% if comment.body %}
+                            <p class="comment-body" itemprop="commentText">{{comment.body|safe}}</p>
+                        {% endif %}
                         {% if user_is_admin %}
                             <form class="comment-delete" action="{{blog_url}}/admin/comments" method="post">
                                 <input type="hidden" name="post" value="{{post.slug}}"/>
@@ -149,6 +165,15 @@
                 {% else %}
                     <div id="comment-author-info">
                 {% endif %}
+                        <p><label><input type="checkbox" name="trackback" {{(form_data.get('trackback') and 'checked="checked"' or '') | safe}}/> Trackback</label></p>
+                        <p>
+                            <label for="blog_name">Blog Name:</label>
+                            <input type="text" name="blog_name" value="{{form_data.get('blog_name', '')}}"/>
+                            <span class="help">(optional, appears with trackback)</span>
+                            {% if "blog_name" in errors %}
+                                <span class="error">please enter a valid blog name</span>
+                            {% endif %}
+                        </p>
             {% else %}
                 <div id="comment-author-info">
             {% endif %}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<response>
+    <error>{{error and '1' or '0'}}</error>
+    {% if error %}
+        <message>{{error}}</message>
+    {% endif %}
+</response>

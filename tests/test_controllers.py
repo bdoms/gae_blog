@@ -569,6 +569,91 @@ class TestPost(BaseTestController):
         assert data["url"] in response
         assert data["email"] not in response
 
+        # check that a new email wasn't sent
+        self.executeDeferred(name="mail")
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 1
+
+
+class TestTrackback(BaseTestController):
+
+    def test_trackback(self):
+        # no blog
+        response = self.app.post('/trackback/nothing')
+        assert '<error>1</error>' in response
+
+        blog = self.createBlog()
+        blog.moderation_alert = True
+        blog.admin_email = "test.admin" + UCHAR + "@example.com"
+
+        # comments still aren't enabled
+        response = self.app.post('/trackback/nothing')
+        assert '<error>1</error>' in response
+
+        blog.enable_comments = True
+
+        # ip address in block list
+        address = '127.0.0.1'
+        self.testbed.setup_env(REMOTE_ADDR=address)
+        blog.blocklist = [address]
+
+        response = self.app.post('/trackback/nothing')
+        assert '<error>1</error>' in response
+
+        blog.blocklist = []
+
+        # still no post
+        response = self.app.post('/trackback/nothing')
+        assert '<error>1</error>' in response
+
+        post = self.createPost()
+        post.published = False
+        path = '/trackback/' + post.slug
+        response = self.app.post(path)
+        assert '<error>1</error>' in response
+
+        post.published = True
+        data = {}
+        data["excerpt"] = "Test Trackback Excerpt" + UCHAR
+        data["blog_name"] = ("Test Trackback Blog Name" + UCHAR).encode("utf-8")
+        data["title"] = ("Test Trackback Post Title" + UCHAR).encode("utf-8")
+        data["url"] = "http://www.example.com/trackback-test"
+
+        # unapproved, so comment should not be there
+        response = self.app.post(path, data)
+        assert '<error>0</error>' in response
+
+        # and a moderation email should've been sent
+        self.executeDeferred(name="mail")
+
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 1
+        assert self.author.email in messages[0].to
+        assert "Trackback Awaiting Moderation" in messages[0].subject
+
+        comment = self.createComment(post=post)
+        comment.approved = True
+        comment.trackback = True
+        comment.url = data["url"]
+        comment.put()
+
+        # url now matches an approved comment, so it should be auto approved
+        data["email"] = comment.email.encode("utf-8")
+        response = self.app.post(path, data)
+        assert '<error>0</error>' in response
+
+        # check that a new email wasn't sent
+        self.executeDeferred(name="mail")
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 1
+
+        # check that it appears on page
+        response = self.app.get('/post/' + post.slug)
+        assert 'Trackback from' in response
+        assert data["title"] in response
+        assert data["url"] in response
+        assert data["blog_name"] in response
+
 
 class TestVerify(BaseTestController):
 
