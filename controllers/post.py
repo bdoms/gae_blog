@@ -62,15 +62,13 @@ class PostController(FormController):
                         if not author:
                             errors["author"] = True
 
-                        if errors:
-                            self.errorsToSession(form_data, errors)
-                            return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
+                        if not errors:
+                            comment = model.BlogComment(body=body, approved=True, author=author.key, parent=post.key)
+                            memcache.delete(self.request.path)
 
-                        comment = model.BlogComment(body=body, approved=True, author=author.key, parent=post.key)
-                        memcache.delete(self.request.path)
-                    elif errors:
+                    if errors:
                         return self.redisplay(form_data, errors, self.blog_url + '/post/' + post_slug + '#comments')
-                    else:
+                    elif valid_data["author_choice"] == "custom":
                         # look for a previously approved comment from this email address on this blog
                         email = valid_data["email"]
                         approved = blog.comments.filter(model.BlogComment.email == email).filter(model.BlogComment.approved == True)
