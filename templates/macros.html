@@ -1,5 +1,5 @@
 
-{%- macro renderPost(post, include_comments=True) -%}
+{%- macro renderPost(post, show_comments=True) -%}
 
 <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
     <h3 class="post-title" itemprop="headline">
@@ -47,7 +47,7 @@
     </div>
 
 {% if blog.enable_comments %}
-    {% if include_comments %}
+    {% if show_comments %}
         {% if post.approved_comments.count() %}
             <h4 id="comments">Comments</h4>
             <div class="comments">
@@ -211,6 +211,21 @@
             <textarea name="body">{{form_data.get('body', '')}}</textarea>
             <p><input type="submit" value="Make Comment" /></p>
         </form>
+
+        {% if root_url %}
+            {# note escaping hyphens below to make sure the comment renders correctly #}
+            <!--
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                     xmlns:dc="http://purl.org/dc/elements/1.1/"
+                     xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/" >
+                <rdf:Description
+                    rdf:about="{{root_url}}/post/{{post.slug.replace('-', '%2d')}}"
+                    dc:identifier="{{root_url}}/post/{{post.slug.replace('-', '%2d')}}"
+                    dc:title="{{post.title.replace('-', '&#45;')}}"
+                    trackback:ping="{{root_url}}/trackback/{{post.slug.replace('-', '%2d')}}" />
+            </rdf:RDF>
+            -->
+        {% endif %}
     {% else %}
         {% if post.published %}
             <p class="all-comments">

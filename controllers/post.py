@@ -21,7 +21,12 @@ class PostController(FormController):
             if post and post.published:
                 # only display a post if it's actually published
                 form_data, errors = self.errorsFromSession()
-                return self.cacheAndRenderTemplate('post.html', post=post, form_data=form_data, errors=errors)
+
+                # the root URL and `include_comments` allow the trackback RDF to render correctly
+                root_url = self.request.host_url + self.blog_url
+
+                return self.cacheAndRenderTemplate('post.html', post=post, root_url=root_url,
+                    include_comments=True, form_data=form_data, errors=errors)
 
         return self.renderError(404)
 

@@ -17,7 +17,7 @@
         <div class="post-list">
             {% for post in posts %}
                 <div class="post-list-post">
-                    {{renderPost(post, include_comments=False)}}
+                    {{renderPost(post, show_comments=False)}}
                 </div>
             {% endfor %}
         </div>
