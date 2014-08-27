@@ -3,19 +3,9 @@
 var DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-var converted = [];
 var convert_timestamp = function(el) {
-    for (var i=0; i < converted.length; i++) {
-        if (converted[i] === el) {
-            return;
-        }
-    }
-    converted.push(el);
-
-    var seconds = el.getElementsByTagName("input")[0].value;
-    // convert from seconds to ms
-    var utc_ms = parseInt(seconds) * 1000;
-    var local = new Date(utc_ms);
+    var iso = el.getAttribute("datetime");
+    var local = new Date(iso);
     var day_and_month = DAYS[local.getDay()] + ", " + MONTHS[local.getMonth()];
     var date_string = day_and_month + " " + local.getDate().toString() + ", " + local.getFullYear().toString();
 
@@ -63,12 +53,9 @@ var getRequest = function(url, callback) {
 };
 
 /* post page */
-var paragraphs = document.getElementsByTagName("p");
-for (var i=0; i < paragraphs.length; i++) {
-    var p = paragraphs[i];
-    if (p.className === "post-timestamp" || p.className === "comment-timestamp") {
-        convert_timestamp(p);
-    }
+var times = document.getElementsByTagName("time");
+for (var i=0; i < times.length; i++) {
+    convert_timestamp(times[i]);
 }
 
 var handlePublicSubmit = function(e) {

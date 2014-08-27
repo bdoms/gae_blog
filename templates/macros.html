@@ -40,7 +40,6 @@
         <time pubdate datetime="{{post.timestamp.isoformat()}}" itemprop="datePublished">
             {{post.timestamp.isoformat()}}
         </time>
-        <input type="hidden" value="{{post.secondsSinceEpoch}}"/>
     </p>
 
     <div class="post-body" itemprop="articleBody">
@@ -106,7 +105,6 @@
                             <time datetime="{{comment.timestamp.isoformat()}}" itemprop="commentTime">
                                 {{comment.timestamp.isoformat()}}
                             </time>
-                            <input type="hidden" value="{{comment.secondsSinceEpoch}}"/>
                         </p>
                         {# body is required for normal comments, but may not exist for trackbacks #}
                         {% if comment.body %}
