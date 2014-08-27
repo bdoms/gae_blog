@@ -541,7 +541,7 @@ class TestPost(BaseTestController):
         data["email"] = "test.comment" + UCHAR + "@example.com"
         data["name"] = ("Test Comment Name" + UCHAR).encode("utf-8")
         data["url"] = "http://www.example.com"
-        data["token"] = self.getVerifyToken(path)
+        data["token"] = token = self.getVerifyToken(path)
 
         # unapproved, so comment should not be there
         response = self.app.post(path, data)
@@ -573,6 +573,19 @@ class TestPost(BaseTestController):
         self.executeDeferred(name="mail")
         messages = self.mail_stub.get_sent_messages()
         assert len(messages) == 1
+
+        # test using an author
+        self.login(is_admin=True)
+        data = {}
+        data["body"] = ("Test Author Comment Body" + UCHAR).encode("utf-8")
+        data["author_choice"] = "author"
+        data["author"] = self.author.slug
+        data["token"] = token
+
+        response = self.app.post(path, data)
+        response = response.follow()
+        assert "(post author)" in response
+        assert data["body"] in response
 
 
 class TestTrackback(BaseTestController):

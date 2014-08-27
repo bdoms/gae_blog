@@ -50,7 +50,7 @@ class PostController(FormController):
                             body = model.linkURLs(body)
                             # finally, replace linebreaks with HTML linebreaks
                             body = body.replace("\r\n", "<br/>")
-                        else:
+                        elif not valid_data["trackback"]:
                             errors["body"] = True
 
                     if valid_data["author_choice"] == "author":
@@ -65,10 +65,17 @@ class PostController(FormController):
                         if not errors:
                             comment = model.BlogComment(body=body, approved=True, author=author.key, parent=post.key)
                             memcache.delete(self.request.path)
+                    else:
+                        # trackbacks require URLs, normal comments require emails if not from an author
+                        if valid_data["trackback"]:
+                            if not valid_data["url"]:
+                                errors["url"] = True
+                        elif not valid_data["email"]:
+                            errors["email"] = True
 
                     if errors:
                         return self.redisplay(form_data, errors, self.blog_url + '/post/' + post_slug + '#comments')
-                    elif valid_data["author_choice"] == "custom":
+                    elif valid_data["author_choice"] != "author":
                         # look for a previously approved comment from this email address on this blog
                         email = valid_data["email"]
                         approved = blog.comments.filter(model.BlogComment.email == email).filter(model.BlogComment.approved == True)
