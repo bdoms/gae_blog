@@ -102,8 +102,9 @@ if (comment_form) {
 
 var handleCommentLink = function(e) {
     toggle(comment_form);
-    stopEvent(e);
-    return false;
+    if (comment_form.style.display === "none") {
+        stopEvent(e);
+    }
 };
 
 var comment_link = document.getElementById("comment-link");

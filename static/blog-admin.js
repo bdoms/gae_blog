@@ -42,6 +42,14 @@ if (custom_radio) {
     }, false);
 }
 
+var trackback = document.getElementById("trackback");
+if (trackback) {
+    var trackback_blog_name = document.getElementById("trackback-blog-name");
+    trackback.addEventListener("click", function(e) {
+        toggle(trackback_blog_name);
+    }, false);
+}
+
 /* images page */
 var forms = document.getElementsByTagName("form");
 for (var i=0; i < forms.length; i++) {
