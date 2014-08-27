@@ -2,7 +2,9 @@
 
 {% block content %}
 
-{% block blog_content %}{% endblock %}
+<section itemscope itemtype="http://schema.org/Blog">
+    {% block blog_content %}{% endblock %}
+</section>
 
 <script src="{{static(blog_url + '/static/blog.js')}}"></script>
 

@@ -1,10 +1,10 @@
 
 {%- macro renderPost(post, include_comments=True) -%}
 
-<div class="post">
-    <h3 class="post-title">
+<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+    <h3 class="post-title" itemprop="headline">
         {% if post.published %}
-            <a href="{{blog_url}}/post/{{post.slug}}">{{post.title}}</a>
+            <a href="{{blog_url}}/post/{{post.slug}}" itemprop="url">{{post.title}}</a>
         {% else %}
             {{post.title}}
         {% endif %}
@@ -22,25 +22,30 @@
 
     <p class="post-author">
         By
-        {% set post_author = post.author.get() %}
-        {% if post_author.url %}
-            <a href="{{post_author.url}}" target="_blank">{{post_author.name}}</a>
-        {% elif blog.author_pages %}
-            <a href="{{blog_url}}/author/{{post_author.slug}}">{{post_author.name}}</a>
-        {% else %}
-            {{post_author.name}}
-        {% endif %}
+        <address class="author">
+            {% set post_author = post.author.get() %}
+            {% if post_author.url %}
+                <a href="{{post_author.url}}" target="_blank" rel="author">{{post_author.name}}</a>
+            {% elif blog.author_pages %}
+                <a href="{{blog_url}}/author/{{post_author.slug}}" rel="author">{{post_author.name}}</a>
+            {% else %}
+                <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+                    <span itemprop="name">{{post_author.name}}</span>
+                </span>
+            {% endif %}
+        </address>
     </p>
 
     <p class="post-timestamp">
-        {{post.timestamp.strftime("%c")}}
+        <time pubdate datetime="{{post.timestamp.isoformat()}}" itemprop="datePublished">
+            {{post.timestamp.isoformat()}}
+        </time>
         <input type="hidden" value="{{post.secondsSinceEpoch}}"/>
     </p>
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
         {{post.body|safe}}
     </div>
-</div>
 
 {% if blog.enable_comments %}
     {% if include_comments %}
@@ -50,12 +55,12 @@
                 {% for comment in post.approved_comments %}
                     {% if comment.author %}
                         {% if comment.author == post.author %}
-                            <div class="comment post-author-comment">
+                            <div class="comment post-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                         {% else %}
-                            <div class="comment blog-author-comment">
+                            <div class="comment blog-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                         {% endif %}
                     {% else %}
-                        <div class="comment">
+                        <div class="comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                     {% endif %}
                         <p class="comment-name">
                             {% if comment.author %}
@@ -85,10 +90,12 @@
                             says
                         </p>
                         <p class="comment-timestamp">
-                            {{comment.timestamp.strftime("%c")}}
+                            <time datetime="{{comment.timestamp.isoformat()}}" itemprop="commentTime">
+                                {{comment.timestamp.isoformat()}}
+                            </time>
                             <input type="hidden" value="{{comment.secondsSinceEpoch}}"/>
                         </p>
-                        <p class="comment-body">{{comment.body|safe}}</p>
+                        <p class="comment-body" itemprop="commentText">{{comment.body|safe}}</p>
                         {% if user_is_admin %}
                             <form class="comment-delete" action="{{blog_url}}/admin/comments" method="post">
                                 <input type="hidden" name="post" value="{{post.slug}}"/>
@@ -187,9 +194,15 @@
         </form>
     {% else %}
         {% if post.published %}
-            <p class="all-comments"><a href="{{blog_url}}/post/{{post.slug}}#comments">See All Comments ({{post.approved_comments.count()}})</a></p>
+            <p class="all-comments">
+                <a href="{{blog_url}}/post/{{post.slug}}#comments" itemprop="discussionUrl">
+                    See All Comments (<span itemprop="interactionCount">{{post.approved_comments.count()}}</span>)
+                </a>
+            </p>
         {% endif %}
     {% endif %}
 {% endif %}
+
+</article>
 
 {%- endmacro -%}
