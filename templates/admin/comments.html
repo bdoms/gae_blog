@@ -34,7 +34,7 @@
                 <td>{{comment.ip_address}}</td>
                 <td>
                     <form action="" method="post">
-                        <input type="hidden" name="email" value="{{comment.email}}" />
+                        <input type="hidden" name="comment" value="{{comment.key.urlsafe()}}" />
                         <input type="submit" value="Approve" />
                     </form>
                     <form action="" method="post">
@@ -44,6 +44,7 @@
                     </form>
                     <form action="" method="post">
                         <input type="hidden" name="comment" value="{{comment.key.urlsafe()}}" />
+                        <input type="hidden" name="delete" value="1" />
                         <input type="submit" value="Just Delete" />
                     </form>
                 </td>

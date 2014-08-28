@@ -354,7 +354,9 @@ class CommentsController(AdminController):
             except:
                 pass
             
-            if comment:
+            if not comment:
+                return self.renderError(404)
+            else:
                 block = self.request.get("block")
                 if block:
                     # also block the IP address
@@ -362,25 +364,27 @@ class CommentsController(AdminController):
                     if comment.ip_address and comment.ip_address not in blog.blocklist:
                         blog.blocklist.append(comment.ip_address)
                         blog.put()
-                comment.key.delete()
-            else:
-                return self.renderError(404)
 
-            # return them to the post they were viewing if this was deleted from a post page
-            post_slug = self.request.get("post")
-            if post_slug:
-                return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
-        else:
-            # approve all the comments with the submitted email address here
-            email = self.request.get("email")
+                if block or self.request.get("delete"):
+                    comment.key.delete()
+                    # return them to the post they were viewing if this was deleted from a post page
+                    post_slug = self.request.get("post")
+                    if post_slug:
+                        return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
-            comments = self.blog.comments.filter(model.BlogComment.email == email)
+                else:
+                    if comment.trackback:
+                        # just approve this one
+                        comments = [comment]
+                    else:
+                        # approve all the comments with the submitted email address here
+                        comments = self.blog.comments.filter(model.BlogComment.email == comment.email)
 
-            for comment in comments:
-                comment.approved = True
-                comment.put()
-                post_path = self.blog_url + '/post/' + comment.post.slug
-                memcache.delete(post_path)
+                    for comment in comments:
+                        comment.approved = True
+                        comment.put()
+                        post_path = self.blog_url + '/post/' + comment.post.slug
+                        memcache.delete(post_path)
 
         self.redirect(self.blog_url + '/admin/comments')
 
