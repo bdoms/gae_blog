@@ -648,24 +648,27 @@ class TestTrackback(BaseTestController):
         comment.approved = True
         comment.trackback = True
         comment.url = data["url"]
+        comment.name = data["title"]
+        comment.blog_name = data["blog_name"]
+        comment.body = data["excerpt"]
         comment.put()
 
-        # url now matches an approved comment, so it should be auto approved
-        data["email"] = comment.email.encode("utf-8")
+        # url now matches an existing comment, so it should be rejected as redundant
         response = self.app.post(path, data)
-        assert '<error>0</error>' in response
+        assert '<error>1</error>' in response
 
         # check that a new email wasn't sent
         self.executeDeferred(name="mail")
         messages = self.mail_stub.get_sent_messages()
         assert len(messages) == 1
 
-        # check that it appears on page
+        # check that the approved one appears on the page
         response = self.app.get('/post/' + post.slug)
-        assert 'Trackback from' in response
-        assert data["title"] in response
-        assert data["url"] in response
-        assert data["blog_name"] in response
+        assert 'Trackback' in response
+        assert comment.url in response
+        assert comment.name in response
+        assert comment.blog_name in response
+        assert comment.body in response
 
 
 class TestVerify(BaseTestController):
@@ -872,13 +875,24 @@ class TestAdmin(BaseTestController):
         assert comment.body in response
 
     def test_moderateComment(self):
-        self.createBlog()
+        blog = self.createBlog()
+        blog.enable_comments = True
         self.login(is_admin=True)
 
         data = {'comment': 'nothing'}
 
         assert self.app.post('/admin/comments', data, status=404)
 
+        # a simple delete
+        comment = self.createComment()
+
+        data = {'comment': comment.key.urlsafe(), 'delete': '1'}
+
+        response = self.app.post('/admin/comments', data)
+        response = response.follow()
+        assert 'No comments to moderate.' in response
+
+        # blocking the ip address, and redirecting back to the post page
         comment = self.createComment()
         comment.ip_address = '192.168.1.255'
 
@@ -887,14 +901,24 @@ class TestAdmin(BaseTestController):
         response = self.app.post('/admin/comments', data)
         response = response.follow()
         assert self.post.title in response
+        assert comment.body not in response
 
+        response = self.app.get('/admin/comments')
+        assert 'No comments to moderate.' in response
+
+        # approving
         comment = self.createComment()
 
-        data = {'email': comment.email.encode('utf-8')}
+        data = {'comment': comment.key.urlsafe()}
 
         response = self.app.post('/admin/comments', data)
         response = response.follow()
         assert 'No comments to moderate.' in response
+
+        # check that it made it to the page and email isn't visible
+        response = self.app.get('/post/' + self.post.slug)
+        assert comment.body in response
+        assert comment.email not in response
 
     def test_images(self):
         blog = self.createBlog()

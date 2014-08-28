@@ -1,6 +1,4 @@
-from google.appengine.api import memcache
-
-from base import FormController, renderIfCachedNoErrors
+from base import FormController
 
 from gae_blog.lib.gae_validators import validateString, validateText, validateRequiredUrl
 from gae_blog import model
@@ -15,6 +13,8 @@ class TrackbackController(FormController):
         return self.renderError(405)
 
     def post(self, post_slug):
+
+        # this is probably the best resource for more info about trackback: http://www.sixapart.com/labs/trackback/
 
         ip_address = self.request.remote_addr
         blog = self.blog
@@ -34,38 +34,40 @@ class TrackbackController(FormController):
             else:
                 form_data, errors, valid_data = self.validate()
 
-                if valid_data["excerpt"]:
-                    # strip out all HTML to be on the safe side
-                    excerpt = model.stripHTML(valid_data["excerpt"])
-
-                    if excerpt:
-                        # turn URL's into links
-                        excerpt = model.linkURLs(excerpt)
-                        # finally, replace linebreaks with HTML linebreaks
-                        excerpt = excerpt.replace("\r\n", "<br/>")
-
                 if errors:
                     error = 'Invalid request.'
                 else:
-                    # look for a previously approved comment from this URL address on this blog
-                    url = valid_data["url"]
-                    query = blog.comments.filter(model.BlogComment.url == url)
-                    query = query.filter(model.BlogComment.trackback == True)
-                    approved = query.filter(model.BlogComment.approved == True)
+                    excerpt = valid_data["excerpt"]
+                    if excerpt:
+                        # strip out all HTML to be on the safe side
+                        excerpt = model.stripHTML(excerpt)
 
+                        if excerpt:
+                            # turn URL's into links
+                            excerpt = model.linkURLs(excerpt)
+                            # finally, replace linebreaks with HTML linebreaks
+                            excerpt = excerpt.replace("\r\n", "<br/>")
+
+                    url = valid_data["url"]
+                    if url:
+                        # look for a comment from this URL address on this blog already (redundancy check)
+                        exists = post.comments.filter(model.BlogComment.url == url).filter(model.BlogComment.trackback == True)
+                        if exists.count():
+                            error = 'This trackback already exists.'
+
+                if not error:
                     comment = model.BlogComment(url=url, trackback=True, ip_address=ip_address, parent=post.key)
 
                     if valid_data["title"]:
                         comment.name = valid_data["title"]
-                    if valid_data["excerpt"]:
+                    if excerpt:
                         comment.body = excerpt
                     if valid_data["blog_name"]:
                         comment.blog_name = valid_data["blog_name"]
 
-                    if approved.count():
-                        comment.approved = True
-                        memcache.delete(self.request.path)
-                    elif blog.moderation_alert and blog.admin_email:
+                    comment.put()
+
+                    if blog.moderation_alert and blog.admin_email:
                         # send out an email to the author of the post if they have an email address
                         # informing them of the comment needing moderation
                         author = post.author.get()
@@ -77,7 +79,5 @@ class TrackbackController(FormController):
                             comments_url = self.request.host_url + self.blog_url + "/admin/comments"
                             body = "A trackback on your post \"" + post.title + "\" is waiting to be approved or denied at " + comments_url
                             self.deferEmail(author.name + " <" + author.email + ">", subject, body)
-
-                    comment.put()
 
         self.renderTemplate('trackback.xml', error=error)
