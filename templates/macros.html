@@ -59,7 +59,7 @@
                             <div class="comment blog-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                         {% endif %}
                     {% else %}
-                        <div class="comment {{comment.trackback and 'trackback' or ''}}" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
+                        <div class="comment {{comment.trackback and 'trackback' or ''}} {{comment.pingback and 'pingback' or ''}}" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                     {% endif %}
                         <p class="comment-name">
                             {% if comment.author %}
@@ -77,8 +77,13 @@
                                 {% endif %}
                                 says
                             {% else %}
-                                {% if comment.trackback %}
-                                    Trackback from 
+                                {% if comment.trackback or comment.pingback %}
+                                    {% if comment.trackback %}
+                                        Trackback
+                                    {% elif comment.pingback %}
+                                        Pingback
+                                    {% endif %}
+                                    from
                                     {% if comment.name %}
                                         <a target="_blank" href="{{comment.url}}">{{comment.name}}</a>
                                     {% else %}
@@ -124,7 +129,7 @@
 
         <h4 id="comment-link-header"><a id="comment-link" href="#comment-link">Leave a Comment</a></h4>
 
-        <form id="comment-form" action="" method="post" {{not errors and 'style="display: none;"'|safe or ''}}>
+        <form id="comment-form" action="{{blog_url}}/post/{{post.slug}}" method="post" {{not errors and 'style="display: none;"'|safe or ''}}>
             {% if user_is_admin %}
                 <ul>
                     <li>
@@ -168,6 +173,7 @@
                             <span class="error">please enter a valid blog name</span>
                         {% endif %}
                     </p>
+                    <p><label><input id="pingback" type="checkbox" name="pingback" {{(form_data.get('pingback') and 'checked="checked"' or '') | safe}}/> Pingback</label></p>
             {% else %}
                 <div id="comment-author-info">
             {% endif %}

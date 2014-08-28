@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import xmlrpclib
 
 import jinja2
 
@@ -32,6 +33,10 @@ class BaseTestController(BaseTestCase):
                 if not url.startswith('http'):
                     url = self.blog_url + url
                 return super(BlogTestApp, self).post(url, *args, **kwargs)
+            def request(self, url, *args, **kwargs):
+                if not url.startswith('http'):
+                    url = self.blog_url + url
+                return super(BlogTestApp, self).request(url, *args, **kwargs)
 
         self.app = BlogTestApp(app)
 
@@ -669,6 +674,102 @@ class TestTrackback(BaseTestController):
         assert comment.name in response
         assert comment.blog_name in response
         assert comment.body in response
+
+
+class TestPingback(BaseTestController):
+
+    def test_pingback(self):
+        # no blog
+        params = ("http://www.example.com/pingback-test-source",)
+        body = xmlrpclib.dumps(params, "nothing")
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Blog Not Found' in response
+
+        blog = self.createBlog()
+        blog.moderation_alert = True
+        blog.admin_email = "test.admin" + UCHAR + "@example.com"
+
+        # comments still aren't enabled
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Access Denied' in response
+
+        blog.enable_comments = True
+
+        # bad requests
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Unsupported Method' in response
+
+        body = xmlrpclib.dumps(params, "pingback.ping")
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Invalid Request' in response
+
+        params = (params[0], "not a url")
+        body = xmlrpclib.dumps(params, "pingback.ping")
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Invalid Request' in response
+
+        params = (params[0], "http://localhost/blog/post/")
+        body = xmlrpclib.dumps(params, "pingback.ping")
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Post ID Not Found' in response
+
+        # still no post
+        params = (params[0], "http://localhost/blog/post/post-title")
+        body = xmlrpclib.dumps(params, "pingback.ping")
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Post Not Found' in response
+
+        # not published
+        post = self.createPost()
+        post.published = False
+        params = (params[0], "http://localhost/blog/post/" + post.slug)
+        body = xmlrpclib.dumps(params, "pingback.ping")
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Post Not Found' in response
+
+        post.published = True
+
+        # unapproved, so comment should not be there
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' not in response
+        assert 'Pingback Receieved Successfully' in response
+
+        # and a moderation email should've been sent
+        self.executeDeferred(name="mail")
+
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 1
+        assert self.author.email in messages[0].to
+        assert "Pingback Awaiting Moderation" in messages[0].subject
+
+        comment = self.createComment(post=post)
+        comment.approved = True
+        comment.pingback = True
+        comment.url = params[1]
+        comment.put()
+
+        # url now matches an existing comment, so it should be rejected as redundant
+        response = self.app.request('/pingback', method='POST', body=body)
+        assert '<fault>' in response
+        assert 'Pingback Already Registered' in response
+
+        # check that a new email wasn't sent
+        self.executeDeferred(name="mail")
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 1
+
+        # check that the approved one appears on the page
+        response = self.app.get('/post/' + post.slug)
+        assert 'Pingback' in response
+        assert comment.url in response
 
 
 class TestVerify(BaseTestController):

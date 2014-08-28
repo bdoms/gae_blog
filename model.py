@@ -129,6 +129,7 @@ class BlogComment(ndb.Model):
     body = ndb.TextProperty()
     blog_name = ndb.StringProperty()
     trackback = ndb.BooleanProperty(default=False)
+    pingback = ndb.BooleanProperty(default=False)
     approved = ndb.BooleanProperty(default=False)
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     ip_address = ndb.StringProperty(default='')

@@ -14,7 +14,7 @@
             <th>Email</th>
             <th>Body</th>
             <th>Trackback</th>
-            <th>Blog Name</th>
+            <th>Pingback</th>
             <th>Timestamp (UTC)</th>
             <th>IP Address</th>
             <th>Actions</th>
@@ -28,8 +28,15 @@
                 <td>{{comment.url}}</td>
                 <td>{{comment.email}}</td>
                 <td>{{comment.body}}</td>
-                <td>{{comment.trackback and 'Yes' or 'No'}}</td>
-                <td>{{comment.blog_name}}</td>
+                <td>
+                    {% if comment.trackback %}
+                        Yes <br/>
+                        Blog Name: {{comment.blog_name}}
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                <td>{{comment.pingback and 'Yes' or 'No'}}</td>
                 <td>{{comment.timestamp.strftime("%Y-%m-%d %H:%M:%S")}}</td>
                 <td>{{comment.ip_address}}</td>
                 <td>

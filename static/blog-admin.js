@@ -44,9 +44,21 @@ if (custom_radio) {
 
 var trackback = document.getElementById("trackback");
 if (trackback) {
+    var pingback = document.getElementById("pingback");
     var trackback_blog_name = document.getElementById("trackback-blog-name");
+
     trackback.addEventListener("click", function(e) {
         toggle(trackback_blog_name);
+        if (trackback.checked) {
+            pingback.checked = false;
+        }
+    }, false);
+    
+    pingback.addEventListener("click", function(e) {
+        if (pingback.checked) {
+            trackback.checked = false;
+            trackback_blog_name.style.display = "none";
+        }
     }, false);
 }
 

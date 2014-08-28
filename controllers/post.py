@@ -2,7 +2,7 @@ from google.appengine.api import memcache
 
 from base import FormController, renderIfCachedNoErrors
 
-from gae_blog.lib.gae_validators import validateBool, validateString, validateRequiredText, validateEmail, validateUrl
+from gae_blog.lib.gae_validators import validateBool, validateString, validateText, validateEmail, validateUrl
 from gae_blog import model
 
 
@@ -10,8 +10,8 @@ class PostController(FormController):
     """ shows an individual post and saves comments to it """
 
     FIELDS = {"author_choice": validateString, "author": validateString, "email": validateEmail,
-              "name": validateString, "url": validateUrl, "body": validateRequiredText,
-              "trackback": validateBool, "blog_name": validateString}
+              "name": validateString, "url": validateUrl, "body": validateText,
+              "trackback": validateBool, "blog_name": validateString, "pingback": validateBool}
 
     @renderIfCachedNoErrors
     def get(self, post_slug):
@@ -24,6 +24,9 @@ class PostController(FormController):
 
                 # the root URL and `include_comments` allow the trackback RDF to render correctly
                 root_url = self.request.host_url + self.blog_url
+
+                if self.blog.enable_comments:
+                    self.response.headers["X-Pingback"] = root_url + "/pingback"
 
                 return self.cacheAndRenderTemplate('post.html', post=post, root_url=root_url,
                     include_comments=True, form_data=form_data, errors=errors)
@@ -41,7 +44,7 @@ class PostController(FormController):
                 if post and post.published:
                     # only allow commenting to a post if it's actually published
 
-                    bot = self.botProtection('/post/' + post_slug + '#comments')
+                    bot = self.botProtection('/post/' + post_slug)
                     if bot: return
 
                     form_data, errors, valid_data = self.validate()
@@ -55,7 +58,7 @@ class PostController(FormController):
                             body = model.linkURLs(body)
                             # finally, replace linebreaks with HTML linebreaks
                             body = body.replace("\r\n", "<br/>")
-                        elif not valid_data["trackback"]:
+                        elif not valid_data["trackback"] and not valid_data["pingback"]:
                             errors["body"] = True
 
                     if valid_data["author_choice"] == "author":
@@ -72,14 +75,18 @@ class PostController(FormController):
                             memcache.delete(self.request.path)
                     else:
                         # trackbacks require URLs, normal comments require emails if not from an author
-                        if valid_data["trackback"]:
+                        if valid_data["trackback"] or valid_data["pingback"]:
+                            # must be admin to set linkbacks here and not through the normal paths
+                            if not self.user_is_admin:
+                                return self.renderError(403)
+
                             if not valid_data["url"]:
                                 errors["url"] = True
                         elif not valid_data["email"]:
                             errors["email"] = True
 
                     if errors:
-                        return self.redisplay(form_data, errors, self.blog_url + '/post/' + post_slug + '#comments')
+                        return self.redisplay(form_data, errors, self.blog_url + '/post/' + post_slug + '#comment-link')
                     elif valid_data["author_choice"] != "author":
                         # look for a previously approved comment from this email address on this blog
                         email = valid_data["email"]
@@ -95,6 +102,8 @@ class PostController(FormController):
                             comment.trackback = True
                         if valid_data["blog_name"]:
                             comment.blog_name = valid_data["blog_name"]
+                        if valid_data["pingback"]:
+                            comment.pingback = True
 
                         if approved.count():
                             comment.approved = True
