@@ -62,18 +62,7 @@ class PingbackController(BaseController):
 
                     result = ('Pingback Receieved Successfully',)
 
-                    if blog.moderation_alert and blog.admin_email:
-                        # send out an email to the author of the post if they have an email address
-                        # informing them of the comment needing moderation
-                        author = post.author.get()
-                        if author.email:
-                            if blog.title:
-                                subject = blog.title + " - Pingback Awaiting Moderation"
-                            else:
-                                subject = "Blog - Pingback Awaiting Moderation"
-                            comments_url = self.request.host_url + self.blog_url + "/admin/comments"
-                            body = "A pingback on your post \"" + post.title + "\" is waiting to be approved or denied at " + comments_url
-                            self.deferEmail(author.name + " <" + author.email + ">", subject, body)
+                    self.linkbackEmail(post, comment)
 
         xml = xmlrpclib.dumps(result, methodresponse=True)
 

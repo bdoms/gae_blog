@@ -224,7 +224,7 @@ class TestBase(BaseMockController):
 
     def test_deferEmail(self):
         blog = self.createBlog()
-        blog.admin_email = "admin@example.com"
+        blog.admin_email = "test.admin" + UCHAR + "@example.com"
         self.controller.blog = blog
 
         to = "test" + UCHAR + "@example.com"
@@ -240,6 +240,38 @@ class TestBase(BaseMockController):
         assert messages[0].to == to
         assert messages[0].subject == subject
         assert body in str(messages[0].body)
+
+    def test_linkbackEmail(self):
+        blog = self.createBlog()
+        post = self.createPost(blog=blog)
+        comment = self.createComment(post=post)
+        self.controller.blog = blog
+
+        # no moderation alert
+        self.controller.linkbackEmail(post, comment)
+
+        self.executeDeferred(name="mail")
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 0
+
+        # no admin email
+        self.controller.blog.moderation_alert = True
+
+        self.controller.linkbackEmail(post, comment)
+
+        self.executeDeferred(name="mail")
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 0
+
+        # success
+        self.controller.blog.admin_email = "test.admin" + UCHAR + "@example.com"
+
+        self.controller.linkbackEmail(post, comment)
+
+        self.executeDeferred(name="mail")
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 1
+        assert "Comment Awaiting Moderation" in messages[0].subject
 
 
 class TestForm(BaseMockController):

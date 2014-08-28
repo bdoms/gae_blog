@@ -168,6 +168,27 @@ class BaseController(webapp2.RequestHandler):
     def deferEmail(self, to, subject, body, reply_to=None, **kwargs):
         deferred.defer(self.sendEmail, self.blog.admin_email, to, subject, body, reply_to=reply_to, _queue=self.blog.mail_queue)
 
+    def linkbackEmail(self, post, comment):
+        blog = self.blog
+        if blog.moderation_alert and blog.admin_email:
+            # send out an email to the author of the post if they have an email address
+            # informing them of the comment needing moderation
+            author = post.author.get()
+            if author.email:
+                if comment.trackback:
+                    linkback = "Trackback"
+                elif comment.pingback:
+                    linkback = "Pingback"
+                else:
+                    linkback = "Comment"
+                if blog.title:
+                    subject = blog.title + " - " + linkback + " Awaiting Moderation"
+                else:
+                    subject = "Blog - " + linkback + " Awaiting Moderation"
+                comments_url = self.request.host_url + self.blog_url + "/admin/comments"
+                body = "A " + linkback + " on your post \"" + post.title + "\" is waiting to be approved or denied at " + comments_url
+                self.deferEmail(author.name + " <" + author.email + ">", subject, body)
+
 
 class FormController(BaseController):
 
