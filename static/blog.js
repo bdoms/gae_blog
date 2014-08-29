@@ -1,12 +1,15 @@
 /* JS for the blog to run on all pages */
 
-var DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var gaeblog = gaeblog || {};
 
-var convert_timestamp = function(el) {
+gaeblog.DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+gaeblog.MONTHS = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+
+gaeblog.convert_timestamp = function(el) {
     var iso = el.getAttribute("datetime");
     var local = new Date(iso);
-    var day_and_month = DAYS[local.getDay()] + ", " + MONTHS[local.getMonth()];
+    var day_and_month = gaeblog.DAYS[local.getDay()] + ", " + gaeblog.MONTHS[local.getMonth()];
     var date_string = day_and_month + " " + local.getDate().toString() + ", " + local.getFullYear().toString();
 
     var hours = local.getHours();
@@ -23,7 +26,7 @@ var convert_timestamp = function(el) {
     el.innerHTML = date_string + " at " + time_string;
 };
 
-var stopEvent = function(e) {
+gaeblog.stopEvent = function(e) {
     if (e.stopPropagation) {e.stopPropagation();}
     else {e.cancelBubble = true;}
 
@@ -31,7 +34,7 @@ var stopEvent = function(e) {
     else {e.returnValue = false;}
 };
 
-var toggle = function(el) {
+gaeblog.toggle = function(el) {
     if (el.style.display === "none") {
         el.style.display = "block";
     }
@@ -40,7 +43,7 @@ var toggle = function(el) {
     }
 };
 
-var getRequest = function(url, callback) {
+gaeblog.getRequest = function(url, callback) {
     var req = new XMLHttpRequest;
     req.open("GET", url, true);
     req.onreadystatechange = function() {
@@ -53,12 +56,12 @@ var getRequest = function(url, callback) {
 };
 
 /* post page */
-var times = document.getElementsByTagName("time");
-for (var i=0; i < times.length; i++) {
-    convert_timestamp(times[i]);
+gaeblog.times = document.getElementsByTagName("time");
+for (var i=0; i < gaeblog.times.length; i++) {
+    gaeblog.convert_timestamp(gaeblog.times[i]);
 }
 
-var handlePublicSubmit = function(e) {
+gaeblog.handlePublicSubmit = function(e) {
     var form = this;
     var submit_token = document.getElementById("submit-token");
     if (submit_token) {
@@ -66,7 +69,7 @@ var handlePublicSubmit = function(e) {
     }
     else if (!form.getAttribute("data-locked")) {
         form.setAttribute("data-locked", true);
-        var url = BLOG_URL + '/verify?url=' + form.action;
+        var url = gaeblog.BLOG_URL + '/verify?url=' + form.action;
         var submitWithToken = function(response) {
             var input = document.createElement("input");
             input.name = "token";
@@ -76,31 +79,31 @@ var handlePublicSubmit = function(e) {
             form.appendChild(input);
             form.submit();
         };
-        getRequest(url, submitWithToken);
+        gaeblog.getRequest(url, submitWithToken);
     }
-    stopEvent(e);
+    gaeblog.stopEvent(e);
     return false;
 };
 
-var comment_form = document.getElementById("comment-form");
-if (comment_form) {
-    comment_form.addEventListener("submit", handlePublicSubmit, false);
+gaeblog.comment_form = document.getElementById("comment-form");
+if (gaeblog.comment_form) {
+    gaeblog.comment_form.addEventListener("submit", gaeblog.handlePublicSubmit, false);
 }
 
-var handleCommentLink = function(e) {
-    toggle(comment_form);
-    if (comment_form.style.display === "none") {
-        stopEvent(e);
+gaeblog.handleCommentLink = function(e) {
+    gaeblog.toggle(gaeblog.comment_form);
+    if (gaeblog.comment_form.style.display === "none") {
+        gaeblog.stopEvent(e);
     }
 };
 
-var comment_link = document.getElementById("comment-link");
-if (comment_link) {
-    comment_link.addEventListener("click", handleCommentLink, false);
+gaeblog.comment_link = document.getElementById("comment-link");
+if (gaeblog.comment_link) {
+    gaeblog.comment_link.addEventListener("click", gaeblog.handleCommentLink, false);
 }
 
 /* contact page */
-var contact_form = document.getElementById("contact-form");
-if (contact_form) {
-    contact_form.addEventListener("submit", handlePublicSubmit, false);
+gaeblog.contact_form = document.getElementById("contact-form");
+if (gaeblog.contact_form) {
+    gaeblog.contact_form.addEventListener("submit", gaeblog.handlePublicSubmit, false);
 }

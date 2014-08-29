@@ -83,7 +83,8 @@
 {% endif %}
 
 <script>
-    BLOG_URL = "{{blog_url}}";
+    var gaeblog = gaeblog || {};
+    gaeblog.BLOG_URL = "{{blog_url}}";
 </script>
 
 {% endblock %}

@@ -181,9 +181,10 @@
 
 <script src="{{static(blog_url + '/static/nicEdit-0.9.min.js')}}"></script>
 <script>
-    BLOG_URL = "{{blog_url}}";
-    BLOG_ICON_URL = "{{static(blog_url + '/static/nicEditorIcons-0.9.gif')}}";
-    BLOG_IMAGE_PREVIEW_SIZE = {{blog.image_preview_size}};
+    var gaeblog = gaeblog || {};
+    gaeblog.BLOG_URL = "{{blog_url}}";
+    gaeblog.BLOG_ICON_URL = "{{static(blog_url + '/static/nicEditorIcons-0.9.gif')}}";
+    gaeblog.BLOG_IMAGE_PREVIEW_SIZE = {{blog.image_preview_size}};
 </script>
 
 {% endblock %}
