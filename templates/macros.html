@@ -37,8 +37,8 @@
     </p>
 
     <p class="post-timestamp">
-        <time pubdate datetime="{{post.timestamp.isoformat()}}" itemprop="datePublished">
-            {{post.timestamp.isoformat()}}
+        <time pubdate datetime="{{post.timestamp.isoformat()}}Z" itemprop="datePublished">
+            {{post.timestamp.isoformat()}}Z
         </time>
     </p>
 
@@ -107,8 +107,8 @@
                             {% endif %}
                         </p>
                         <p class="comment-timestamp">
-                            <time datetime="{{comment.timestamp.isoformat()}}" itemprop="commentTime">
-                                {{comment.timestamp.isoformat()}}
+                            <time datetime="{{comment.timestamp.isoformat()}}Z" itemprop="commentTime">
+                                {{comment.timestamp.isoformat()}}Z
                             </time>
                         </p>
                         {# body is required for normal comments, but may not exist for trackbacks #}
