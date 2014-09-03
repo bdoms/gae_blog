@@ -20,21 +20,19 @@
         </h4>
     {% endif %}
 
-    <p class="post-author">
+    <address class="post-author">
         By
-        <address class="author">
-            {% set post_author = post.author.get() %}
-            {% if post_author.url %}
-                <a href="{{post_author.url}}" target="_blank" rel="author">{{post_author.name}}</a>
-            {% elif blog.author_pages %}
-                <a href="{{blog_url}}/author/{{post_author.slug}}" rel="author">{{post_author.name}}</a>
-            {% else %}
-                <span itemprop="author" itemscope itemtype="http://schema.org/Person">
-                    <span itemprop="name">{{post_author.name}}</span>
-                </span>
-            {% endif %}
-        </address>
-    </p>
+        {% set post_author = post.author.get() %}
+        {% if post_author.url %}
+            <a href="{{post_author.url}}" target="_blank" rel="author">{{post_author.name}}</a>
+        {% elif blog.author_pages %}
+            <a href="{{blog_url}}/author/{{post_author.slug}}" rel="author">{{post_author.name}}</a>
+        {% else %}
+            <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+                <span itemprop="name">{{post_author.name}}</span>
+            </span>
+        {% endif %}
+    </address>
 
     <p class="post-timestamp">
         <time pubdate datetime="{{post.timestamp.isoformat()}}Z" itemprop="datePublished">
