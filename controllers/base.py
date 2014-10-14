@@ -133,13 +133,19 @@ class BaseController(webapp2.RequestHandler):
 
         self.renderError(status_int, stacktrace=stacktrace)
 
+    def getUser(self):
+        return users.get_current_user()
+
+    def isUserAdmin(self):
+        return users.is_current_user_admin()
+
     @webapp2.cached_property
     def user(self):
-        return users.get_current_user()
+        return self.getUser()
 
     @webapp2.cached_property
     def user_is_admin(self):
-        return users.is_current_user_admin()
+        return self.isUserAdmin()
 
     @webapp2.cached_property
     def blog(self):
