@@ -12,6 +12,7 @@ class Blog(ndb.Model):
     title = ndb.StringProperty()
     description = ndb.StringProperty()
     enable_comments = ndb.BooleanProperty(default=False)
+    enable_linkbacks = ndb.BooleanProperty(default=False)
     moderation_alert = ndb.BooleanProperty(default=False)
     contact = ndb.BooleanProperty(default=False)
     author_pages = ndb.BooleanProperty(default=False)
@@ -104,6 +105,14 @@ class BlogPost(ndb.Model):
         return self.comments.filter(BlogComment.approved == True).order(BlogComment.timestamp)
 
     @property
+    def approved_user_comments(self):
+        return [comment for comment in self.approved_comments if not comment.linkback]
+
+    @property
+    def approved_linkbacks(self):
+        return [comment for comment in self.approved_comments if comment.linkback]
+
+    @property
     def children(self):
         return self.comments
 
@@ -119,6 +128,16 @@ class BlogPost(ndb.Model):
             return no_html
         else:
             return " ".join(words[:length]) + "..."
+
+    def enabled_comments(self, blog):
+        comments = []
+        if blog.enable_comments and blog.enable_linkbacks:
+            comments = list(self.approved_comments)
+        elif blog.enable_comments:
+            comments = self.approved_user_comments
+        elif blog.enable_linkbacks:
+            comments = self.approved_linkbacks
+        return comments
 
 
 class BlogComment(ndb.Model):

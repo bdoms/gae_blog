@@ -26,7 +26,7 @@ class PostController(FormController):
                 # the root URL and `include_comments` allow the trackback RDF to render correctly
                 root_url = self.request.host_url + self.blog_url
 
-                if self.blog.enable_comments:
+                if self.blog.enable_linkbacks:
                     self.response.headers["X-Pingback"] = root_url + "/pingback"
                     self.response.headers["Link"] = '<' + root_url + '/webmention>; rel="webmention"'
 

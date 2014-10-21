@@ -19,7 +19,7 @@ class WebmentionController(BaseController):
 
         if not blog:
             self.renderError(404)
-        elif not blog.enable_comments or ip_address in blog.blocklist:
+        elif not blog.enable_linkbacks or ip_address in blog.blocklist:
             self.renderError(403)
         else:
             source = self.request.get("source")

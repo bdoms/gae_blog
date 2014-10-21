@@ -22,7 +22,7 @@ class TrackbackController(FormController):
 
         if not blog:
             error = 'There is no blog at this URL.'
-        elif not blog.enable_comments or ip_address in blog.blocklist:
+        elif not blog.enable_linkbacks or ip_address in blog.blocklist:
             error = 'This blog does not have trackbacks enabled.'
         elif not post_slug:
             error = 'Missing post ID.'

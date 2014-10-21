@@ -30,6 +30,6 @@ class AuthorController(IndexController):
                 page_title = "Author - " + author.name
 
                 return self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts,
-                    author=author, author_url=author_url, page_title=page_title)
+                    author=author, author_url=author_url, page_title=page_title, len=len)
 
         return self.renderError(404)

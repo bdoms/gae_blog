@@ -22,7 +22,7 @@ class PingbackController(BaseController):
 
         if not blog:
             result = xmlrpclib.Fault(32, 'Blog Not Found')
-        elif not blog.enable_comments or ip_address in blog.blocklist:
+        elif not blog.enable_linkbacks or ip_address in blog.blocklist:
             result = xmlrpclib.Fault(49, 'Access Denied')
         else:
             params, methodname = xmlrpclib.loads(self.request.body)

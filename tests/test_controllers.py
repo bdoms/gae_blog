@@ -408,6 +408,7 @@ class TestAuthor(BaseTestController):
         assert self.app.get('/author/nothing', status=403)
 
         blog = self.createBlog()
+        blog.enable_comments = True
 
         # author pages not enabled
         assert self.app.get('/author/nothing', status=403)
@@ -513,7 +514,8 @@ class TestIndex(BaseTestController):
         response = self.app.get('')
         assert "There's nothing here yet." in response
 
-        self.createBlog(url='blog')
+        blog = self.createBlog(url='blog')
+        blog.enable_comments = True
         response = self.app.get('')
         assert "No posts yet." in response
 
@@ -636,11 +638,11 @@ class TestTrackback(BaseTestController):
         blog.moderation_alert = True
         blog.admin_email = "test.admin" + UCHAR + "@example.com"
 
-        # comments still aren't enabled
+        # linkbacks still aren't enabled
         response = self.app.post('/trackback/nothing')
         assert '<error>1</error>' in response
 
-        blog.enable_comments = True
+        blog.enable_linkbacks = True
 
         # ip address in block list
         address = '127.0.0.1'
@@ -722,12 +724,12 @@ class TestPingback(BaseTestController):
         blog.moderation_alert = True
         blog.admin_email = "test.admin" + UCHAR + "@example.com"
 
-        # comments still aren't enabled
+        # linkbacks still aren't enabled
         response = self.app.request('/pingback', method='POST', body=body)
         assert '<fault>' in response
         assert 'Access Denied' in response
 
-        blog.enable_comments = True
+        blog.enable_linkbacks = True
 
         # bad requests
         response = self.app.request('/pingback', method='POST', body=body)
@@ -815,10 +817,10 @@ class TestWebmention(BaseTestController):
         blog.moderation_alert = True
         blog.admin_email = "test.admin" + UCHAR + "@example.com"
 
-        # comments still aren't enabled
+        # linkbacks still aren't enabled
         assert self.app.post('/webmention', data, status=403)
 
-        blog.enable_comments = True
+        blog.enable_linkbacks = True
 
         # bad requests
         assert self.app.post('/webmention', data, status=400)
@@ -935,6 +937,7 @@ class TestAdmin(BaseTestController):
         data["mail_queue"] = 'mail'
         data["blocklist"] = '192.168.1.255,192.168.1.254'
         data["enable_comments"] = '1'
+        data["enable_linkbacks"] = '1'
         data["author_pages"] = '1'
         data["admin_email"] = ('test.admin' + UCHAR + '@example.com').encode('utf-8')
         data["moderation_alert"] = '1'

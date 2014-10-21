@@ -44,12 +44,13 @@
         {{post.body|safe}}
     </div>
 
-{% if blog.enable_comments %}
+{% if blog.enable_comments or blog.enable_linkbacks %}
     {% if show_comments %}
-        {% if post.approved_comments.count() %}
+        {% set comments = post.enabled_comments(blog) %}
+        {% if comments %}
             <h4 id="comments">Comments</h4>
             <div class="comments">
-                {% for comment in post.approved_comments %}
+                {% for comment in comments %}
                     {% if comment.author %}
                         {% if comment.author == post.author %}
                             <div class="comment post-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
@@ -127,99 +128,101 @@
             </div>
         {% endif %}
 
-        <h4 id="comment-link-header"><a id="comment-link" href="#comment-link">Leave a Comment</a></h4>
+        {% if blog.enable_comments %}
+            <h4 id="comment-link-header"><a id="comment-link" href="#comment-link">Leave a Comment</a></h4>
 
-        <form id="comment-form" action="{{blog_url}}/post/{{post.slug}}" method="post" {{not errors and 'style="display: none;"'|safe or ''}}>
-            {% if user_is_admin %}
-                <ul>
-                    <li>
-                        {% if form_data.get('author_choice') != 'custom' %}
-                            <input id="author-choice-author" type="radio" name="author_choice" value="author" checked="checked" />
-                        {% else %}
-                            <input id="author-choice-author" type="radio" name="author_choice" value="author" />
-                        {% endif %}
-                        <label for="author-choice-author">Leave comment as author:</label>
-                        <select name="author">
-                            {% for author in blog.authors %}
-                                {% if form_data.get('author') == author.slug %}
-                                    <option value="{{author.slug}}" selected="selected">{{author.name}}</option>
-                                {% else %}
-                                    <option value="{{author.slug}}">{{author.name}}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                        <span class="help">(bypasses moderation)</span>
-                        {% if "author" in errors %}
-                            <span class="error">please select a valid author</span>
-                        {% endif %}
-                    </li>
-                    <li>
-                        {% if form_data.get('author_choice') == 'custom' %}
-                            <input id="author-choice-custom" type="radio" name="author_choice" value="custom" checked="checked" />
-                        {% else %}
-                            <input id="author-choice-custom" type="radio" name="author_choice" value="custom" />
-                        {% endif %}
-                        <label for="author-choice-custom">Enter custom information</label>
-                    </li>
-                </ul>
+            <form id="comment-form" action="{{blog_url}}/post/{{post.slug}}" method="post" {{not errors and 'style="display: none;"'|safe or ''}}>
+                {% if user_is_admin %}
+                    <ul>
+                        <li>
+                            {% if form_data.get('author_choice') != 'custom' %}
+                                <input id="author-choice-author" type="radio" name="author_choice" value="author" checked="checked" />
+                            {% else %}
+                                <input id="author-choice-author" type="radio" name="author_choice" value="author" />
+                            {% endif %}
+                            <label for="author-choice-author">Leave comment as author:</label>
+                            <select name="author">
+                                {% for author in blog.authors %}
+                                    {% if form_data.get('author') == author.slug %}
+                                        <option value="{{author.slug}}" selected="selected">{{author.name}}</option>
+                                    {% else %}
+                                        <option value="{{author.slug}}">{{author.name}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <span class="help">(bypasses moderation)</span>
+                            {% if "author" in errors %}
+                                <span class="error">please select a valid author</span>
+                            {% endif %}
+                        </li>
+                        <li>
+                            {% if form_data.get('author_choice') == 'custom' %}
+                                <input id="author-choice-custom" type="radio" name="author_choice" value="custom" checked="checked" />
+                            {% else %}
+                                <input id="author-choice-custom" type="radio" name="author_choice" value="custom" />
+                            {% endif %}
+                            <label for="author-choice-custom">Enter custom information</label>
+                        </li>
+                    </ul>
 
-                <div id="comment-author-info" {{(form_data.get('author_choice') != 'custom' and 'style="display: none;"' or '') | safe}}>
-                    <p><label><input id="trackback" type="checkbox" name="trackback" {{(form_data.get('trackback') and 'checked="checked"' or '') | safe}}/> Trackback</label></p>
-                    <p id="trackback-blog-name" {{(not form_data.get('trackback') and 'style="display: none;"' or '') | safe}}>
-                        <label for="blog_name">Blog Name:</label>
-                        <input type="text" name="blog_name" value="{{form_data.get('blog_name', '')}}"/>
-                        <span class="help">(optional, appears with trackback)</span>
-                        {% if "blog_name" in errors %}
-                            <span class="error">please enter a valid blog name</span>
+                    <div id="comment-author-info" {{(form_data.get('author_choice') != 'custom' and 'style="display: none;"' or '') | safe}}>
+                        <p><label><input id="trackback" type="checkbox" name="trackback" {{(form_data.get('trackback') and 'checked="checked"' or '') | safe}}/> Trackback</label></p>
+                        <p id="trackback-blog-name" {{(not form_data.get('trackback') and 'style="display: none;"' or '') | safe}}>
+                            <label for="blog_name">Blog Name:</label>
+                            <input type="text" name="blog_name" value="{{form_data.get('blog_name', '')}}"/>
+                            <span class="help">(optional, appears with trackback)</span>
+                            {% if "blog_name" in errors %}
+                                <span class="error">please enter a valid blog name</span>
+                            {% endif %}
+                        </p>
+                        <p><label><input id="pingback" type="checkbox" name="pingback" {{(form_data.get('pingback') and 'checked="checked"' or '') | safe}}/> Pingback</label></p>
+                        <p><label><input id="webmention" type="checkbox" name="webmention" {{(form_data.get('webmention') and 'checked="checked"' or '') | safe}}/> Webmention</label></p>
+                {% else %}
+                    <div id="comment-author-info">
+                {% endif %}
+                    <p>
+                        <label for="name">Name:</label>
+                        <input type="text" name="name" value="{{form_data.get('name', '')}}"/>
+                        <span class="help">(optional, appears with comment)</span>
+                        {% if "name" in errors %}
+                            <span class="error">please enter a valid name</span>
                         {% endif %}
                     </p>
-                    <p><label><input id="pingback" type="checkbox" name="pingback" {{(form_data.get('pingback') and 'checked="checked"' or '') | safe}}/> Pingback</label></p>
-                    <p><label><input id="webmention" type="checkbox" name="webmention" {{(form_data.get('webmention') and 'checked="checked"' or '') | safe}}/> Webmention</label></p>
-            {% else %}
-                <div id="comment-author-info">
-            {% endif %}
+                    <p>
+                        <label for="url">URL:</label>
+                        <input type="url" name="url" value="{{form_data.get('url', '')}}"/>
+                        <span class="help">(optional, your name links to this address if included)</span>
+                        {% if "url" in errors %}
+                            <span class="error">please enter a valid URL</span>
+                        {% endif %}
+                    </p>
+                    <p>
+                        <label for="email">Email:</label>
+                        <input type="email" name="email" value="{{form_data.get('email', '')}}"/>
+                        <span class="help">(required for verification, first comment is moderated)</span>
+                        {% if "email" in errors %}
+                            <span class="error">please enter a valid email</span>
+                        {% endif %}
+                    </p>
+                    <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
+                        <label for="required">Required:</label>
+                        <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
+                        <span class="help">(required for verification)</span>
+                    </p>
+                </div>
                 <p>
-                    <label for="name">Name:</label>
-                    <input type="text" name="name" value="{{form_data.get('name', '')}}"/>
-                    <span class="help">(optional, appears with comment)</span>
-                    {% if "name" in errors %}
-                        <span class="error">please enter a valid name</span>
+                    <label for="body">Comment:</label>
+                    <span class="help">(HTML is stripped, URL's become links)</span>
+                    {% if "body" in errors %}
+                        <span class="error">please enter a valid comment</span>
                     {% endif %}
                 </p>
-                <p>
-                    <label for="url">URL:</label>
-                    <input type="url" name="url" value="{{form_data.get('url', '')}}"/>
-                    <span class="help">(optional, your name links to this address if included)</span>
-                    {% if "url" in errors %}
-                        <span class="error">please enter a valid URL</span>
-                    {% endif %}
-                </p>
-                <p>
-                    <label for="email">Email:</label>
-                    <input type="email" name="email" value="{{form_data.get('email', '')}}"/>
-                    <span class="help">(required for verification, first comment is moderated)</span>
-                    {% if "email" in errors %}
-                        <span class="error">please enter a valid email</span>
-                    {% endif %}
-                </p>
-                <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
-                    <label for="required">Required:</label>
-                    <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
-                    <span class="help">(required for verification)</span>
-                </p>
-            </div>
-            <p>
-                <label for="body">Comment:</label>
-                <span class="help">(HTML is stripped, URL's become links)</span>
-                {% if "body" in errors %}
-                    <span class="error">please enter a valid comment</span>
-                {% endif %}
-            </p>
-            <textarea name="body">{{form_data.get('body', '')}}</textarea>
-            <p><input type="submit" value="Make Comment" /></p>
-        </form>
+                <textarea name="body">{{form_data.get('body', '')}}</textarea>
+                <p><input type="submit" value="Make Comment" /></p>
+            </form>
+        {% endif %}
 
-        {% if root_url %}
+        {% if blog.enable_linkbacks and root_url %}
             {# note escaping hyphens below to make sure the comment renders correctly #}
             <!--
             <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -238,7 +241,7 @@
         {% if post.published %}
             <p class="all-comments">
                 <a href="{{blog_url}}/post/{{post.slug}}#comments" itemprop="discussionUrl">
-                    See All Comments (<span itemprop="interactionCount">{{post.approved_comments.count()}}</span>)
+                    See All Comments (<span itemprop="interactionCount">{{len(post.enabled_comments(blog))}}</span>)
                 </a>
             </p>
         {% endif %}

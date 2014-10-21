@@ -45,7 +45,19 @@
         {% endif %}
     </p>
     <p>
-        <label for="moderation_alert-box">Enable Email Alerts for Comments Needing Moderation:</label>
+        <label for="enable_linkbacks">Enable Linkbacks:</label>
+        {% if "enable_linkbacks" in form_data %}
+            <input type="checkbox" name="enable_linkbacks" id="enable_linkbacks" {{(form_data['enable_linkbacks'] and 'checked="checked"' or '') | safe}}/>
+        {% else %}
+            {% if blog and blog.enable_linkbacks %}
+                <input type="checkbox" name="enable_linkbacks" id="enable_linkbacks" checked="checked" />
+            {% else %}
+                <input type="checkbox" name="enable_linkbacks" id="enable_linkbacks" />
+            {% endif %}
+        {% endif %}
+    </p>
+    <p>
+        <label for="moderation_alert-box">Enable Email Alerts for Comments and/or Linkbacks Needing Moderation:</label>
         {% if "moderation_alert" in form_data %}
             <input type="checkbox" name="moderation_alert" id="moderation_alert-box" {{(form_data['moderation_alert'] and 'checked="checked"' or '') | safe}}/>
         {% else %}

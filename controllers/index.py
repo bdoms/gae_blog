@@ -23,7 +23,7 @@ class IndexController(BaseController):
 
             page, last_page, posts = result
 
-        self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts)
+        self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts, len=len)
 
 
     def getPaginatedPosts(self, entity, posts_per_page, redirect_url):

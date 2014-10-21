@@ -18,6 +18,34 @@ class TestBlogPost(BaseTestCase):
         short = post.summarize(2)
         assert short == 'test body...'
 
+    def test_enabled_comments(self):
+        comment1 = self.createComment()
+        comment1.approved = True
+        comment1.put()
+        comment2 = self.createComment()
+        comment2.approved = True
+        comment2.put()
+        comment3 = self.createComment()
+        comment3.approved = True
+        comment3.trackback = True
+        comment3.put()
+        post = comment1.post
+        blog = post.blog
+
+        assert len(post.enabled_comments(blog)) == 0
+
+        blog.enable_comments = True
+
+        assert len(post.enabled_comments(blog)) == 2
+
+        blog.enable_linkbacks = True
+
+        assert len(post.enabled_comments(blog)) == 3
+
+        blog.enable_comments = False
+
+        assert len(post.enabled_comments(blog)) == 1
+
 
 class TestModelFunctions(BaseTestCase):
 
