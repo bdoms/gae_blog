@@ -11,7 +11,8 @@ class PostController(FormController):
 
     FIELDS = {"author_choice": validateString, "author": validateString, "email": validateEmail,
               "name": validateString, "url": validateUrl, "body": validateText,
-              "trackback": validateBool, "blog_name": validateString, "pingback": validateBool}
+              "trackback": validateBool, "blog_name": validateString, "pingback": validateBool,
+              "webmention": validateBool}
 
     @renderIfCachedNoErrors
     def get(self, post_slug):
@@ -27,6 +28,7 @@ class PostController(FormController):
 
                 if self.blog.enable_comments:
                     self.response.headers["X-Pingback"] = root_url + "/pingback"
+                    self.response.headers["Link"] = '<' + root_url + '/webmention>; rel="webmention"'
 
                 return self.cacheAndRenderTemplate('post.html', post=post, root_url=root_url,
                     include_comments=True, form_data=form_data, errors=errors)
@@ -49,6 +51,8 @@ class PostController(FormController):
 
                     form_data, errors, valid_data = self.validate()
 
+                    valid_linkback = valid_data["trackback"] or valid_data["pingback"] or valid_data["webmention"]
+
                     if "body" not in errors:
                         # strip out all HTML to be on the safe side
                         body = model.stripHTML(valid_data["body"])
@@ -58,7 +62,7 @@ class PostController(FormController):
                             body = model.linkURLs(body)
                             # finally, replace linebreaks with HTML linebreaks
                             body = body.replace("\r\n", "<br/>")
-                        elif not valid_data["trackback"] and not valid_data["pingback"]:
+                        elif not valid_linkback:
                             errors["body"] = True
 
                     if valid_data["author_choice"] == "author":
@@ -75,7 +79,7 @@ class PostController(FormController):
                             memcache.delete(self.request.path)
                     else:
                         # trackbacks require URLs, normal comments require emails if not from an author
-                        if valid_data["trackback"] or valid_data["pingback"]:
+                        if valid_linkback:
                             # must be admin to set linkbacks here and not through the normal paths
                             if not self.user_is_admin:
                                 return self.renderError(403)
@@ -104,6 +108,8 @@ class PostController(FormController):
                             comment.blog_name = valid_data["blog_name"]
                         if valid_data["pingback"]:
                             comment.pingback = True
+                        if valid_data["webmention"]:
+                            comment.webmention = True
 
                         if approved.count():
                             comment.approved = True

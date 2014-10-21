@@ -57,7 +57,7 @@
                             <div class="comment blog-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                         {% endif %}
                     {% else %}
-                        <div class="comment {{comment.trackback and 'trackback' or ''}} {{comment.pingback and 'pingback' or ''}}" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
+                        <div class="comment {{comment.trackback and 'trackback' or ''}} {{comment.pingback and 'pingback' or ''}} {{comment.webmention and 'webmention' or ''}}" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
                     {% endif %}
                         <p class="comment-name">
                             {% if comment.author %}
@@ -75,11 +75,13 @@
                                 {% endif %}
                                 says
                             {% else %}
-                                {% if comment.trackback or comment.pingback %}
+                                {% if comment.linkback %}
                                     {% if comment.trackback %}
                                         Trackback
                                     {% elif comment.pingback %}
                                         Pingback
+                                    {% else %}
+                                        Webmention
                                     {% endif %}
                                     from
                                     {% if comment.name %}
@@ -172,6 +174,7 @@
                         {% endif %}
                     </p>
                     <p><label><input id="pingback" type="checkbox" name="pingback" {{(form_data.get('pingback') and 'checked="checked"' or '') | safe}}/> Pingback</label></p>
+                    <p><label><input id="webmention" type="checkbox" name="webmention" {{(form_data.get('webmention') and 'checked="checked"' or '') | safe}}/> Webmention</label></p>
             {% else %}
                 <div id="comment-author-info">
             {% endif %}
@@ -229,6 +232,7 @@
                     trackback:ping="{{root_url}}/trackback/{{post.slug.replace('-', '%2d')}}" />
             </rdf:RDF>
             -->
+            <a href="{{root_url}}/webmention" rel="webmention" style="display: none;">Webmention Endpoint</a>
         {% endif %}
     {% else %}
         {% if post.published %}

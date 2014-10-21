@@ -130,6 +130,7 @@ class BlogComment(ndb.Model):
     blog_name = ndb.StringProperty()
     trackback = ndb.BooleanProperty(default=False)
     pingback = ndb.BooleanProperty(default=False)
+    webmention = ndb.BooleanProperty(default=False)
     approved = ndb.BooleanProperty(default=False)
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     ip_address = ndb.StringProperty(default='')
@@ -143,6 +144,10 @@ class BlogComment(ndb.Model):
     def secondsSinceEpoch(self):
         return mktime(self.timestamp.timetuple())
 
+    @property
+    def linkback(self):
+        return self.trackback or self.pingback or self.webmention
+    
 
 class BlogImage(ndb.Model):
 

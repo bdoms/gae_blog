@@ -13,8 +13,7 @@
             <th>URL</th>
             <th>Email</th>
             <th>Body</th>
-            <th>Trackback</th>
-            <th>Pingback</th>
+            <th>Linkback</th>
             <th>Timestamp (UTC)</th>
             <th>IP Address</th>
             <th>Actions</th>
@@ -30,13 +29,16 @@
                 <td>{{comment.body}}</td>
                 <td>
                     {% if comment.trackback %}
-                        Yes <br/>
+                        Trackback <br/>
                         Blog Name: {{comment.blog_name}}
+                    {% elif comment.pingback %}
+                        Pingback
+                    {% elif comment.webmention %}
+                        Webmention
                     {% else %}
-                        No
+                        None
                     {% endif %}
                 </td>
-                <td>{{comment.pingback and 'Yes' or 'No'}}</td>
                 <td>{{comment.timestamp.strftime("%Y-%m-%d %H:%M:%S")}}</td>
                 <td>{{comment.ip_address}}</td>
                 <td>

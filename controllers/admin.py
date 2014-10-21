@@ -373,7 +373,7 @@ class CommentsController(AdminController):
                         return self.redirect(self.blog_url + '/post/' + post_slug + '#comments')
 
                 else:
-                    if comment.trackback or comment.pingback:
+                    if comment.linkback:
                         # just approve this one
                         comments = [comment]
                     else:

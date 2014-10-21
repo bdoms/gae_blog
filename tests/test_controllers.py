@@ -804,6 +804,75 @@ class TestPingback(BaseTestController):
         assert comment.url in response
 
 
+class TestWebmention(BaseTestController):
+
+    def test_webmention(self):
+        # no blog
+        data = {"source": "http://www.example.com/webmention-test-source"}
+        assert self.app.post('/webmention', data, status=404)
+
+        blog = self.createBlog()
+        blog.moderation_alert = True
+        blog.admin_email = "test.admin" + UCHAR + "@example.com"
+
+        # comments still aren't enabled
+        assert self.app.post('/webmention', data, status=403)
+
+        blog.enable_comments = True
+
+        # bad requests
+        assert self.app.post('/webmention', data, status=400)
+
+        data["target"] = "not a URL"
+        assert self.app.post('/webmention', data, status=400)
+
+        data["target"] = "http://localhost/blog/post/"
+        assert self.app.post('/webmention', data, status=404)
+
+        # still no post
+        data["target"] = "http://localhost/blog/post/post-title"
+        assert self.app.post('/webmention', data, status=404)
+
+        # not published
+        post = self.createPost()
+        post.published = False
+        data["target"] = "http://localhost/blog/post/" + post.slug
+        assert self.app.post('/webmention', data, status=404)
+
+        post.published = True
+
+        # unapproved, so comment should not be there
+        response = self.app.post('/webmention', data)
+        assert 'Awaiting Moderation' in response
+
+        # and a moderation email should've been sent
+        self.executeDeferred(name="mail")
+
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 1
+        assert self.author.email in messages[0].to
+        assert "Webmention Awaiting Moderation" in messages[0].subject
+
+        comment = self.createComment(post=post)
+        comment.approved = True
+        comment.webmention = True
+        comment.url = data["source"]
+        comment.put()
+
+        # url now matches an existing comment, so it should be rejected as redundant
+        assert self.app.post('/webmention', data, status=400)
+
+        # check that a new email wasn't sent
+        self.executeDeferred(name="mail")
+        messages = self.mail_stub.get_sent_messages()
+        assert len(messages) == 1
+
+        # check that the approved one appears on the page
+        response = self.app.get('/post/' + post.slug)
+        assert 'Webmention' in response
+        assert comment.url in response
+
+
 class TestVerify(BaseTestController):
 
     def test_verify(self):

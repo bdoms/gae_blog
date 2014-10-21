@@ -185,6 +185,8 @@ class BaseController(webapp2.RequestHandler):
                     linkback = "Trackback"
                 elif comment.pingback:
                     linkback = "Pingback"
+                elif comment.webmention:
+                    linkback = "Webmention"
                 else:
                     linkback = "Comment"
                 if blog.title:

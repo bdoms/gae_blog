@@ -47,13 +47,15 @@ if (gaeblog.custom_radio) {
 
 gaeblog.trackback = document.getElementById("trackback");
 if (gaeblog.trackback) {
-    gaeblog.pingback = document.getElementById("pingback");
     gaeblog.trackback_blog_name = document.getElementById("trackback-blog-name");
+    gaeblog.pingback = document.getElementById("pingback");
+    gaeblog.webmention = document.getElementById("webmention");
 
     gaeblog.trackback.addEventListener("click", function(e) {
         gaeblog.toggle(gaeblog.trackback_blog_name);
         if (gaeblog.trackback.checked) {
             gaeblog.pingback.checked = false;
+            gaeblog.webmention.checked = false;
         }
     }, false);
     
@@ -61,6 +63,15 @@ if (gaeblog.trackback) {
         if (gaeblog.pingback.checked) {
             gaeblog.trackback.checked = false;
             gaeblog.trackback_blog_name.style.display = "none";
+            gaeblog.webmention.checked = false;
+        }
+    }, false);
+
+    gaeblog.webmention.addEventListener("click", function(e) {
+        if (gaeblog.webmention.checked) {
+            gaeblog.trackback.checked = false;
+            gaeblog.trackback_blog_name.style.display = "none";
+            gaeblog.pingback.checked = false;
         }
     }, false);
 }
