@@ -72,10 +72,13 @@ class BaseController(webapp2.RequestHandler):
         # save all sessions
         self.session_store.save_sessions(self.response)
 
+    def getSession(self):
+        return self.session_store.get_session()
+
     @webapp2.cached_property
     def session(self):
         # uses the default cookie key
-        return self.session_store.get_session()
+        return self.getSession()
 
     def cacheAndRenderTemplate(self, filename, **kwargs):
         def renderHTML():
