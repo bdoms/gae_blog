@@ -41,7 +41,7 @@
     </p>
 
     <div class="post-body" itemprop="articleBody">
-        {{post.body|safe}}
+        {{post.body}}
     </div>
 
 {% if blog.enable_comments or blog.enable_linkbacks %}
@@ -86,19 +86,19 @@
                                     {% endif %}
                                     from
                                     {% if comment.name %}
-                                        <a target="_blank" href="{{comment.url}}">{{comment.name}}</a>
+                                        <a target="_blank" href="{{comment.url}}">{{comment.name|e}}</a>
                                     {% else %}
                                         <a target="_blank" href="{{comment.url}}">{{comment.url}}</a>
                                     {% endif %}
                                     {% if comment.blog_name %}
-                                        on {{comment.blog_name}}
+                                        on {{comment.blog_name|e}}
                                     {% endif %}
                                 {% else %}
                                     {% if comment.name %}
                                         {% if comment.url %}
-                                            <a target="_blank" href="{{comment.url}}">{{comment.name}}</a>
+                                            <a target="_blank" href="{{comment.url}}">{{comment.name|e}}</a>
                                         {% else %}
-                                            {{comment.name}}
+                                            {{comment.name|e}}
                                         {% endif %}
                                     {% else %}
                                         Anonymous
@@ -114,7 +114,7 @@
                         </p>
                         {# body is required for normal comments, but may not exist for trackbacks #}
                         {% if comment.body %}
-                            <p class="comment-body" itemprop="commentText">{{comment.body|safe}}</p>
+                            <p class="comment-body" itemprop="commentText">{{comment.body}}</p>
                         {% endif %}
                         {% if user_is_admin %}
                             <form class="comment-delete" action="{{blog_url}}/admin/comments" method="post">
@@ -131,7 +131,7 @@
         {% if blog.enable_comments %}
             <h4 id="comment-link-header"><a id="comment-link" href="#comment-link">Leave a Comment</a></h4>
 
-            <form id="comment-form" action="{{blog_url}}/post/{{post.slug}}" method="post" {{not errors and 'style="display: none;"'|safe or ''}}>
+            <form id="comment-form" action="{{blog_url}}/post/{{post.slug}}" method="post" {{not errors and 'style="display: none;"' or ''}}>
                 {% if user_is_admin %}
                     <ul>
                         <li>

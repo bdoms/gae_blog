@@ -23,14 +23,14 @@
         {% for comment in comments %}
             <tr>
                 <td><a href="{{blog_url}}/admin/post/{{comment.post.slug}}">{{comment.post.title}}</a></td>
-                <td>{{comment.name}}</td>
+                <td>{{comment.name|e}}</td>
                 <td>{{comment.url}}</td>
                 <td>{{comment.email}}</td>
                 <td>{{comment.body}}</td>
                 <td>
                     {% if comment.trackback %}
                         Trackback <br/>
-                        Blog Name: {{comment.blog_name}}
+                        Blog Name: {{comment.blog_name|e}}
                     {% elif comment.pingback %}
                         Pingback
                     {% elif comment.webmention %}

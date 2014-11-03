@@ -61,7 +61,7 @@ class RelativeLoader(jinja2.BaseLoader):
 
 class BaseController(webapp2.RequestHandler):
 
-    jinja_env = RelativeEnvironment(autoescape=True, loader=RelativeLoader())
+    jinja_env = RelativeEnvironment(loader=RelativeLoader())
 
     def dispatch(self):
         # get a session store for this request

@@ -21,7 +21,7 @@
         		<dc:creator>{{post.author.name}}</dc:creator>
 
 	        	<description><![CDATA[
-                    {{post.body|safe}}
+                    {{post.body}}
                 ]]></description>
             </item>
         {% endfor %}
