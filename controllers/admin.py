@@ -7,7 +7,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 from base import FormController
 
 from gae_blog.lib.gae_validators import (validateString, validateRequiredString, validateText, validateEmail,
-    validateUrl, validateInt, validateBool, validateDate)
+    validateUrl, validateInt, validateBool, validateDateTime)
 from gae_blog import model
 
 
@@ -15,7 +15,7 @@ def validateDT(source):
     if not source:
         return True, None
     else:
-        return validateDate(source, date_format="%Y-%m-%d %H:%M:%S", keep_time=True, future_only=False)
+        return validateDateTime(source, date_format="%Y-%m-%d %H:%M:%S", future_only=False)
 
 
 class AdminController(FormController):
