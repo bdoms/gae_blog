@@ -26,10 +26,12 @@ try:
 except ImportError:
     def cacheHTML(controller, function, **kwargs):
         return function()
-    def renderIfCached(action):
-        def decorate(*args,  **kwargs):
-            return action(*args, **kwargs)
-        return decorate
+    def renderIfCached(**top_kwargs):
+        def wrap_action(action):
+            def decorate(*args,  **kwargs):
+                return action(*args, **kwargs)
+            return decorate
+        return wrap_action
 
 # see if asset management is available
 try:
@@ -274,5 +276,5 @@ def renderIfCachedNoErrors(action):
         if "errors" in controller.session or controller.user_is_admin:
             return action(*args, **kwargs)
         else:
-            return renderIfCached(action)(*args, **kwargs)
+            return renderIfCached()(action)(*args, **kwargs)
     return decorate

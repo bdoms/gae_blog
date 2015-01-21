@@ -7,7 +7,7 @@ from gae_blog import model
 class AuthorController(IndexController):
     """ handles request for an author's page """
 
-    @renderIfCached
+    @renderIfCached()
     def get(self, author_slug):
 
         blog = self.blog

@@ -282,9 +282,10 @@ class PostController(AdminController):
             else:
                 errors["author"] = True
 
+        now = datetime.utcnow()
         if "timestamp_choice" not in errors:
             if valid_data["timestamp_choice"] == "now":
-                valid_data["timestamp"] = datetime.utcnow()
+                valid_data["timestamp"] = now
             elif not valid_data.get("timestamp"):
                 errors["timestamp"] = True
 
@@ -311,7 +312,24 @@ class PostController(AdminController):
 
         # send them back to the admin list of posts if it's not published or to the actual post if it is
         if post.published:
-            memcache.delete_multi(getCacheKeys(blog))
+            cache_keys = getCacheKeys(blog)
+            memcache.delete_multi(cache_keys)
+            keys = [model.ndb.Key('HTMLCache', key) for key in cache_keys]
+            existing_keys = [key for key in keys if key is not None]
+            if existing_keys:
+                if post.timestamp > now:
+                    # post is in the future, so set the expires on these to just after it's available
+                    html_caches = ndb.get_multi(existing_keys, use_memcache=False)
+                    new_html_caches = []
+                    diff = int((post.timestamp - now).total_seconds())
+                    for html_cache in html_caches:
+                        if html_cache:
+                            html_cache.expires = diff
+                            new_html_caches.append(html_cache)
+                    ndb.put_multi(new_html_caches)
+                else:
+                    # post is published in the past so just delete everything
+                    ndb.delete_multi(existing_keys)
             self.redirect(self.blog_url + '/post/' + post.slug)
         else:
             if self.request.get("preview"):
