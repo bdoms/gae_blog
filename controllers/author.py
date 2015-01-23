@@ -1,4 +1,4 @@
-from base import renderIfCached
+from base import cacheAndRender
 from index import IndexController
 
 from gae_blog import model
@@ -7,7 +7,7 @@ from gae_blog import model
 class AuthorController(IndexController):
     """ handles request for an author's page """
 
-    @renderIfCached()
+    @cacheAndRender()
     def get(self, author_slug):
 
         blog = self.blog
@@ -29,7 +29,7 @@ class AuthorController(IndexController):
 
                 page_title = "Author - " + author.name
 
-                return self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts,
+                return self.compileTemplate('index.html', page=page, last_page=last_page, posts=posts,
                     author=author, author_url=author_url, page_title=page_title, len=len)
 
         return self.renderError(404)

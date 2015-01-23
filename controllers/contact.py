@@ -23,7 +23,7 @@ class ContactController(FormController):
 
         form_data, errors = self.errorsFromSession()
 
-        return self.cacheAndRenderTemplate('contact.html', sent=sent, authors=authors, form_data=form_data, errors=errors, page_title="Contact")
+        return self.compileTemplate('contact.html', sent=sent, authors=authors, form_data=form_data, errors=errors, page_title="Contact")
 
     def post(self, sent=False):
 

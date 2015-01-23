@@ -22,11 +22,9 @@ from gae_blog import model
 
 # see if caching is available
 try:
-    from gae_html import cacheHTML, renderIfCached
+    from gae_html import cacheAndRender
 except ImportError:
-    def cacheHTML(controller, function, **kwargs):
-        return function()
-    def renderIfCached(**top_kwargs):
+    def cacheAndRender(**top_kwargs):
         def wrap_action(action):
             def decorate(*args,  **kwargs):
                 return action(*args, **kwargs)
@@ -81,15 +79,6 @@ class BaseController(webapp2.RequestHandler):
     def session(self):
         # uses the default cookie key
         return self.getSession()
-
-    def cacheAndRenderTemplate(self, filename, **kwargs):
-        def renderHTML():
-            return self.compileTemplate(filename, **kwargs)
-        if "errors" in kwargs or self.user_is_admin:
-            html = renderHTML()
-        else:
-            html = cacheHTML(self, renderHTML, **kwargs)
-        return self.response.out.write(html)
 
     def compileTemplate(self, filename, **kwargs):
         template = self.jinja_env.get_template(filename)
@@ -274,7 +263,7 @@ def renderIfCachedNoErrors(action):
     def decorate(*args,  **kwargs):
         controller = args[0]
         if "errors" in controller.session or controller.user_is_admin:
-            return action(*args, **kwargs)
+            return controller.response.out.write(action(*args, **kwargs))
         else:
-            return renderIfCached()(action)(*args, **kwargs)
+            return cacheAndRender()(action)(*args, **kwargs)
     return decorate

@@ -121,13 +121,6 @@ class TestBase(BaseMockController):
         self.controller.dispatch()
         assert self.controller.session.get("test key") == "test value" + UCHAR
 
-    def test_cacheAndRenderTemplate(self):
-        self.mockSessions()
-        # using a template object directly means that we don't need to use the file system
-        template = jinja2.Template("test cache and render template" + UCHAR)
-        self.controller.cacheAndRenderTemplate(template)
-        assert "test cache and render template" + UCHAR in self.controller.response.unicode_body
-
     def test_compileTemplate(self):
         self.mockSessions()
         template = jinja2.Template("test compile template" + UCHAR)

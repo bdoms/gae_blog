@@ -1,12 +1,12 @@
 import math
 
-from base import BaseController, renderIfCached
+from base import BaseController, cacheAndRender
 
 
 class IndexController(BaseController):
     """ handles request for the main index page of the site """
 
-    @renderIfCached()
+    @cacheAndRender()
     def get(self):
 
         blog = self.blog
@@ -23,7 +23,7 @@ class IndexController(BaseController):
 
             page, last_page, posts = result
 
-        self.cacheAndRenderTemplate('index.html', page=page, last_page=last_page, posts=posts, len=len)
+        return self.compileTemplate('index.html', page=page, last_page=last_page, posts=posts, len=len)
 
 
     def getPaginatedPosts(self, entity, posts_per_page, redirect_url):
