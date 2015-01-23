@@ -370,23 +370,6 @@ class TestForm(BaseMockController):
         assert result == "4a4659bd137f6296ac850e4b57aef19e49ec98a2e3d8dfb518a8900c24765fbc256ddc0991d4cb33a540453d3a9a5d3c574fd91e0b991366c923c48824a602a5"
 
 
-class TestDecorators(BaseMockController):
-
-    def setUp(self):
-        super(TestDecorators, self).setUp()
-
-        self.controller = controller_base.BaseController()
-        self.controller.initialize(self.getMockRequest(), self.app.app.response_class())
-
-    def test_renderIfCachedNoErrors(self):
-        self.mockSessions()
-        action = lambda x: "action"
-        decorator = controller_base.renderIfCachedNoErrors(action)
-
-        response = decorator(self.controller)
-        assert response == "action"
-
-
 class TestError(BaseTestController):
 
     def test_error(self):

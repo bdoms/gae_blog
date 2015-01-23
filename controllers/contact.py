@@ -1,4 +1,4 @@
-from base import FormController, renderIfCachedNoErrors
+from base import FormController, cacheAndRender
 
 from gae_blog.lib.gae_validators import validateString, validateRequiredString, validateRequiredText, validateRequiredEmail
 from gae_blog import model
@@ -9,7 +9,7 @@ class ContactController(FormController):
 
     FIELDS = {"author": validateRequiredString, "email": validateRequiredEmail, "subject": validateString, "body": validateRequiredText}
 
-    @renderIfCachedNoErrors
+    @cacheAndRender(error_string='errors', error_attr='session')
     def get(self):
 
         blog = self.blog

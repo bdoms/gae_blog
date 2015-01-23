@@ -256,14 +256,3 @@ class FormController(BaseController):
         if not timestamp:
             timestamp = datetime.utcnow()
         return sha512(url + salt + timestamp.strftime("%Y%m%d%H%M")).hexdigest()
-
-
-# decorators
-def renderIfCachedNoErrors(action):
-    def decorate(*args,  **kwargs):
-        controller = args[0]
-        if "errors" in controller.session or controller.user_is_admin:
-            return controller.response.out.write(action(*args, **kwargs))
-        else:
-            return cacheAndRender()(action)(*args, **kwargs)
-    return decorate

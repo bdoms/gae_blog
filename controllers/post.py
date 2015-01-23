@@ -1,6 +1,6 @@
 from google.appengine.api import memcache
 
-from base import FormController, renderIfCachedNoErrors
+from base import FormController, cacheAndRender
 
 from gae_blog.lib.gae_validators import validateBool, validateString, validateText, validateEmail, validateUrl
 from gae_blog import model
@@ -14,7 +14,7 @@ class PostController(FormController):
               "trackback": validateBool, "blog_name": validateString, "pingback": validateBool,
               "webmention": validateBool}
 
-    @renderIfCachedNoErrors
+    @cacheAndRender(include_comments=True, error_string='errors', error_attr='session')
     def get(self, post_slug):
 
         if post_slug and self.blog:
@@ -31,7 +31,7 @@ class PostController(FormController):
                     self.response.headers["Link"] = '<' + root_url + '/webmention>; rel="webmention"'
 
                 return self.compileTemplate('post.html', post=post, root_url=root_url,
-                    include_comments=True, form_data=form_data, errors=errors)
+                    form_data=form_data, errors=errors)
 
         return self.renderError(404)
 
