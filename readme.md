@@ -1,4 +1,4 @@
-Copyright &copy; 2010-2014, [Brendan Doms](http://www.bdoms.com/)  
+Copyright &copy; 2010-2015, [Brendan Doms](http://www.bdoms.com/)  
 Licensed under the [MIT license](http://www.opensource.org/licenses/MIT)
 
 
@@ -87,3 +87,14 @@ environment variable. Then, running tests is simple:
 ```bash
 python tests
 ```
+
+## Scheduling Posts for the Future
+
+There is some support for scheduling posts to be published in the future.
+As noted on the admin post page, this is accomplished simply by checking the
+"published" checkbox and entering a future timestamp. However, please note
+that it is possible for pages including a yet-to-be-published post - such as
+the index page, author pages (if enabled), and the RSS feed - to be put into
+memcache after the post has been saved but before it has been published.
+It is therefore recommended that you manually flush the cache if the post
+appearing in those places is time sensitive.
