@@ -14,7 +14,7 @@ class PostController(FormController):
               "trackback": validateBool, "blog_name": validateString, "pingback": validateBool,
               "webmention": validateBool}
 
-    @cacheAndRender(include_comments=True, error_string='errors', error_attr='session')
+    @cacheAndRender(include_comments=True, skip_check=lambda controller: 'errors' in controller.session)
     def get(self, post_slug):
 
         if post_slug and self.blog:

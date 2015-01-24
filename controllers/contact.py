@@ -9,7 +9,7 @@ class ContactController(FormController):
 
     FIELDS = {"author": validateRequiredString, "email": validateRequiredEmail, "subject": validateString, "body": validateRequiredText}
 
-    @cacheAndRender(error_string='errors', error_attr='session')
+    @cacheAndRender(skip_check=lambda controller: 'errors' in controller.session)
     def get(self):
 
         blog = self.blog
