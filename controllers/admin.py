@@ -97,7 +97,7 @@ class BlogController(AdminController):
 
         blog.put()
         
-        memcache.delete_multi(getCacheKeys(blog))
+        clearCache(blog)
 
         if existed:
             self.redirect('/' + blog.slug + '/admin')
@@ -225,7 +225,7 @@ class PostsController(AdminController):
                     model.db.delete(list(post.comments))
                 # then the post itself
                 post.key.delete()
-                memcache.delete_multi(getCacheKeys(self.blog))
+                clearCache(self.blog)
             else:
                 return self.renderError(404)
 
@@ -300,7 +300,10 @@ class PostController(AdminController):
         del valid_data["slug_choice"]
         del valid_data["timestamp_choice"]
 
+        was_published = False
         if post:
+            was_published = post.published
+
             # if the slug is different, remake the entities since the key name needs to change
             if slug != post.slug:
                 post = model.makeNew(post, id=slug, parent=blog.key)
@@ -314,24 +317,26 @@ class PostController(AdminController):
         if post.published:
             cache_keys = getCacheKeys(blog)
             memcache.delete_multi(cache_keys)
-            keys = [model.ndb.Key('HTMLCache', key) for key in cache_keys]
-            existing_keys = [key for key in keys if key is not None]
-            if existing_keys:
-                if post.timestamp > now:
-                    # post is in the future, so set the expires on these to just after it's available
-                    html_caches = ndb.get_multi(existing_keys, use_memcache=False)
-                    new_html_caches = []
-                    diff = int((post.timestamp - now).total_seconds())
-                    for html_cache in html_caches:
-                        if html_cache:
-                            html_cache.expires = diff
-                            new_html_caches.append(html_cache)
+            datastore_keys = getDatastoreKeys(blog)
+            if post.timestamp > now:
+                # post is in the future, so set the expires on these to just after it's available
+                html_caches = ndb.get_multi(datastore_keys, use_memcache=False)
+                new_html_caches = []
+                diff = int((post.timestamp - now).total_seconds())
+                for html_cache in html_caches:
+                    if html_cache:
+                        html_cache.expires = diff
+                        new_html_caches.append(html_cache)
+                if new_html_caches:
                     ndb.put_multi(new_html_caches)
-                else:
-                    # post is published in the past so just delete everything
-                    ndb.delete_multi(existing_keys)
+            else:
+                # post is published in the past so just delete everything
+                ndb.delete_multi(datastore_keys)
             self.redirect(self.blog_url + '/post/' + post.slug)
         else:
+            if was_published:
+                clearCache(blog)
+
             if self.request.get("preview"):
                 self.redirect(self.blog_url + '/admin/preview/' + post.slug)
             else:
@@ -553,3 +558,16 @@ def getCacheKeys(blog):
             keys.append(author_url + 'page=' + str(page + 1))
 
     return keys
+
+
+def getDatastoreKeys(blog):
+    url = '/' + blog.slug
+    string_keys = [url + '/feed']
+    return [model.ndb.Key('HTMLCache', key) for key in string_keys]
+
+
+def clearCache(blog):
+    cache_keys = getCacheKeys(blog)
+    memcache.delete_multi(cache_keys)
+    datastore_keys = getDatastoreKeys(blog)
+    ndb.delete_multi(datastore_keys)

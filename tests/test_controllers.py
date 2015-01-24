@@ -12,7 +12,7 @@ from webtest import TestApp
 from controllers import base as controller_base
 from controllers import admin as controller_admin
 
-from base import BaseTestCase, UCHAR
+from base import BaseTestCase, UCHAR, model
 
 
 class BaseTestController(BaseTestCase):
@@ -1154,3 +1154,19 @@ class TestAdmin(BaseTestController):
 
         keys = controller_admin.getCacheKeys(self.blog)
         assert keys == ['/blog', '/blog/contact', '/blog/feed', '/blog/post/test-post', '/blog/author/test-author']
+
+    def test_getDatastoreKeys(self):
+        post = self.createPost()
+        post.published = True
+
+        keys = controller_admin.getDatastoreKeys(self.blog)
+        assert keys == [model.ndb.Key('HTMLCache', '/blog/feed')]
+
+    def test_clearCache(self):
+        post = self.createPost()
+        post.published = True
+
+        controller_admin.clearCache(self.blog)
+
+        keys = controller_admin.getCacheKeys(self.blog)
+        assert not memcache.get_multi(keys)
