@@ -12,9 +12,9 @@
     <p>
         <label for="title">Blog Title:</label>
         {% if "title" in form_data %}
-            <input type="text" name="title" value="{{form_data['title']}}" />
+            <input type="text" name="title" value="{{form_data['title']}}" required />
         {% else %}
-            <input type="text" name="title" value="{{blog and blog.title or ''}}" />
+            <input type="text" name="title" value="{{blog and blog.title or ''}}" autofocus required />
         {% endif %}
         {% if "title" in errors %}
             <span class="error">please enter a valid title</span>
@@ -95,9 +95,9 @@
     <p>
         <label for="admin_email">Admin Email:</label>
         {% if "admin_email" in form_data %}
-            <input type="text" name="admin_email" value="{{form_data['admin_email']}}" />
+            <input type="email" name="admin_email" value="{{form_data['admin_email']}}" />
         {% else %}
-            <input type="text" name="admin_email" value="{{blog and blog.admin_email or ''}}" />
+            <input type="email" name="admin_email" value="{{blog and blog.admin_email or ''}}" />
         {% endif %}
         <span class="help">(required for email alerts or the contact page to work correctly, must match the email address of a GAE admin)</span>
         {% if "admin_email" in errors %}
@@ -107,9 +107,9 @@
     <p>
         <label for="posts_per_page">Posts Per Page:</label>
         {% if "posts_per_page" in form_data %}
-            <input type="text" name="posts_per_page" value="{{form_data['posts_per_page']}}" />
+            <input type="number" min="1" step="1" name="posts_per_page" value="{{form_data['posts_per_page']}}" />
         {% else %}
-            <input type="text" name="posts_per_page" value="{{blog and blog.posts_per_page or 10}}" />
+            <input type="number" min="1" step="1" name="posts_per_page" value="{{blog and blog.posts_per_page or 10}}" />
         {% endif %}
         <span class="help">(control how many posts are shown at once on index pages)</span>
         {% if "posts_per_page" in errors %}
@@ -119,9 +119,9 @@
     <p>
         <label for="image_preview_size">Image Preview Size:</label>
         {% if "image_preview_size" in form_data %}
-            <input type="text" name="image_preview_size" value="{{form_data['image_preview_size']}}" />
+            <input type="number" min="1" step="1" name="image_preview_size" value="{{form_data['image_preview_size']}}" />
         {% else %}
-            <input type="text" name="image_preview_size" value="{{blog and blog.image_preview_size or 600}}" />
+            <input type="number" min="1" step="1" name="image_preview_size" value="{{blog and blog.image_preview_size or 600}}" />
         {% endif %}
         <span class="help">(the maximum number of pixels wide or high for previews, applies to the larger dimension)</span>
         {% if "image_preview_size" in errors %}

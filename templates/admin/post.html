@@ -20,9 +20,9 @@
     <p>
         <label for="title">Title:</label>
         {% if "title" in form_data %}
-            <input type="text" name="title" value="{{form_data['title']}}" />
+            <input type="text" name="title" value="{{form_data['title']}}" required />
         {% else %}
-            <input type="text" name="title" value="{{post and post.title.replace('"', '&quot;') or ''}}" />
+            <input type="text" name="title" value="{{post and post.title.replace('"', '&quot;') or ''}}" required autofocus />
         {% endif %}
         {% if "title" in errors %}
             <span class="error">please enter a valid title</span>

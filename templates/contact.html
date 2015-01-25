@@ -34,7 +34,7 @@
 
                 <p class="contact-email">
                     <label for="email">From Email Address:</label>
-                    <input type="email" name="email" value="{{form_data.get('email', '')}}"/>
+                    <input type="email" name="email" value="{{form_data.get('email', '')}}" required autofocus />
                     <span class="help">(required for a response)</span>
                     {% if "email" in errors %}
                         <span class="error">please enter a valid email</span>

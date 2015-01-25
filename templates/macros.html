@@ -182,7 +182,7 @@
                 {% endif %}
                     <p>
                         <label for="name">Name:</label>
-                        <input type="text" name="name" value="{{form_data.get('name', '')}}"/>
+                        <input type="text" name="name" value="{{form_data.get('name', '')}}" autofocus />
                         <span class="help">(optional, appears with comment)</span>
                         {% if "name" in errors %}
                             <span class="error">please enter a valid name</span>
