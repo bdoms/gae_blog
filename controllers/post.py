@@ -30,7 +30,7 @@ class PostController(FormController):
                     self.response.headers["X-Pingback"] = root_url + "/pingback"
                     self.response.headers["Link"] = '<' + root_url + '/webmention>; rel="webmention"'
 
-                return self.compileTemplate('post.html', post=post, root_url=root_url,
+                return self.renderTemplate('post.html', post=post, root_url=root_url,
                     form_data=form_data, errors=errors)
 
         return self.renderError(404)

@@ -13,5 +13,4 @@ class FeedController(BaseController):
 
         root_url = self.request.headers.get('host')
 
-
-        return self.compileTemplate('feed.rss', blog=self.blog, root_url=root_url, build_date=datetime.utcnow())
+        self.renderTemplate('feed.rss', blog=self.blog, root_url=root_url, build_date=datetime.utcnow())
