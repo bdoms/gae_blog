@@ -418,6 +418,13 @@ class TestContact(BaseTestController):
 
         blog.contact = True
 
+        # no admin email
+        response = self.app.get('/contact')
+        assert "<h3>Contact</h3>" in response
+        assert "There is no admin email address for this blog" in response
+
+        blog.admin_email = "test.admin" + UCHAR + "@example.com"
+
         # no authors
         response = self.app.get('/contact')
         assert "<h3>Contact</h3>" in response
@@ -436,17 +443,17 @@ class TestContact(BaseTestController):
 
     def test_sendContact(self):
         # no blog
-        assert self.app.post('/contact', status=302)
+        assert self.app.post('/contact', status=403)
 
         blog = self.createBlog()
 
         # contact page not enabled
-        assert self.app.post('/contact', status=302)
+        assert self.app.post('/contact', status=403)
 
         blog.contact = True
 
         # no admin email
-        assert self.app.post('/contact', status=302)
+        assert self.app.post('/contact', status=403)
 
         blog.admin_email = "test.admin" + UCHAR + "@example.com"
 

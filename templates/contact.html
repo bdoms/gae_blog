@@ -5,81 +5,82 @@
 
 {% if sent %}
     <p>Message sent successfully. Thanks!</p>
-{% else %}
-    {% if blog.authors.count() %}
-        {% if authors %}
-            <form action="" method="post" id="contact-form">
-                <p class="contact-author">
-                    <label for="author">To:</label>
-                    <select name="author">
-                        {% if authors|length > 1 %}
-                            {% if form_data.get('author') == 'all' %}
-                                <option value="all" selected="selected">Everyone</option>
-                            {% else %}
-                                <option value="all">Everyone</option>
-                            {% endif %}
-                        {% endif %}
-                        {% for author in authors %}
-                            {% if form_data.get('author') == author.slug %}
-                                <option value="{{author.slug}}" selected="selected">{{author.name}}</option>
-                            {% else %}
-                                <option value="{{author.slug}}">{{author.name}}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                    {% if "author" in errors %}
-                        <span class="error">please select a valid recipient</span>
+{% elif blog.admin_email and authors %}
+    <form action="{{blog_url}}/contact" method="post" id="contact-form">
+        <p class="contact-author">
+            <label for="author">To:</label>
+            <select name="author">
+                {% if authors|length > 1 %}
+                    {% if form_data.get('author') == 'all' %}
+                        <option value="all" selected="selected">Everyone</option>
+                    {% else %}
+                        <option value="all">Everyone</option>
                     {% endif %}
-                </p>
-
-                <p class="contact-email">
-                    <label for="email">From Email Address:</label>
-                    <input type="email" name="email" value="{{form_data.get('email', '')}}" required autofocus />
-                    <span class="help">(required for a response)</span>
-                    {% if "email" in errors %}
-                        <span class="error">please enter a valid email</span>
+                {% endif %}
+                {% for author in authors %}
+                    {% if form_data.get('author') == author.slug %}
+                        <option value="{{author.slug}}" selected="selected">{{author.name}}</option>
+                    {% else %}
+                        <option value="{{author.slug}}">{{author.name}}</option>
                     {% endif %}
-                </p>
-
-                <p class="contact-subject">
-                    <label for="subject">Subject:</label>
-                    <input type="text" name="subject" value="{{form_data.get('subject', '')}}"/>
-                    <span class="help">(optional)</span>
-                    {% if "subject" in errors %}
-                        <span class="error">please enter a valid subject</span>
-                    {% endif %}
-                </p>
-
-                <p class="contact-message">
-                    <label for="body">Message:</label>
-                    <span class="help">(plain text)</span>
-                    {% if "body" in errors %}
-                        <span class="error">please enter a valid message</span>
-                    {% endif %}
-                </p>
-
-                <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
-                    <label for="required">Required:</label>
-                    <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
-                    <span class="help">(required for verification)</span>
-                </p>
-
-                <textarea class="contact-body" name="body">{{form_data.get('body', '')}}</textarea>
-
-                <p class="contact-submit"><input type="submit" value="Send"/></p>
-            </form>
-        {% else %}
-            <p>
-                There aren't any emails associated with authors yet.
-                For this contact page to work you need to <a href="{{blog_url}}/admin/authors">add at least one</a>.
-            </p>
-        {% endif %}
-    {% else %}
-        <p>
-            There aren't any authors for this blog yet.
-            You should <a href="{{blog_url}}/admin/author/">add one</a>.
+                {% endfor %}
+            </select>
+            {% if "author" in errors %}
+                <span class="error">please select a valid recipient</span>
+            {% endif %}
         </p>
-    {% endif %}
+
+        <p class="contact-email">
+            <label for="email">From Email Address:</label>
+            <input type="email" name="email" value="{{form_data.get('email', '')}}" required autofocus />
+            <span class="help">(required for a response)</span>
+            {% if "email" in errors %}
+                <span class="error">please enter a valid email</span>
+            {% endif %}
+        </p>
+
+        <p class="contact-subject">
+            <label for="subject">Subject:</label>
+            <input type="text" name="subject" value="{{form_data.get('subject', '')}}"/>
+            <span class="help">(optional)</span>
+            {% if "subject" in errors %}
+                <span class="error">please enter a valid subject</span>
+            {% endif %}
+        </p>
+
+        <p class="contact-message">
+            <label for="body">Message:</label>
+            <span class="help">(plain text)</span>
+            {% if "body" in errors %}
+                <span class="error">please enter a valid message</span>
+            {% endif %}
+        </p>
+
+        <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
+            <label for="required">Required:</label>
+            <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
+            <span class="help">(required for verification)</span>
+        </p>
+
+        <textarea class="contact-body" name="body" required>{{form_data.get('body', '')}}</textarea>
+
+        <p class="contact-submit"><input type="submit" value="Send"/></p>
+    </form>
+{% elif not blog.admin_email %}
+    <p>
+        There is no admin email address for this blog, but it is required to send emails.
+        For this contact page to work you need to <a href="{{blog_url}}/admin/blog">add one</a>.
+    </p>
+{% elif blog.authors.count() %}
+    <p>
+        There aren't any emails associated with authors yet.
+        For this contact page to work you need to <a href="{{blog_url}}/admin/authors">add at least one</a>.
+    </p>
+{% else %}
+    <p>
+        There aren't any authors for this blog yet.
+        You should <a href="{{blog_url}}/admin/author/">add one</a>.
+    </p>
 {% endif %}
 
 <script>

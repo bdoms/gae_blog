@@ -61,5 +61,7 @@ class ContactController(FormController):
             for author in authors:
                 self.deferEmail(author.name + " <" + author.email + ">", subject, valid_data["body"], valid_data["email"])
 
-        self.session["blog_contact_sent"] = True
-        return self.redirect(self.blog_url + '/contact')
+            self.session["blog_contact_sent"] = True
+            self.redirect(self.blog_url + '/contact')
+        else:
+            self.renderError(403)
