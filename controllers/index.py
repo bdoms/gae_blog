@@ -1,6 +1,7 @@
 import math
 
 from base import BaseController, cacheAndRender
+from gae_blog.lib.gae_validators import validateInt
 
 
 class IndexController(BaseController):
@@ -31,13 +32,14 @@ class IndexController(BaseController):
 
         last_page = int(math.ceil(published_posts.count() / float(posts_per_page)))
         
+        try:
+            page_str = self.request.get("page")
+        except UnicodeDecodeError:
+            return self.renderError(400)
+        
         page = 0
-        page_str = self.request.get("page")
         if page_str:
-            try:
-                page = int(page_str)
-            except:
-                pass
+            valid, page = validateInt(page_str)
 
             # don't want this for SEO purposes
             if not page:
