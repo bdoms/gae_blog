@@ -14,6 +14,17 @@ class PostController(FormController):
               "trackback": validateBool, "blog_name": validateString, "pingback": validateBool,
               "webmention": validateBool}
 
+    def headers(self):
+
+        if self.blog and self.request.method == "GET":
+            self.response.headers.add("Link", '<' + self.request.path_url + '>; rel="canonical"')
+
+            root_url = self.request.host_url + self.blog_url
+
+            if self.blog.enable_linkbacks:
+                self.response.headers.add("X-Pingback", root_url + "/pingback")
+                self.response.headers.add("Link", '<' + root_url + '/webmention>; rel="webmention"')
+
     @cacheAndRender(include_comments=True, skip_check=lambda controller: 'errors' in controller.session)
     def get(self, post_slug):
 
@@ -25,10 +36,6 @@ class PostController(FormController):
 
                 # the root URL and `include_comments` allow the trackback RDF to render correctly
                 root_url = self.request.host_url + self.blog_url
-
-                if self.blog.enable_linkbacks:
-                    self.response.headers["X-Pingback"] = root_url + "/pingback"
-                    self.response.headers["Link"] = '<' + root_url + '/webmention>; rel="webmention"'
 
                 return self.renderTemplate('post.html', post=post, root_url=root_url,
                     form_data=form_data, errors=errors)

@@ -67,6 +67,9 @@ class BaseController(webapp2.RequestHandler):
         # get a session store for this request
         self.session_store = sessions.get_store(request=self.request)
 
+        if hasattr(self, "headers"):
+            self.headers()
+
         webapp2.RequestHandler.dispatch(self)
 
         # save all sessions

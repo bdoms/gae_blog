@@ -509,6 +509,31 @@ class TestIndex(BaseTestController):
 
 class TestPost(BaseTestController):
 
+    def test_post_headers(self):
+        # no blog
+        assert self.app.get('/post/nothing', status=404)
+
+        blog = self.createBlog()
+
+        # no post
+        assert self.app.get('/post/nothing', status=404)
+
+        post = self.createPost()
+        response = self.app.get('/post/' + post.slug)
+        assert "Link" in response.headers
+        links = response.headers.getall("Link")
+        assert inList("canonical", links)
+        assert not inList("webmention", links)
+        assert "X-Pingback" not in response.headers
+
+        blog.enable_linkbacks = True
+        response = self.app.get('/post/' + post.slug)
+        assert "Link" in response.headers
+        links = response.headers.getall("Link")
+        assert inList("canonical", links)
+        assert inList("webmention", links)
+        assert "X-Pingback" in response.headers
+
     def test_post(self):
         # no blog
         assert self.app.get('/post/nothing', status=404)
@@ -1177,3 +1202,10 @@ class TestAdmin(BaseTestController):
 
         keys = controller_admin.getCacheKeys(self.blog)
         assert not memcache.get_multi(keys)
+
+
+def inList(string, list):
+    for item in list:
+        if string in item:
+            return True
+    return False
