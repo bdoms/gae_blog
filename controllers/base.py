@@ -99,7 +99,8 @@ class BaseController(webapp2.RequestHandler):
         return template.render(kwargs)
 
     def renderTemplate(self, filename, **kwargs):
-        self.response.out.write(self.compileTemplate(filename, **kwargs))
+        if self.request.method != 'HEAD':
+            self.response.out.write(self.compileTemplate(filename, **kwargs))
 
     def renderError(self, status_int, stacktrace=None):
         self.response.set_status(status_int)
@@ -108,7 +109,14 @@ class BaseController(webapp2.RequestHandler):
 
     def renderJSON(self, data):
         self.response.headers['Content-Type'] = "application/json"
-        self.response.out.write(json.dumps(data, ensure_ascii=False, encoding='utf-8'))
+        if self.request.method != 'HEAD':
+            self.response.out.write(json.dumps(data, ensure_ascii=False, encoding='utf-8'))
+
+    def head(self, *args):
+        # support HEAD requests in a generic way
+        self.get(*args)
+        # the output may be cached, but still don't send it to save bandwidth
+        self.response.clear()
 
     # this overrides the base class for handling things like 500 errors
     def handle_exception(self, exception, debug):

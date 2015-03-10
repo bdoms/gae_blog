@@ -16,7 +16,7 @@ class PostController(FormController):
 
     def headers(self):
 
-        if self.blog and self.request.method == "GET":
+        if self.blog and self.request.method != "POST":
             self.response.headers.add("Link", '<' + self.request.path_url + '>; rel="canonical"')
 
             root_url = self.request.host_url + self.blog_url

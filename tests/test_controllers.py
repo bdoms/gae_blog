@@ -144,6 +144,19 @@ class TestBase(BaseMockController):
         assert self.controller.response.headers['Content-Type'] == "application/json; charset=utf-8"
         assert self.controller.response.unicode_body == '{"test key": "test value' + UCHAR + '"}'
 
+    def test_head(self):
+        def get(): self.called = True
+        self.controller.get = get
+
+        # HEAD should just call the GET version
+        self.called = False
+        self.controller.head()
+        assert self.called
+
+        # but not have a response body
+        assert not self.controller.response.unicode_body
+        assert not self.controller.response.body
+
     def test_handle_exception(self):
         self.mockSessions()
         # temporarily disable exception logging for this test to avoid messy printouts
@@ -271,6 +284,7 @@ class TestForm(BaseMockController):
 
     class UnicodeMockRequest(object):
         path = url = "/test-path"
+        method = "POST"
         def __init__(self, d):
             self.d = d
         def get(self, field):
