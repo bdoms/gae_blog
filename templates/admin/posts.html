@@ -21,10 +21,11 @@
             {% for post in posts %}
                 <tr>
                     <td><a href="{{blog_url}}/admin/post/{{post.slug}}">{{post.title}}</a></td>
-                    {% if post.author.url %}
-                        <td><a href="{{post.author.url}}" target="_blank">{{post.author.name}}</a></td>
+                    {% set post_author = post.author.get() %}
+                    {% if post_author.url %}
+                        <td><a href="{{post_author.url}}" target="_blank">{{post_author.name}}</a></td>
                     {% else %}
-                        <td><a href="{{blog_url}}/author/${post.author.slug}}">{{post.author.name}}</a></td>
+                        <td><a href="{{blog_url}}/author/{{post_author.slug}}">{{post_author.name}}</a></td>
                     {% endif %}
                     {% if post.published %}
                         <td><a href="{{blog_url}}/post/{{post.slug}}">{{post.published}}</a></td>
