@@ -2,6 +2,8 @@ from datetime import datetime
 
 from base import BaseController, cacheAndRender
 
+from gae_blog import model
+
 
 class FeedController(BaseController):
     """ handles request for news feeds like RSS """
@@ -13,4 +15,25 @@ class FeedController(BaseController):
 
         root_url = self.request.headers.get('host')
 
-        self.renderTemplate('feed.rss', blog=self.blog, root_url=root_url, build_date=datetime.utcnow())
+        blog = self.blog
+        author = None
+        tag = None
+        posts = []
+        if blog:
+            entity = blog
+            author_slug = self.request.get("author")
+            if author_slug and blog.author_pages:
+                author = model.BlogAuthor.get_by_id(author_slug, parent=blog.key)
+                if author:
+                    entity = author
+            else:
+                tag_slug = self.request.get("tag")
+                if tag_slug:
+                    tag = model.BlogTag.get_by_id(tag_slug, parent=blog.key)
+                    if tag:
+                        entity = tag
+
+            posts = entity.published_posts.fetch(blog.posts_per_page)
+
+        self.renderTemplate('feed.rss', blog=blog, author=author, tag=tag,
+            posts=posts, root_url=root_url, build_date=datetime.utcnow())

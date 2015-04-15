@@ -518,13 +518,27 @@ class TestContact(BaseTestController):
 class TestFeed(BaseTestController):
 
     def test_feed(self):
-        self.createPost()
+        blog = self.createBlog()
+        author = self.createAuthor()
+        tag = self.createTag()
+        self.createPost(author=author, tags=[tag])
 
         response = self.app.get('/feed')
-
         assert "<rss" in response
         assert self.blog.title in response
         assert self.post.title in response
+        assert "<category>" + tag.name + "</category>" in response
+
+        response = self.app.get('/feed?author=' + author.slug)
+        assert "Author - " + author.name not in response
+
+        blog.author_pages = True
+
+        response = self.app.get('/feed?author=' + author.slug)
+        assert "Author - " + author.name in response
+
+        response = self.app.get('/feed?tag=' + tag.slug)
+        assert "Tag - " + tag.name in response
 
 
 class TestIndex(BaseTestController):

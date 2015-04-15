@@ -2,7 +2,14 @@
 <rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
 
 <channel>
-	<title>{{blog and blog.title or 'Blog'}}</title>
+	<title>
+        {% if author %}
+            Author - {{author.name}} |
+        {% elif tag %}
+            Tag - {{tag.name}} |
+        {% endif %}
+        {{blog and blog.title or 'Blog'}}
+    </title>
 
 	<link>http://{{root_url}}{{blog_url}}</link>
 	<description>{{blog and blog.description or ''}}</description>
@@ -10,22 +17,24 @@
 	<generator>http://github.com/bdoms/gae_blog</generator>
 	<language>en</language>
 
-    {% if blog %}
-        {% for post in blog.published_posts.fetch(blog.posts_per_page) %}
-            <item>
-        		<title>{{post.title}}</title>
-        		<link>http://{{root_url}}{{blog_url}}/post/{{post.slug}}</link>
+    {% for post in posts %}
+        <item>
+    		<title>{{post.title}}</title>
+    		<link>http://{{root_url}}{{blog_url}}/post/{{post.slug}}</link>
 
-        		<comments>http://{{root_url}}{{blog_url}}/post/{{post.slug}}#comments</comments>
-        		<pubDate>{{post.timestamp.strftime("%a, %d %b %Y %H:%M:%S GMT")}}</pubDate>
-        		<dc:creator>{{post.author.name}}</dc:creator>
+    		<comments>http://{{root_url}}{{blog_url}}/post/{{post.slug}}#comments</comments>
+    		<pubDate>{{post.timestamp.strftime("%a, %d %b %Y %H:%M:%S GMT")}}</pubDate>
+    		<dc:creator>{{post.author.name}}</dc:creator>
 
-	        	<description><![CDATA[
-                    {{post.body}}
-                ]]></description>
-            </item>
-        {% endfor %}
-    {% endif %}
+        	<description><![CDATA[
+                {{post.body}}
+            ]]></description>
+
+            {% for tag in post.tags %}
+                <category>{{tag.name}}</category>
+            {% endfor %}
+        </item>
+    {% endfor %}
 
 </channel>
 </rss>
