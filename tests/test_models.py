@@ -71,6 +71,13 @@ class TestModelFunctions(BaseTestCase):
         assert new_blog.slug == 'new-blog'
 
 
+    def test_slugify(self):
+        name = 'Test Post with-&-a--lot---of----hyphens-' + UCHAR
+        slug = model.slugify(name)
+
+        assert slug == 'test-post-with-a-lot-of-hyphens'
+
+
     def test_makeSlug(self):
         # without a pre-existing entity
         blog = self.createBlog()

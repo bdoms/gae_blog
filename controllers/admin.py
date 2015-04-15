@@ -236,8 +236,8 @@ class PostController(AdminController):
     """ handles editing and publishing posts """
 
     FIELDS = {"title": validateRequiredString, "slug_choice": validateRequiredString, "slug": validateString,
-        "author": validateRequiredString, "body": validateText, "timestamp_choice": validateRequiredString,
-        "timestamp": validateDT, "published": validateBool}
+        "author": validateRequiredString, "body": validateText, "tags": validateString,
+        "timestamp_choice": validateRequiredString, "timestamp": validateDT, "published": validateBool}
 
 
     def get(self, post_slug):
@@ -295,9 +295,30 @@ class PostController(AdminController):
         if slug_choice == "auto":
             slug = model.makeSlug(valid_data["title"], blog, model.BlogPost, post)
 
+        # turn tag strings into keys
+        tag_keys = []
+        if valid_data["tags"]:
+            new_tags = []
+            for tag_string in valid_data["tags"].split(","):
+                tag_string = tag_string.strip()
+                if tag_string:
+                    tag_slug = model.slugify(tag_string)
+                    tag = model.BlogTag.get_by_id(tag_slug, parent=blog.key)
+                    if tag:
+                        tag_keys.append(tag.key)
+                    else:
+                        tag_slug = model.makeSlug(tag_string, blog, model.BlogTag)
+                        tag = model.BlogTag(id=tag_slug, name=tag_string, parent=blog.key)
+                        new_tags.append(tag)
+            if new_tags:
+                ndb.put_multi(new_tags)
+                tag_keys.extend([tag.key for tag in new_tags])
+        valid_data["tag_keys"] = tag_keys
+
         # don't want to attach these temporary choices to the model
         del valid_data["slug"]
         del valid_data["slug_choice"]
+        del valid_data["tags"]
         del valid_data["timestamp_choice"]
 
         was_published = False

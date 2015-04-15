@@ -1057,6 +1057,7 @@ class TestAdmin(BaseTestController):
         data["slug"] = ''
         data["author"] = author.slug
         data["body"] = ('Test Post Body' + UCHAR).encode('utf-8')
+        data["tags"] = ('tag1, tag two ' + UCHAR).encode('utf-8')
         data["timestamp_choice"] = 'now'
         data["timestamp"] = ''
         data["preview"] = '1'
@@ -1065,6 +1066,7 @@ class TestAdmin(BaseTestController):
         response = response.follow()
         assert data["title"] in response
         assert 'Preview Mode' in response
+        assert 'tag1' in response
 
         data["slug_choice"] = 'custom'
         data["slug"] = 'test-slug'

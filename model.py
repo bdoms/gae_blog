@@ -80,13 +80,9 @@ class BlogAuthor(ndb.Model):
         return self.posts.filter(BlogPost.published == True).filter(BlogPost.timestamp < datetime.utcnow()).order(-BlogPost.timestamp)
 
 
-class BlogPost(ndb.Model):
+class BlogTag(ndb.Model):
 
-    title = ndb.StringProperty(required=True) # max of 500 chars
-    body = ndb.TextProperty() # returns type db.Text (a subclass of unicode)
-    published = ndb.BooleanProperty(default=False)
-    timestamp = ndb.DateTimeProperty(auto_now_add=True)
-    author = ndb.KeyProperty(kind=BlogAuthor, required=True)
+    name = ndb.StringProperty(required=True)
 
     @property
     def slug(self):
@@ -95,6 +91,36 @@ class BlogPost(ndb.Model):
     @property
     def blog(self):
         return self.key.parent().get()
+
+    @property
+    def posts(self):
+        return BlogPost.query(BlogPost.tags == self.key)
+
+
+class BlogPost(ndb.Model):
+
+    title = ndb.StringProperty(required=True) # max of 500 chars
+    body = ndb.TextProperty() # returns type db.Text (a subclass of unicode)
+    published = ndb.BooleanProperty(default=False)
+    timestamp = ndb.DateTimeProperty(auto_now_add=True)
+    author = ndb.KeyProperty(kind=BlogAuthor, required=True)
+    tag_keys = ndb.KeyProperty(kind=BlogTag, repeated=True)
+
+    @property
+    def slug(self):
+        return self.key.string_id()
+
+    @property
+    def blog(self):
+        return self.key.parent().get()
+
+    @property
+    def tags(self):
+        return ndb.get_multi(self.tag_keys)
+
+    @property
+    def tag_names(self):
+        return [tag.name for tag in self.tags]
 
     @property
     def comments(self):
@@ -166,7 +192,7 @@ class BlogComment(ndb.Model):
     @property
     def linkback(self):
         return self.trackback or self.pingback or self.webmention
-    
+
 
 class BlogImage(ndb.Model):
 
@@ -228,10 +254,16 @@ def makeNew(model_object, id=None, parent=None, use_transaction=True):
 
     return new_object
 
+def slugify(name):
+    slug = name.lower().replace(" ", "-").encode("utf-8")
+    slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
+    slug = re.sub(r'(-)\1+', '-', slug)
+    if slug.endswith('-'): slug = slug[:-1]
+    return slug[:500]
+
 def makeSlug(name, blog, model_class, entity=None):
     """ creates a slug for use in a url """
-    slug = name.lower().replace(" ", "-").replace("---", "-")[:500].encode("utf-8")
-    slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
+    slug = slugify(name)
     existing = model_class.get_by_id(slug, parent=blog.key)
     if (not entity and existing) or ((entity and existing) and entity.key != existing.key):
         # only work on finding a new slug if this isn't the same post that already uses it

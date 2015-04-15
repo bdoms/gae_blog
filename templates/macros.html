@@ -40,6 +40,21 @@
         </time>
     </p>
 
+    {% if post.tag_keys %}
+        <p class="post-tags">
+            Tagged with
+            {% for tag in post.tags %}
+                {% set sep = '' %}
+                {% if loop.index == loop.length - 1 %}
+                    {% set sep = ', and' %}
+                {% elif loop.index < loop.length %}
+                    {% set sep = ',' %}
+                {% endif %}
+                <span itemprop="keywords">{{tag.name}}</span>{{sep}}
+            {% endfor %}
+        </p>
+    {% endif %}
+
     <div class="post-body" itemprop="articleBody">
         {{post.body}}
     </div>
