@@ -8,8 +8,8 @@
 {% elif blog.admin_email and authors %}
     <form action="{{blog_url}}/contact" method="post" id="contact-form">
         <p class="contact-author">
-            <label for="author">To:</label>
-            <select name="author">
+            <label for="contact-author">To:</label>
+            <select id="contact-author" name="author">
                 {% if authors|length > 1 %}
                     {% if form_data.get('author') == 'all' %}
                         <option value="all" selected="selected">Everyone</option>
@@ -31,8 +31,8 @@
         </p>
 
         <p class="contact-email">
-            <label for="email">From Email Address:</label>
-            <input type="email" name="email" value="{{form_data.get('email', '')}}" required autofocus />
+            <label for="contact-email">From Email Address:</label>
+            <input type="email" id="contact-email" name="email" value="{{form_data.get('email', '')}}" required autofocus />
             <span class="help">(required for a response)</span>
             {% if "email" in errors %}
                 <span class="error">please enter a valid email</span>
@@ -40,8 +40,8 @@
         </p>
 
         <p class="contact-subject">
-            <label for="subject">Subject:</label>
-            <input type="text" name="subject" value="{{form_data.get('subject', '')}}"/>
+            <label for="contact-subject">Subject:</label>
+            <input type="text" id="contact-subject" name="subject" value="{{form_data.get('subject', '')}}"/>
             <span class="help">(optional)</span>
             {% if "subject" in errors %}
                 <span class="error">please enter a valid subject</span>
@@ -49,7 +49,7 @@
         </p>
 
         <p class="contact-message">
-            <label for="body">Message:</label>
+            <label for="contact-body">Message:</label>
             <span class="help">(plain text)</span>
             {% if "body" in errors %}
                 <span class="error">please enter a valid message</span>
@@ -57,12 +57,12 @@
         </p>
 
         <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
-            <label for="required">Required:</label>
-            <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
+            <label for="contact-required">Required:</label>
+            <input type="text" id="contact-required" name="required" value="" autocomplete="off" tabindex="-1" />
             <span class="help">(required for verification)</span>
         </p>
 
-        <textarea class="contact-body" name="body" required>{{form_data.get('body', '')}}</textarea>
+        <textarea class="contact-body" id="contact-body" name="body" required>{{form_data.get('body', '')}}</textarea>
 
         <p class="contact-submit"><input type="submit" value="Send"/></p>
     </form>

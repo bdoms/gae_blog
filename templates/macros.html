@@ -23,15 +23,15 @@
     <address class="post-author">
         By
         {% set post_author = post.author.get() %}
-        {% if post_author.url %}
-            <a href="{{post_author.url}}" target="_blank" rel="author">{{post_author.name}}</a>
-        {% elif blog.author_pages %}
-            <a href="{{blog_url}}/author/{{post_author.slug}}" rel="author">{{post_author.name}}</a>
-        {% else %}
-            <span itemprop="author" itemscope itemtype="http://schema.org/Person">
-                <span itemprop="name">{{post_author.name}}</span>
-            </span>
-        {% endif %}
+        <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">
+            {% if post_author.url %}
+                <a href="{{post_author.url}}" target="_blank" rel="author">{{post_author.name}}</a>
+            {% elif blog.author_pages %}
+                <a href="{{blog_url}}/author/{{post_author.slug}}" rel="author">{{post_author.name}}</a>
+            {% else %}
+                {{post_author.name}}
+            {% endif %}
+        </span></span>
     </address>
 
     <p class="post-timestamp">
@@ -68,21 +68,23 @@
                 {% for comment in comments %}
                     {% if comment.author %}
                         {% if comment.author == post.author %}
-                            <div class="comment post-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
+                            <div class="comment post-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/Comment">
                         {% else %}
-                            <div class="comment blog-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
+                            <div class="comment blog-author-comment" itemprop="comment" itemscope itemtype="http://schema.org/Comment">
                         {% endif %}
                     {% else %}
-                        <div class="comment {{comment.trackback and 'trackback' or ''}} {{comment.pingback and 'pingback' or ''}} {{comment.webmention and 'webmention' or ''}}" itemprop="comment" itemscope itemtype="http://schema.org/UserComments">
+                        <div class="comment {{comment.trackback and 'trackback' or ''}} {{comment.pingback and 'pingback' or ''}} {{comment.webmention and 'webmention' or ''}}" itemprop="comment" itemscope itemtype="http://schema.org/Comment">
                     {% endif %}
                         <p class="comment-name">
                             {% if comment.author %}
                                 {% set comment_author = comment.author.get() %}
-                                {% if comment_author.url %}
-                                    <a target="_blank" href="{{comment_author.url}}">{{comment_author.name}}</a>
-                                {% else %}
-                                    <a href="{{blog_url}}/author/{{comment_author.slug}}">{{comment_author.name}}</a>
-                                {% endif %}
+                                <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">
+                                    {% if comment_author.url %}
+                                        <a target="_blank" href="{{comment_author.url}}">{{comment_author.name}}</a>
+                                    {% else %}
+                                        <a href="{{blog_url}}/author/{{comment_author.slug}}">{{comment_author.name}}</a>
+                                    {% endif %}
+                                </span></span>
 
                                 {% if comment.author == post.author %}
                                     (post author)
@@ -109,27 +111,29 @@
                                         on {{comment.blog_name|e}}
                                     {% endif %}
                                 {% else %}
-                                    {% if comment.name %}
-                                        {% if comment.url %}
-                                            <a target="_blank" href="{{comment.url}}">{{comment.name|e}}</a>
+                                    <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">
+                                        {% if comment.name %}
+                                            {% if comment.url %}
+                                                <a target="_blank" href="{{comment.url}}">{{comment.name|e}}</a>
+                                            {% else %}
+                                                {{comment.name|e}}
+                                            {% endif %}
                                         {% else %}
-                                            {{comment.name|e}}
+                                            Anonymous
                                         {% endif %}
-                                    {% else %}
-                                        Anonymous
-                                    {% endif %}
+                                    </span></span>
                                     says
                                 {% endif %}
                             {% endif %}
                         </p>
                         <p class="comment-timestamp">
-                            <time datetime="{{comment.timestamp.isoformat()}}Z" itemprop="commentTime">
+                            <time datetime="{{comment.timestamp.isoformat()}}Z" itemprop="dateCreated">
                                 {{comment.timestamp.isoformat()}}Z
                             </time>
                         </p>
                         {# body is required for normal comments, but may not exist for trackbacks #}
                         {% if comment.body %}
-                            <p class="comment-body" itemprop="commentText">{{comment.body}}</p>
+                            <p class="comment-body" itemprop="text">{{comment.body}}</p>
                         {% endif %}
                         {% if user_is_admin %}
                             <form class="comment-delete" action="{{blog_url}}/admin/comments" method="post">
@@ -196,43 +200,43 @@
                     <div id="comment-author-info">
                 {% endif %}
                     <p>
-                        <label for="name">Name:</label>
-                        <input type="text" name="name" value="{{form_data.get('name', '')}}" autofocus />
+                        <label for="comment-name">Name:</label>
+                        <input type="text" id="comment-name" name="name" value="{{form_data.get('name', '')}}" autofocus />
                         <span class="help">(optional, appears with comment)</span>
                         {% if "name" in errors %}
                             <span class="error">please enter a valid name</span>
                         {% endif %}
                     </p>
                     <p>
-                        <label for="url">URL:</label>
-                        <input type="url" name="url" value="{{form_data.get('url', '')}}"/>
+                        <label for="comment-url">URL:</label>
+                        <input type="url" id="comment-url" name="url" value="{{form_data.get('url', '')}}"/>
                         <span class="help">(optional, your name links to this address if included)</span>
                         {% if "url" in errors %}
                             <span class="error">please enter a valid URL</span>
                         {% endif %}
                     </p>
                     <p>
-                        <label for="email">Email:</label>
-                        <input type="email" name="email" value="{{form_data.get('email', '')}}"/>
+                        <label for="comment-email">Email:</label>
+                        <input type="email" id="comment-email" name="email" value="{{form_data.get('email', '')}}"/>
                         <span class="help">(required for verification, first comment is moderated)</span>
                         {% if "email" in errors %}
                             <span class="error">please enter a valid email</span>
                         {% endif %}
                     </p>
                     <p style="position: absolute; width: 1px; height: 1px; overflow: hidden; color: #fff;">
-                        <label for="required">Required:</label>
-                        <input type="text" name="required" value="" autocomplete="off" tabindex="-1" />
+                        <label for="comment-required">Required:</label>
+                        <input type="text" id="comment-required" name="required" value="" autocomplete="off" tabindex="-1" />
                         <span class="help">(required for verification)</span>
                     </p>
                 </div>
                 <p>
-                    <label for="body">Comment:</label>
+                    <label for="comment-body">Comment:</label>
                     <span class="help">(HTML is stripped, URL's become links)</span>
                     {% if "body" in errors %}
                         <span class="error">please enter a valid comment</span>
                     {% endif %}
                 </p>
-                <textarea name="body">{{form_data.get('body', '')}}</textarea>
+                <textarea id="comment-body" name="body">{{form_data.get('body', '')}}</textarea>
                 <p><input type="submit" value="Make Comment" /></p>
             </form>
         {% endif %}

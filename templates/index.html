@@ -29,16 +29,16 @@
         {% if page > 0 %}
             <p class="post-nav">
                 {% if page > 1 %}
-                    <a href="{{paginate_url}}?page={{page - 1}}">&lt; Older Posts</a>
+                    <a href="{{paginate_url}}?page={{page - 1}}" rel="prev">&lt; Older Posts</a>
                     {% if last_page > page %}
                         |
                     {% endif %}
                 {% endif %}
                 {% if last_page > page %}
                     {% if page + 1 == last_page %}
-                        <a href="{{paginate_url}}">Newer Posts &gt;</a>
+                        <a href="{{paginate_url}}" rel="next">Newer Posts &gt;</a>
                     {% else %}
-                        <a href="{{paginate_url}}?page={{page + 1}}">Newer Posts &gt;</a>
+                        <a href="{{paginate_url}}?page={{page + 1}}" rel="next">Newer Posts &gt;</a>
                     {% endif %}
                 {% endif %}
             </p>
