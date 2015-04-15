@@ -1,7 +1,10 @@
 import math
+from datetime import datetime
 
 from base import BaseController, cacheAndRender
 from gae_blog.lib.gae_validators import validateInt
+
+from gae_blog import model
 
 
 class IndexController(BaseController):
@@ -37,6 +40,11 @@ class IndexController(BaseController):
         except UnicodeDecodeError:
             return self.renderError(400)
         
+        try:
+            order = self.request.get("order")
+        except UnicodeDecodeError:
+            return self.renderError(400)
+
         page = 0
         if page_str:
             valid, page = validateInt(page_str)
@@ -50,6 +58,11 @@ class IndexController(BaseController):
         else:
             page = last_page
         
+        if order == 'asc':
+            now = datetime.utcnow()
+            published_posts = entity.posts.filter(model.BlogPost.published == True) \
+                .filter(model.BlogPost.timestamp < now).order(model.BlogPost.timestamp)
+
         posts = []
         if page:
             # invert the offset so that pages increase as time goes on

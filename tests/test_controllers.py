@@ -418,6 +418,15 @@ class TestAuthor(BaseTestController):
         response = self.app.get('/author/' + author.slug)
         assert post.body in response
 
+        # test that ordering works correctly
+        post2 = self.createPost(slug='second-test-post')
+        response = self.app.get('/author/' + author.slug)
+        assert unicode(response).index(post2.slug) < unicode(response).index(post.slug)
+
+        # and can be flipped
+        response = self.app.get('/author/' + author.slug + '?order=asc')
+        assert unicode(response).index(post2.slug) > unicode(response).index(post.slug)
+
 
 class TestTag(BaseTestController):
 
@@ -439,6 +448,15 @@ class TestTag(BaseTestController):
         post = self.createPost(tags=[tag])
         response = self.app.get('/tag/' + tag.slug)
         assert post.body in response
+
+        # test that ordering works correctly
+        post2 = self.createPost(slug='second-test-post', tags=[tag])
+        response = self.app.get('/tag/' + tag.slug)
+        assert unicode(response).index(post2.slug) < unicode(response).index(post.slug)
+
+        # and can be flipped
+        response = self.app.get('/tag/' + tag.slug + '?order=asc')
+        assert unicode(response).index(post2.slug) > unicode(response).index(post.slug)
 
 
 class TestContact(BaseTestController):
