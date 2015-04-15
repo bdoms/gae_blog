@@ -50,7 +50,7 @@
                 {% elif loop.index < loop.length %}
                     {% set sep = ',' %}
                 {% endif %}
-                <span itemprop="keywords">{{tag.name}}</span>{{sep}}
+                <span itemprop="keywords"><a href="{{blog_url}}/tag/{{tag.slug}}" rel="tag">{{tag.name}}</a></span>{{sep}}
             {% endfor %}
         </p>
     {% endif %}

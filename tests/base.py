@@ -75,7 +75,19 @@ class BaseTestCase(unittest.TestCase):
         self.author.put()
         return self.author
 
-    def createPost(self, slug='test-post', blog=None, author=None):
+    def createTag(self, slug='test-tag', blog=None):
+        if not blog:
+            if hasattr(self, 'blog'):
+                blog = self.blog
+            else:
+                blog = self.blog = self.createBlog()
+
+        name = 'Test Tag' + UCHAR
+        self.tag = model.BlogTag(id=slug, name=name, parent=blog.key)
+        self.tag.put()
+        return self.tag
+
+    def createPost(self, slug='test-post', blog=None, author=None, tags=None):
         if not author:
             if hasattr(self, 'author'):
                 author = self.author
@@ -85,9 +97,14 @@ class BaseTestCase(unittest.TestCase):
         if not blog:
             blog = self.blog
 
+        tag_keys = []
+        if tags:
+            tag_keys = [tag.key for tag in tags]
+
         title = 'Test Post Title' + UCHAR
         body = ' Test Post Body' + UCHAR
-        self.post = model.BlogPost(id=slug, title=title, body=body, published=True, author=author.key, parent=blog.key)
+        self.post = model.BlogPost(id=slug, title=title, body=body, published=True,
+            author=author.key, tag_keys=tag_keys, parent=blog.key)
         self.post.put()
         return self.post
 

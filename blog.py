@@ -9,7 +9,7 @@ PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PARENT_DIR not in sys.path:
     sys.path.append(PARENT_DIR)
 
-from gae_blog.controllers import admin, author, contact, error, feed, index, pingback, post, trackback, verify, webmention
+from gae_blog.controllers import admin, author, contact, error, feed, index, pingback, post, tag, trackback, verify, webmention
 
 # url routes
 BLOG_URLS = ['/blog']
@@ -21,6 +21,7 @@ for url in BLOG_URLS:
                    (url + '/feed', feed.FeedController),
                    (url + '/contact', contact.ContactController),
                    (url + '/post/(.[^/]+)', post.PostController),
+                   (url + '/tag/(.[^/]+)', tag.TagController),
                    (url + '/author/(.[^/]+)', author.AuthorController),
                    (url + '/trackback/(.[^/]+)', trackback.TrackbackController),
                    (url + '/pingback', pingback.PingbackController),

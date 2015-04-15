@@ -419,6 +419,28 @@ class TestAuthor(BaseTestController):
         assert post.body in response
 
 
+class TestTag(BaseTestController):
+
+    def test_tag(self):
+        # no blog
+        assert self.app.get('/tag/nothing', status=403)
+
+        blog = self.createBlog()
+
+        # no tag
+        assert self.app.get('/tag/nothing', status=404)
+
+        tag = self.createTag(blog=blog)
+        
+        response = self.app.get('/tag/' + tag.slug)
+        assert "Tag - " + tag.name in response
+        assert "No posts yet." in response
+
+        post = self.createPost(tags=[tag])
+        response = self.app.get('/tag/' + tag.slug)
+        assert post.body in response
+
+
 class TestContact(BaseTestController):
 
     def test_contact(self):

@@ -94,7 +94,11 @@ class BlogTag(ndb.Model):
 
     @property
     def posts(self):
-        return BlogPost.query(BlogPost.tags == self.key)
+        return BlogPost.query(BlogPost.tag_keys == self.key)
+
+    @property
+    def published_posts(self):
+        return self.posts.filter(BlogPost.published == True).filter(BlogPost.timestamp < datetime.utcnow()).order(-BlogPost.timestamp)
 
 
 class BlogPost(ndb.Model):
