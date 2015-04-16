@@ -5,11 +5,11 @@
 <h3>Author</h3>
 <form action="" method="post">
     <p>
-        <label for="name">Name:</label>
+        <label for="author-name">Name:</label>
         {% if "name" in form_data %}
-            <input type="text" name="name" value="{{form_data['name']}}" required />
+            <input type="text" name="name" id="author-name" value="{{form_data['name']}}" required />
         {% else %}
-            <input type="text" name="name" value="{{author and author.name or ''}}" required autofocus />
+            <input type="text" name="name" id="author-name" value="{{author and author.name or ''}}" required autofocus />
         {% endif %}
         <span class="help">(required)</span>
         {% if "name" in errors %}
@@ -18,11 +18,11 @@
     </p>
 
     <p>
-        <label for="url">URL:</label>
+        <label for="author-url">URL:</label>
         {% if "url" in form_data %}
-            <input type="url" name="url" value="{{form_data['url']}}" />
+            <input type="url" name="url" id="author-url" value="{{form_data['url']}}" />
         {% else %}
-            <input type="url" name="url" value="{{author and author.url or ''}}" />
+            <input type="url" name="url" id="author-url" value="{{author and author.url or ''}}" />
         {% endif %}
         <span class="help">(optional, overrides links to author index)</span>
         {% if "url" in errors %}
@@ -31,11 +31,11 @@
     </p>
 
     <p>
-        <label for="email">Email:</label>
+        <label for="author-email">Email:</label>
         {% if "email" in form_data %}
-            <input type="email" name="email" value="{{form_data['email']}}" />
+            <input type="email" name="email" id="author-email" value="{{form_data['email']}}" />
         {% else %}
-            <input type="email" name="email" value="{{author and author.email or ''}}" />
+            <input type="email" name="email" id="author-email" value="{{author and author.email or ''}}" />
         {% endif %}
         <span class="help">(optional, for messages from the contact page)</span>
         {% if "email" in errors %}

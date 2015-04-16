@@ -188,7 +188,7 @@
                         <p><label><input id="trackback" type="checkbox" name="trackback" {{(form_data.get('trackback') and 'checked="checked"' or '') | safe}}/> Trackback</label></p>
                         <p id="trackback-blog-name" {{(not form_data.get('trackback') and 'style="display: none;"' or '') | safe}}>
                             <label for="blog_name">Blog Name:</label>
-                            <input type="text" name="blog_name" value="{{form_data.get('blog_name', '')}}"/>
+                            <input type="text" name="blog_name" id="blog_name" value="{{form_data.get('blog_name', '')}}"/>
                             <span class="help">(optional, appears with trackback)</span>
                             {% if "blog_name" in errors %}
                                 <span class="error">please enter a valid blog name</span>

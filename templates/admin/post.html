@@ -18,11 +18,11 @@
 
 <form action="" method="post">
     <p>
-        <label for="title">Title:</label>
+        <label for="post-title">Title:</label>
         {% if "title" in form_data %}
-            <input type="text" name="title" value="{{form_data['title']}}" required />
+            <input type="text" name="title" id="post-title" value="{{form_data['title']}}" required />
         {% else %}
-            <input type="text" name="title" value="{{post and post.title.replace('"', '&quot;') or ''}}" required autofocus />
+            <input type="text" name="title" id="post-title" value="{{post and post.title.replace('"', '&quot;') or ''}}" required autofocus />
         {% endif %}
         {% if "title" in errors %}
             <span class="error">please enter a valid title</span>
@@ -78,8 +78,8 @@
     </ul>
 
     <p>
-        <label for="author">Author:</label>
-        <select name="author">
+        <label for="post-author">Author:</label>
+        <select name="author" id="post-author">
             {% for author in blog.authors %}
                 {% if "author" in form_data %}
                     <option value="{{author.slug}}" {{form_data['author'] == author.slug and 'selected="selected"' or ''}}>{{author.name}}</option>
@@ -111,12 +111,12 @@
     {% endif %}
 
     <p>
-        <label for="tags">Tags:</label>
+        <label for="post-tags">Tags:</label>
         <span class="help">(optional, comma-separated)</span>
         {% if "tags" in form_data %}
-            <input type="text" name="tags" value="{{form_data['tags']}}" />
+            <input type="text" name="tags" id="post-tags" value="{{form_data['tags']}}" />
         {% else %}
-            <input type="text" name="tags" value="{{post and (", ".join(post.tag_names)).replace('"', '&quot;') or ''}}" />
+            <input type="text" name="tags" id="post-tags" value="{{post and (", ".join(post.tag_names)).replace('"', '&quot;') or ''}}" />
         {% endif %}
         {% if "tags" in errors %}
             <span class="error">please enter valid tags</span>

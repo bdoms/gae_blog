@@ -10,22 +10,22 @@
 
 <form action="" method="post">
     <p>
-        <label for="title">Blog Title:</label>
+        <label for="blog-title">Blog Title:</label>
         {% if "title" in form_data %}
-            <input type="text" name="title" value="{{form_data['title']}}" required />
+            <input type="text" id="blog-title" name="title" value="{{form_data['title']}}" required />
         {% else %}
-            <input type="text" name="title" value="{{blog and blog.title or ''}}" autofocus required />
+            <input type="text" id="blog-title" name="title" value="{{blog and blog.title or ''}}" autofocus required />
         {% endif %}
         {% if "title" in errors %}
             <span class="error">please enter a valid title</span>
         {% endif %}
     </p>
     <p>
-        <label for="description">Blog Description:</label>
+        <label for="blog-description">Blog Description:</label>
         {% if "description" in form_data %}
-            <input type="text" name="description" value="{{form_data['description']}}" />
+            <input type="text" id="blog-description" name="description" value="{{form_data['description']}}" />
         {% else %}
-            <input type="text" name="description" value="{{blog and blog.description or ''}}" />
+            <input type="text" id="blog-description" name="description" value="{{blog and blog.description or ''}}" />
         {% endif %}
         <span class="help">(optional, used by RSS and default meta tags)</span>
         {% if "description" in errors %}
@@ -95,9 +95,9 @@
     <p>
         <label for="admin_email">Admin Email:</label>
         {% if "admin_email" in form_data %}
-            <input type="email" name="admin_email" value="{{form_data['admin_email']}}" />
+            <input type="email" name="admin_email" id="admin_email" value="{{form_data['admin_email']}}" />
         {% else %}
-            <input type="email" name="admin_email" value="{{blog and blog.admin_email or ''}}" />
+            <input type="email" name="admin_email" id="admin_email" value="{{blog and blog.admin_email or ''}}" />
         {% endif %}
         <span class="help">(required for email alerts or the contact page to work correctly, must match the email address of a GAE admin)</span>
         {% if "admin_email" in errors %}
@@ -107,9 +107,9 @@
     <p>
         <label for="posts_per_page">Posts Per Page:</label>
         {% if "posts_per_page" in form_data %}
-            <input type="number" min="1" step="1" name="posts_per_page" value="{{form_data['posts_per_page']}}" />
+            <input type="number" min="1" step="1" name="posts_per_page" id="posts_per_page" value="{{form_data['posts_per_page']}}" />
         {% else %}
-            <input type="number" min="1" step="1" name="posts_per_page" value="{{blog and blog.posts_per_page or 10}}" />
+            <input type="number" min="1" step="1" name="posts_per_page" id="posts_per_page" value="{{blog and blog.posts_per_page or 10}}" />
         {% endif %}
         <span class="help">(control how many posts are shown at once on index pages)</span>
         {% if "posts_per_page" in errors %}
@@ -119,9 +119,9 @@
     <p>
         <label for="image_preview_size">Image Preview Size:</label>
         {% if "image_preview_size" in form_data %}
-            <input type="number" min="1" step="1" name="image_preview_size" value="{{form_data['image_preview_size']}}" />
+            <input type="number" min="1" step="1" name="image_preview_size" id="image_preview_size" value="{{form_data['image_preview_size']}}" />
         {% else %}
-            <input type="number" min="1" step="1" name="image_preview_size" value="{{blog and blog.image_preview_size or 600}}" />
+            <input type="number" min="1" step="1" name="image_preview_size" id="image_preview_size" value="{{blog and blog.image_preview_size or 600}}" />
         {% endif %}
         <span class="help">(the maximum number of pixels wide or high for previews, applies to the larger dimension)</span>
         {% if "image_preview_size" in errors %}
@@ -129,11 +129,11 @@
         {% endif %}
     </p>
     <p>
-        <label for="url">Blog URL:</label>
+        <label for="blog-url">Blog URL:</label>
         {% if "url" in form_data %}
-            /<input type="text" name="url" value="{{form_data['url']}}" />
+            /<input type="text" name="url" id="blog-url" value="{{form_data['url']}}" />
         {% else %}
-            /<input type="text" name="url" value="{{blog and blog.slug or blog_url[1:]}}" />
+            /<input type="text" name="url" id="blog-url" value="{{blog and blog.slug or blog_url[1:]}}" />
         {% endif %}
         <span class="help">(WARNING: changing this may break things, see readme for instructions)</span>
         {% if "url" in errors %}
@@ -144,11 +144,11 @@
         {% endif %}
     </p>
     <p>
-        <label for="template">Base Template:</label>
+        <label for="blog-template">Base Template:</label>
         {% if "template" in form_data %}
-            <input type="text" name="template" value="{{form_data['template']}}" />
+            <input type="text" name="template" id="blog-template" value="{{form_data['template']}}" />
         {% else %}
-            <input type="text" name="template" value="{{blog and blog.template or ''}}" />
+            <input type="text" name="template" id="blog-template" value="{{blog and blog.template or ''}}" />
         {% endif %}
         <span class="help">(relative path from your parent project)</span>
         {% if "template" in errors %}
@@ -158,9 +158,9 @@
     <p>
         <label for="mail_queue">Mail Queue:</label>
         {% if "mail_queue" in form_data %}
-            <input type="text" name="mail_queue" value="{{form_data['mail_queue']}}" />
+            <input type="text" name="mail_queue" id="mail_queue" value="{{form_data['mail_queue']}}" />
         {% else %}
-            <input type="text" name="mail_queue" value="{{blog and blog.mail_queue or 'mail'}}" />
+            <input type="text" name="mail_queue" id="mail_queue" value="{{blog and blog.mail_queue or 'mail'}}" />
         {% endif %}
         <span class="help">(task queue to use for sending email)</span>
         {% if "mail_queue" in errors %}
@@ -172,12 +172,12 @@
         <span class="help">(newline separated)</span>
     </p>
     {% if "blocklist" in form_data %}
-        <textarea name="blocklist">{{form_data['blocklist']}}</textarea>
+        <textarea name="blocklist" id="blocklist">{{form_data['blocklist']}}</textarea>
     {% else %}
         {% if blog and blog.blocklist %}
-            <textarea name="blocklist">{% for address in blog.blocklist %}{{address}}&#13;&#10;{% endfor %}</textarea>
+            <textarea name="blocklist" id="blocklist">{% for address in blog.blocklist %}{{address}}&#13;&#10;{% endfor %}</textarea>
         {% else %}
-            <textarea name="blocklist"></textarea>
+            <textarea name="blocklist" id="blocklist"></textarea>
         {% endif %}
     {% endif %}
 
