@@ -259,7 +259,7 @@ def makeNew(model_object, id=None, parent=None, use_transaction=True):
     return new_object
 
 def slugify(name):
-    slug = name.lower().replace(" ", "-").encode("utf-8")
+    slug = name.lower().replace(" ", "-").replace("/", "-").encode("utf-8")
     slug = ''.join([char for char in slug if char.isalnum() or char == '-'])
     slug = re.sub(r'(-)\1+', '-', slug)
     if slug.endswith('-'): slug = slug[:-1]
