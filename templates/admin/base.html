@@ -3,7 +3,9 @@
 {% block blog_content %}
 <h2><a href="{{blog_url}}/admin">Admin</a></h2>
 
-<p><a href="{{logout_url}}">Sign Out</a></p>
+{% if logout_url %}
+    <p><a href="{{logout_url}}">Sign Out</a></p>
+{% endif %}
 
 {% block admin_content %}{% endblock %}
 {% endblock %}

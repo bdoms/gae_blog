@@ -41,7 +41,10 @@ class AdminController(FormController):
 
     @property
     def logout_url(self):
-        return users.create_logout_url(self.blog_url)
+        url = None
+        if users.get_current_user():
+            url = users.create_logout_url(self.blog_url)
+        return url
 
 
 class BlogController(AdminController):
