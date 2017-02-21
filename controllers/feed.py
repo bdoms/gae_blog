@@ -8,9 +8,9 @@ from gae_blog import model
 class FeedController(BaseController):
     """ handles request for news feeds like RSS """
 
-    # the minifier does not play nice with RSS - CDATA and camelCased end tags are not handled properly
+    # the minifier does not play nice with RSS - CDATA is not handled properly
     # `use_datastore` adds another layer of caching instead of having to render this each time
-    @cacheAndRender(minify=False, use_datastore=True)
+    @cacheAndRender(minify=False, use_datastore=True, content_type='application/rss+xml')
     def get(self):
 
         root_url = self.request.headers.get('host')
@@ -34,6 +34,8 @@ class FeedController(BaseController):
                         entity = tag
 
             posts = entity.published_posts.fetch(blog.posts_per_page)
+
+        self.response.headers['Content-Type'] = 'application/rss+xml'
 
         self.renderTemplate('feed.rss', blog=blog, author=author, tag=tag,
             posts=posts, root_url=root_url, build_date=datetime.utcnow())
