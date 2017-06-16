@@ -530,7 +530,7 @@ class ImageController(AdminController, blobstore_handlers.BlobstoreUploadHandler
             return self.redisplay({}, errors, self.blog_url + '/admin/image')
 
         image = model.BlogImage(parent=self.blog.key, blob=blob_info.key())
-        image.url = images.get_serving_url(blob_info)
+        image.url = images.get_serving_url(blob_info, secure_url=True)
         image.put()
 
         self.redirect(self.blog_url + '/admin/images')
@@ -549,6 +549,9 @@ class MigrateController(AdminController):
         for image in self.blog.images:
             if not image.url:
                 image.url = images.get_serving_url(image.blob)
+                new_images.append(image)
+            elif image.url.startswith('http://'):
+                image.url = image.url.replace('http://', 'https://')
                 new_images.append(image)
         if new_images:
             model.db.put(new_images)
