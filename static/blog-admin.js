@@ -88,7 +88,7 @@ for (var i=0; i < gaeblog.forms.length; i++) {
 gaeblog.image_upload_form = document.getElementById("image-upload-form");
 if (gaeblog.image_upload_form) {
     gaeblog.image_upload_form.addEventListener("submit", function(e) {
-        if (gaeblog.image_upload_form.action.indexOf(gaeblog.BLOG_URL + '/admin/image') !== -1) {
+        if (!this.action || this.action.indexOf(gaeblog.BLOG_URL + '/admin/image') > -1) {
             var url = gaeblog.BLOG_URL + '/admin/image?json=1';
             var submitImage = function(response) {
                 gaeblog.image_upload_form.action = response.url;
