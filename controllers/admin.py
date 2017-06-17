@@ -166,11 +166,11 @@ class AuthorController(AdminController):
                     for ref_list in ref_lists:
                         new_objects = []
                         for ref_object in ref_list:
-                            ref_object.author = author
+                            ref_object.author = author.key
                             new_objects.append(ref_object)
-                        model.db.put(new_objects)
+                        model.ndb.put_multi(new_objects)
                     return author
-                author = model.db.run_in_transaction(author_transaction, author, slug, blog, [posts, comments])
+                author = model.ndb.transaction(lambda: author_transaction(author, slug, blog, [posts, comments]))
             author.populate(**valid_data)
         else:
             author = model.BlogAuthor(id=slug, parent=blog.key, **valid_data)
@@ -225,7 +225,7 @@ class PostsController(AdminController):
             if post:
                 # delete all the post's comments first
                 if post.comments.count() > 0:
-                    model.db.delete(list(post.comments))
+                    model.ndb.delete_multi(post.comments.fetch(keys_only=True))
                 # then the post itself
                 post.key.delete()
                 clearCache(self.blog)
@@ -554,7 +554,7 @@ class MigrateController(AdminController):
                 image.url = image.url.replace('http://', 'https://')
                 new_images.append(image)
         if new_images:
-            model.db.put(new_images)
+            model.ndb.put_multi(new_images)
 
         self.redirect(self.blog_url + '/admin')
 

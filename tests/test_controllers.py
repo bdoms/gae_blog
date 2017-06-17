@@ -1049,9 +1049,25 @@ class TestAdmin(BaseTestController):
         assert 'Admin - Author - ' + author.name in response
 
     def test_editAuthor(self):
-        self.createBlog()
+        blog = self.createBlog()
+        author = self.createAuthor(blog=blog)
+        post = self.createPost(blog=blog, author=author)
+        comment = self.createComment(post=post)
         self.login(is_admin=True)
 
+        assert self.app.post('/admin/author/nothing', status=404)
+
+        # edit existing
+        data = {}
+        data["name"] = ('New Test Author Name' + UCHAR).encode('utf-8')
+        data["url"] = 'http://www.example.com/new-test-author'
+        data["email"] = ('new.test.author' + UCHAR + '@example.com').encode('utf-8')
+
+        response = self.app.post('/admin/author/' + author.slug, data)
+        response = response.follow()
+        assert "<h3>Actions</h3>" in response
+
+        # create new
         data = {}
         data["name"] = ('Test Author Name' + UCHAR).encode('utf-8')
         data["url"] = 'http://www.example.com/test-author'
@@ -1059,7 +1075,7 @@ class TestAdmin(BaseTestController):
 
         response = self.app.post('/admin/author/', data)
         response = response.follow()
-        assert '<h3>Actions</h3>' in response
+        assert data["name"] in response
 
     def test_posts(self):
         blog = self.createBlog()
@@ -1075,11 +1091,11 @@ class TestAdmin(BaseTestController):
 
     def test_deletePost(self):
         blog = self.createBlog()
+        post = self.createPost(blog=blog)
+        comment = self.createComment(post=post)
         self.login(is_admin=True)
 
         assert self.app.post('/admin/posts', {'post': 'nothing'}, status=404)
-
-        post = self.createPost(blog=blog)
 
         response = self.app.post('/admin/posts', {'post': post.slug})
         response = response.follow()
