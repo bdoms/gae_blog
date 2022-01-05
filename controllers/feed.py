@@ -10,7 +10,7 @@ class FeedController(BaseController):
 
     # the minifier does not play nice with RSS - CDATA is not handled properly
     # `use_datastore` adds another layer of caching instead of having to render this each time
-    @cacheAndRender(minify=False, use_datastore=True, content_type='application/rss+xml')
+    @cacheAndRender(minify=False, use_datastore=True, content_type='application/rss+xml; charset=UTF-8')
     def get(self):
 
         root_url = self.request.headers.get('host')
@@ -35,7 +35,7 @@ class FeedController(BaseController):
 
             posts = entity.published_posts.fetch(blog.posts_per_page)
 
-        self.response.headers['Content-Type'] = 'application/rss+xml'
+        self.response.headers['Content-Type'] = 'application/rss+xml; charset=UTF-8'
 
         self.renderTemplate('feed.rss', blog=blog, author=author, tag=tag,
             posts=posts, root_url=root_url, build_date=datetime.utcnow())
